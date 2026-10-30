@@ -221,7 +221,7 @@ export default function PublishPanel({
           <div className="eyebrow">LOCAL EPUB EXPORT</div>
           <h2 id="publish-title">Ready for the next reader.</h2>
           <p>
-            Build a reflowable ebook from your manuscript and Classic design.
+            Build a reflowable ebook from your manuscript and selected ebook design.
             Everything happens on this device.
           </p>
         </div>
@@ -313,7 +313,7 @@ export default function PublishPanel({
         </div>
         <div>
           <section className="publish-card export-card">
-            <div className="eyebrow">CLASSIC · VERSION 1</div>
+            <div className="eyebrow">{getEbookEdition(book).template.id.toUpperCase()} · VERSION {getEbookEdition(book).template.version}</div>
             <h3>Your ebook, to go.</h3>
             <p>
               {book.chapters.length} section
