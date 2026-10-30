@@ -1794,3 +1794,12 @@ aside h2 {
 .structure-title-visibility { display:flex; align-items:center; gap:9px; cursor:pointer; font-size:12px; font-weight:600; margin:13px 0 6px; }
 .structure-title-visibility input[type="checkbox"] { width:17px; height:17px; margin:0; flex:none; accent-color:var(--green); cursor:pointer; }
 .structure-title-visibility input:focus-visible { outline:2px solid var(--green); outline-offset:3px; }
+
+/* Explicit manuscript block alignment, shared with the live ebook preview. */
+.ProseMirror p[style*="text-align"], .ProseMirror h2[style*="text-align"] { text-indent:0; }
+.ebook-prose .align-left { text-align:left; text-indent:0; }
+.ebook-prose .align-center { text-align:center; text-indent:0; }
+.ebook-prose .align-right { text-align:right; text-indent:0; }
+.ebook-prose .align-justify { text-align:justify; text-indent:0; }
+.toolbar-alignment { display:inline-flex; gap:3px; align-items:center; border-left:1px solid var(--line); padding-left:9px; }
+.toolbar-alignment button { min-width:30px; }
