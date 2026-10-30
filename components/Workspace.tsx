@@ -7,6 +7,8 @@ import DesignPanel from "./DesignPanel";
 import EbookPreview from "./EbookPreview";
 import PublishPanel from "./PublishPanel";
 import PrintPanel from "./PrintPanel";
+import StructurePanel from "./StructurePanel";
+import { changeStructure, type StructureAction } from "../lib/structure";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { getPrintEdition, printPreset } from "../lib/print-profile";
 import { blankChapter, createBook, type Book } from "../lib/model";
@@ -15,7 +17,7 @@ import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [importing, setImporting] = useState(false);
   const [mode, setMode] = useState<
-    "manuscript" | "design" | "publish" | "print"
+    "manuscript" | "structure" | "design" | "publish" | "print"
   >("manuscript");
   const [books, setBooks] = useState<Book[]>([]),
     [book, setBook] = useState<Book | null>(null),
@@ -242,6 +244,18 @@ export default function Workspace() {
       throw Error(
         "Book details could not be saved. Resolve the local save error.",
       );
+  }
+  function updateStructure(action: StructureAction) {
+    const b = current.current;
+    if (!b) return;
+    try {
+      const result = changeStructure(b, action);
+      edit(result.book);
+      if (result.selectedId) setChapterId(result.selectedId);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Structure update failed.");
+      throw e;
+    }
   }
   function changePrintAlignment(alignment: "left" | "justify") {
     const b = current.current;
@@ -472,6 +486,9 @@ export default function Workspace() {
                 >
                   Manuscript
                 </button>
+                <button aria-pressed={mode === "structure"} onClick={() => setMode("structure")}>
+                  Structure
+                </button>
                 <button
                   aria-pressed={mode === "design"}
                   onClick={() => setMode("design")}
@@ -548,6 +565,14 @@ export default function Workspace() {
                   <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
                 </p>
               </section>
+              {mode === "structure" ? (
+                <StructurePanel
+                  book={book}
+                  selectedId={chapterId}
+                  onAction={updateStructure}
+                  onEdit={(id) => { setChapterId(id); setMode("manuscript"); }}
+                />
+              ) : null}
               <DesignPanel
                 hidden={mode !== "design"}
                 edition={getEbookEdition(book)}
@@ -569,7 +594,7 @@ export default function Workspace() {
                 />
               ) : null}
               <EbookPreview
-                hidden={mode === "publish" || mode === "print"}
+                hidden={mode === "publish" || mode === "print" || mode === "structure"}
                 book={book}
                 chapter={previewChapter}
                 chapterId={chapterId}
