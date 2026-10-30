@@ -523,7 +523,7 @@ export async function buildPrintPdf(
     `snapshot:${inputChecksum}`,
   ]);
   const bytes = await pdf.save({ useObjectStreams: false });
-  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}-${profile.template.id}-6x9-proof.pdf`;
+  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}${profile.template.id === "classic" ? "" : `-${profile.template.id}`}-6x9-proof.pdf`;
   return {
     bytes,
     record: {
