@@ -179,6 +179,12 @@ function fromAst(
       }
       const content = nodes.flatMap((c) => inline(c, [], depth + 1));
       const text = content.map(c => c.text).join("").trim();
+      if (html && !heading && blocks.at(-1)?.type === "image" &&
+          /^(?:Figure|Fig\\.|Illustration|Plate)\\s+[0-9IVXLCDM]+\\s*[:.\\-–—]\\s*\\S/i.test(text) &&
+          text.length <= 1000) {
+        blocks[blocks.length - 1].attrs!.caption = text;
+        return;
+      }
       if (scene.test(text)) blocks.push({ type: "scene_break" });
       else blocks.push({
         type: heading ? "heading" : "paragraph",
