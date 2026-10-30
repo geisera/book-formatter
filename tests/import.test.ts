@@ -127,6 +127,13 @@ describe("semantic manuscript import", () => {
     const project=importedBook(draft,chapters,"Test","Author",strToU8("source"));
     expect(restoreProject(backupBook(project.book,project.source)).book.chapters[0].content).toEqual(chapters[0].content);
   });
+  it("attaches a labeled DOCX caption to the preceding image", () => {
+    const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
+    const draft=parseConvertedHtml(`<p><img src="${src}" alt="An illustration"/></p><p>Figure 1: The watchtower.</p><p>Further prose.</p>`,"captions.docx");
+    expect(draft.blocks.map(b=>b.type)).toEqual(["image","paragraph"]);
+    expect(draft.blocks[0].attrs?.caption).toBe("Figure 1: The watchtower.");
+    expect(splitChapters(draft,"none")[0].content).toMatchObject({type:"doc"});
+  });
   it("keeps remote DOCX image references as inert placeholders", () => {
     const draft=parseConvertedHtml('<p>Start <img src="https://example.org/track.png" alt="Bad source"/> end.</p>',"bad.docx");
     expect(draft.blocks.some(b=>b.type==="image")).toBe(false);
