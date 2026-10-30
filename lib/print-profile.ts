@@ -68,6 +68,12 @@ export function validatePrintEdition(value: unknown): PrintEdition {
     throw Error("Unsupported print alignment.");
   return p;
 }
-export const getPrintEdition = (book: {
-  editions?: { print?: PrintEdition };
-}): PrintEdition => book.editions?.print ?? CLASSIC_PRINT;
+/** Design is authoritative. Legacy mismatched saved print profiles are resolved at read time
+ * without mutating the manuscript or losing the print-only justification preference. */
+export function getPrintEdition(book: {
+  editions?: { ebook?: { template: { id: PrintTemplateId } }; print?: PrintEdition };
+}): PrintEdition {
+  const id = book.editions?.ebook?.template.id ?? "classic";
+  const alignment = book.editions?.print?.alignment ?? "left";
+  return printPreset(id, alignment);
+}
