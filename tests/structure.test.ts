@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createBook, blankChapter, validateBook } from "../lib/model";
-import { changeStructure, sectionGroups } from "../lib/structure";
+import { changeStructure, orderedSections, sectionGroups } from "../lib/structure";
 import { backupBook, restoreBook } from "../lib/backup";
 describe("book structure editor", () => {
   it("reorders and renames by stable identity without changing manuscript text", () => {
@@ -50,5 +50,44 @@ describe("book structure editor", () => {
     expect(() => changeStructure(book,{kind:"move",id,to:5})).toThrow("destination");
     expect(() => changeStructure(book,{kind:"split",id,blockIndex:0,title:"Other"})).toThrow("Split");
     expect(() => validateBook({ ...book, chapters:[{...book.chapters[0],sectionType:"invalid"}]})).toThrow("Invalid chapter structure");
+  });
+});
+
+describe("continuous book section numbering", () => {
+  it("numbers front matter first, followed continuously by body and back matter", () => {
+    let book = createBook("Book", "Author");
+    book = changeStructure(book, {kind:"add", title:"Afterword", sectionType:"about-author"}).book;
+    book = changeStructure(book, {kind:"add", title:"Copyright", sectionType:"copyright"}).book;
+    book = changeStructure(book, {kind:"add", title:"Preface", sectionType:"preface"}).book;
+    expect(orderedSections(book).map((c, i) => `${i + 1}. ${c.title}`)).toEqual([
+      "1. Copyright", "2. Preface", "3. Chapter One", "4. Afterword",
+    ]);
+    expect(book.chapters).toEqual(orderedSections(book));
+    const id = book.chapters[1].id;
+    book = changeStructure(book, {kind:"move", id, to:0}).book;
+    expect(book.chapters.map((c, i) => `${i + 1}. ${c.title}`)).toEqual([
+      "1. Preface", "2. Copyright", "3. Chapter One", "4. Afterword",
+    ]);
+  });
+  it("moves sections between matter groups when their type changes, then renumbers", () => {
+    let book = createBook("Book", "Author");
+    book = changeStructure(book, {kind:"add", title:"Acknowledgments", sectionType:"acknowledgments"}).book;
+    const id = book.chapters[1].id;
+    book = changeStructure(book, {kind:"type", id, sectionType:"dedication"}).book;
+    expect(book.chapters.map(c => c.title)).toEqual(["Acknowledgments", "Chapter One"]);
+    expect(orderedSections(book).map((c,i) => [i+1,c.id])).toEqual([[1,id],[2,book.chapters[1].id]]);
+    expect(() => changeStructure(book, {kind:"move", id, to:1})).toThrow("Change the section type");
+    expect(restoreBook(backupBook(book)).chapters.map(c => c.title)).toEqual(["Acknowledgments", "Chapter One"]);
+  });
+  it("normalizes old mixed-order sections without altering their content or identity", () => {
+    const book = createBook("Book","Author");
+    const body = book.chapters[0];
+    const front = {...blankChapter("Dedication"), sectionType:"dedication" as const};
+    const back = {...blankChapter("Author biography"), sectionType:"about-author" as const};
+    book.chapters = [body,back,front];
+    expect(orderedSections(book).map(c => c.title)).toEqual(["Dedication","Chapter One","Author biography"]);
+    const updated = changeStructure(book, {kind:"rename", id: body.id, title:"Opening"}).book;
+    expect(updated.chapters.map(c => c.title)).toEqual(["Dedication","Opening","Author biography"]);
+    expect(updated.chapters.find(c => c.id === body.id)?.content).toEqual(body.content);
   });
 });
