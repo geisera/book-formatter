@@ -1,6 +1,6 @@
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import { schema, validateBook, showSectionTitle, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, type TextAlignment, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
@@ -199,6 +199,7 @@ export async function buildPrintPdf(
     fontSize: number = size,
     baseline = y,
     justify = false,
+    alignment: TextAlignment = "left",
   ) {
     // Never stretch the last paragraph line or a line without enough word gaps.
     // If justification would create visually disruptive gaps, leave it ragged-right.
@@ -208,7 +209,7 @@ export async function buildPrintPdf(
     const normalSpace = measure(" ", "regular", fontSize);
     const extra = justify && spaces >= 2 && available > 0 &&
       available / spaces <= normalSpace * 0.65 ? available / spaces : 0;
-    let x = proof.left + indent;
+    let x = proof.left + indent + (alignment === "center" ? Math.max(0, available) / 2 : alignment === "right" ? Math.max(0, available) : 0);
     for (const run of runs) {
       draw(run.text, x, baseline, fontSize, run.face);
       x += measure(run.text, run.face, fontSize);
@@ -426,7 +427,7 @@ export async function buildPrintPdf(
           bodyPage();
         y -= 10;
         for (const l of lines) {
-          line(l.runs, 0, 13);
+          line(l.runs, 0, 13, y, false, (node.attrs.align as TextAlignment | null) ?? "left");
           y -= 19;
         }
         y -= 9;
@@ -434,7 +435,9 @@ export async function buildPrintPdf(
         return;
       }
       if (!node.textContent.trim()) return;
-      const lines = wrap(units(node), opening ? 0 : 14);
+      const blockAlignment = node.attrs.align as TextAlignment | null;
+      const indent = blockAlignment ? 0 : opening ? 0 : 14;
+      const lines = wrap(units(node), indent);
       let offset = 0;
       while (offset < lines.length) {
         let capacity = slots();
@@ -453,7 +456,9 @@ export async function buildPrintPdf(
           splitViolations++;
         for (let i = 0; i < count; i++) {
           const l = lines[offset + i];
-          line(l.runs, l.indent, size, y, profile.alignment === "justify" && offset + i < lines.length - 1);
+          line(l.runs, l.indent, size, y,
+            (blockAlignment === "justify" || (!blockAlignment && profile.alignment === "justify")) && offset + i < lines.length - 1,
+            blockAlignment ?? "left");
           y -= leading;
         }
         offset += count;
