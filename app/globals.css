@@ -1816,3 +1816,17 @@ aside h2 {
 .structure-generated-note { font-size:12px; line-height:1.65; padding:10px 12px; border-left:3px solid var(--green); background:#f3f4ee; color:var(--muted); margin:10px 0; }
 .ebook-prose nav ol { padding-left:1.4em; }
 .ebook-prose nav button { border:0; background:transparent; font:inherit; color:inherit; cursor:pointer; text-align:left; padding:4px 0; text-decoration:underline; }
+
+/* Local manuscript illustrations */
+.ProseMirror figure.manuscript-image { margin:18px 0; padding:8px; border:1px dashed var(--line); cursor:pointer; }
+.ProseMirror figure.manuscript-image.ProseMirror-selectednode { outline:2px solid var(--green); outline-offset:2px; }
+.ProseMirror figure.manuscript-image img { display:inline-block; max-width:100%; height:auto; }
+.ebook-illustration { margin:1.8em 0; break-inside:avoid; }
+.ebook-illustration.align-left{text-align:left}
+.ebook-illustration.align-center{text-align:center}
+.ebook-illustration.align-right{text-align:right}
+.ebook-illustration img{max-width:100%;height:auto}
+.toolbar-image-controls { display:inline-flex; gap:8px; align-items:center; }
+.toolbar-image-controls label { display:inline-flex; gap:5px; align-items:center; font-size:11px; }
+.toolbar-image-controls select { font-size:12px; padding:4px; max-width:110px; }
+.image-error { color:#9b3030; font-size:12px; padding:8px 12px; }
