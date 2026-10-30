@@ -46,7 +46,13 @@ export const schema = new Schema({
     em: { toDOM: () => ["em", 0], parseDOM: [{ tag: "em" }, { tag: "i" }] },
   },
 });
+export const SECTION_TYPES = ["chapter", "prologue", "epilogue", "interlude", "part", "half-title", "title", "copyright", "dedication", "epigraph", "toc", "preface", "about-author", "also-by", "notes", "acknowledgments", "custom"] as const;
+export type SectionType = (typeof SECTION_TYPES)[number];
+export const sectionMatter = (type: SectionType): "front" | "body" | "back" =>
+  (["half-title", "title", "copyright", "dedication", "epigraph", "toc", "preface"] as string[]).includes(type) ? "front" :
+  (["about-author", "also-by", "notes", "acknowledgments"] as string[]).includes(type) ? "back" : "body";
 export type Chapter = {
+  sectionType?: SectionType;
   id: string;
   title: string;
   content: Record<string, unknown>;
@@ -145,7 +151,8 @@ export function validateBook(value: unknown): Book {
       !c ||
       typeof c.id !== "string" ||
       ids.has(c.id) ||
-      typeof c.title !== "string"
+      typeof c.title !== "string" ||
+      (c.sectionType !== undefined && !SECTION_TYPES.includes(c.sectionType))
     )
       throw Error("Invalid chapter structure.");
     ids.add(c.id);
