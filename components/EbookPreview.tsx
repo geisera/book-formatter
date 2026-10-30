@@ -192,7 +192,7 @@ export default function EbookPreview({
       </div>
       <div className={`reader-viewport theme-${theme}`} ref={viewport}>
         <article
-          className={`ebook-page heading-${edition.headingStyle}`}
+          className={`ebook-page heading-${edition.headingStyle} template-${edition.template.id}`}
           style={style}
           aria-label="Formatted chapter"
           aria-busy={updating}
