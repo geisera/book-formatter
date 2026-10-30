@@ -51,8 +51,13 @@ export type SectionType = (typeof SECTION_TYPES)[number];
 export const sectionMatter = (type: SectionType): "front" | "body" | "back" =>
   (["half-title", "title", "copyright", "dedication", "epigraph", "toc", "preface"] as string[]).includes(type) ? "front" :
   (["about-author", "also-by", "notes", "acknowledgments"] as string[]).includes(type) ? "back" : "body";
+export const defaultShowSectionTitle = (type: SectionType = "chapter"): boolean =>
+  !["dedication", "epigraph", "copyright", "title"].includes(type);
+export const showSectionTitle = (section: Chapter): boolean =>
+  section.showTitle ?? defaultShowSectionTitle(section.sectionType);
 export type Chapter = {
   sectionType?: SectionType;
+  showTitle?: boolean;
   id: string;
   title: string;
   content: Record<string, unknown>;
@@ -152,7 +157,8 @@ export function validateBook(value: unknown): Book {
       typeof c.id !== "string" ||
       ids.has(c.id) ||
       typeof c.title !== "string" ||
-      (c.sectionType !== undefined && !SECTION_TYPES.includes(c.sectionType))
+      (c.sectionType !== undefined && !SECTION_TYPES.includes(c.sectionType)) ||
+      (c.showTitle !== undefined && typeof c.showTitle !== "boolean")
     )
       throw Error("Invalid chapter structure.");
     ids.add(c.id);
