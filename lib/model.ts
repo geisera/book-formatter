@@ -61,9 +61,46 @@ export const defaultShowSectionTitle = (type: SectionType = "chapter"): boolean 
   !["dedication", "epigraph", "copyright", "title"].includes(type);
 export const showSectionTitle = (section: Chapter): boolean =>
   section.showTitle ?? defaultShowSectionTitle(section.sectionType);
+export type PageStart = "next" | "recto" | "verso";
+export type VerticalPlacement = "top" | "center" | "bottom";
+export type PageDecoration = "auto" | "show" | "hide";
+export type SectionPageLayout = {
+  start: PageStart;
+  vertical: VerticalPlacement;
+  header: PageDecoration;
+  pageNumber: PageDecoration;
+  spaceBefore: number;
+  spaceAfter: number;
+};
+export function defaultSectionLayout(type: SectionType = "chapter"): SectionPageLayout {
+  const matter = sectionMatter(type);
+  return {
+    start: matter === "body" ? "recto" : "next",
+    vertical: ["dedication", "epigraph", "half-title", "title"].includes(type) ? "center" : "top",
+    header: matter === "front" ? "hide" : "auto",
+    pageNumber: matter === "front" ? "hide" : "auto",
+    spaceBefore: 0,
+    spaceAfter: 0,
+  };
+}
+export function getSectionLayout(section: Chapter): SectionPageLayout {
+  return { ...defaultSectionLayout(section.sectionType), ...section.pageLayout };
+}
+export function validateSectionLayout(value: unknown): void {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw Error("Invalid section page layout.");
+  const o = value as Record<string, unknown>;
+  if (Object.keys(o).some(k => !["start","vertical","header","pageNumber","spaceBefore","spaceAfter"].includes(k)) ||
+      (o.start !== undefined && !["next","recto","verso"].includes(o.start as string)) ||
+      (o.vertical !== undefined && !["top","center","bottom"].includes(o.vertical as string)) ||
+      (o.header !== undefined && !["auto","show","hide"].includes(o.header as string)) ||
+      (o.pageNumber !== undefined && !["auto","show","hide"].includes(o.pageNumber as string)) ||
+      ["spaceBefore","spaceAfter"].some(k => o[k] !== undefined && (typeof o[k] !== "number" || !Number.isFinite(o[k]) || (o[k] as number) < 0 || (o[k] as number) > 120)))
+    throw Error("Invalid section page layout.");
+}
 export type Chapter = {
   sectionType?: SectionType;
   showTitle?: boolean;
+  pageLayout?: Partial<SectionPageLayout>;
   id: string;
   title: string;
   content: Record<string, unknown>;
@@ -167,6 +204,7 @@ export function validateBook(value: unknown): Book {
       (c.showTitle !== undefined && typeof c.showTitle !== "boolean")
     )
       throw Error("Invalid chapter structure.");
+    if (c.pageLayout !== undefined) validateSectionLayout(c.pageLayout);
     ids.add(c.id);
     const manuscript = schema.nodeFromJSON(c.content);
     manuscript.check();
