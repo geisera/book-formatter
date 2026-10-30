@@ -4,7 +4,7 @@ import { schema, validateBook, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-export const PRINT_RENDERER = "print-proof-1.0.0";
+export const PRINT_RENDERER = "print-proof-1.1.0";
 export type PrintFonts = {
   regular: Uint8Array;
   italic: Uint8Array;
@@ -89,7 +89,8 @@ export async function buildPrintPdf(
   const pages: PageProof[] = [],
     warnings = new Set<string>([
       "Feasibility proof only: reader/retailer approval and a physical print proof are still required.",
-      "Ragged-right text; automatic hyphenation, images and complex-script shaping are not supported.",
+      "Automatic hyphenation, images and complex-script shaping are not supported.",
+      ...(profile.alignment === "justify" ? ["Justification uses capped word-space expansion; lines requiring excessive gaps remain ragged-right."] : []),
     ]);
   if (book.importInfo?.diagnostics.some((d) => d.severity === "warning"))
     warnings.add(
@@ -197,11 +198,21 @@ export async function buildPrintPdf(
     indent = 0,
     fontSize: number = size,
     baseline = y,
+    justify = false,
   ) {
+    // Never stretch the last paragraph line or a line without enough word gaps.
+    // If justification would create visually disruptive gaps, leave it ragged-right.
+    const spaces = runs.filter((r) => r.text === " ").length;
+    const naturalWidth = runs.reduce((n, r) => n + measure(r.text, r.face, fontSize), 0);
+    const available = contentWidth - indent - naturalWidth;
+    const normalSpace = measure(" ", "regular", fontSize);
+    const extra = justify && spaces >= 2 && available > 0 &&
+      available / spaces <= normalSpace * 0.65 ? available / spaces : 0;
     let x = proof.left + indent;
     for (const run of runs) {
       draw(run.text, x, baseline, fontSize, run.face);
       x += measure(run.text, run.face, fontSize);
+      if (run.text === " ") x += extra;
     }
     proof.lineCount++;
   }
@@ -405,7 +416,7 @@ export async function buildPrintPdf(
           splitViolations++;
         for (let i = 0; i < count; i++) {
           const l = lines[offset + i];
-          line(l.runs, l.indent);
+          line(l.runs, l.indent, size, y, profile.alignment === "justify" && offset + i < lines.length - 1);
           y -= leading;
         }
         offset += count;
