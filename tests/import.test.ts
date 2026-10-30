@@ -146,7 +146,7 @@ describe("semantic manuscript import", () => {
     const draft=await importBytes(bytes,"illustrated.docx");
     const images=draft.blocks.filter(b=>b.type==="image");
     expect(images).toHaveLength(1);
-    expect(images[0].attrs?.src).toMatch(/^data:image\\/png;base64,/);
+    expect(images[0].attrs?.src).toMatch(/^data:image\/png;base64,/);
     const chapters=splitChapters(draft,"auto");
     expect(chapters.some(c=>JSON.stringify(c.content).includes('Map of the fictional city'))).toBe(true);
     const project=importedBook(draft,chapters,"Illustrated","Author",bytes);
