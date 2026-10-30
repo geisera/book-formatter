@@ -15,9 +15,10 @@ export type Inline = {
   marks?: { type: "em" | "strong" }[];
 };
 export type ImportBlock = {
-  type: "paragraph" | "heading" | "scene_break";
+  type: "paragraph" | "heading" | "scene_break" | "image";
   content?: Inline[];
   level?: number;
+  attrs?: {src: string; alt: string; width: number; align: string; caption?: string};
 };
 export type ImportDraft = {
   filename: string;
