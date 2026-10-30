@@ -1,4 +1,4 @@
-import { blankChapter, newId, schema, sectionMatter, defaultShowSectionTitle, type Book, type Chapter, type SectionType } from "./model";
+import { blankChapter, newId, schema, sectionMatter, type Book, type Chapter, type SectionType } from "./model";
 
 export type StructureAction =
   | { kind: "move"; id: string; to: number }
@@ -49,7 +49,7 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
       selectedId = action.id;
       break;
     case "add": {
-      const chapter = { ...blankChapter(action.title || "New section"), sectionType: action.sectionType, showTitle: defaultShowSectionTitle(action.sectionType) };
+      const chapter = { ...blankChapter(action.title || "New section"), sectionType: action.sectionType };
       const position = action.after ? chapters.findIndex(c => c.id === action.after) + 1 : chapters.length;
       if (action.after && position === 0) throw Error("Insertion point was not found.");
       chapters.splice(position, 0, chapter);
