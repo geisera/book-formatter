@@ -4,7 +4,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
 import { schema, validateBook, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
-export const EPUB_RENDERER = "epub-1.0.0";
+export const EPUB_RENDERER = "epub-1.1.0";
 export type ExportIssue = {
   severity: "error" | "warning";
   location: string;
@@ -192,7 +192,9 @@ function xhtml(
 }
 export function editionCss(e: EbookEdition): string {
   return `${e.bodyFont === "baskerville" ? `@font-face{font-family:LibreBaskerville;src:url("fonts/regular.woff") format("woff");font-weight:400;font-style:normal}@font-face{font-family:LibreBaskerville;src:url("fonts/italic.woff") format("woff");font-weight:400;font-style:italic}@font-face{font-family:LibreBaskerville;src:url("fonts/bold.woff") format("woff");font-weight:700;font-style:normal}` : ""}
-body{font-family:${e.bodyFont === "baskerville" ? "LibreBaskerville,Georgia,serif" : "Georgia,serif"};font-size:${e.fontSize / 16}em;line-height:${e.lineHeight};margin:1em;color:inherit;background:transparent}h1{font-size:1.65em;font-weight:normal;line-height:1.4;text-align:${e.headingStyle === "left" ? "left" : "center"};margin:${e.chapterSpacing}em 0 2em}h2{font-size:1.15em;line-height:1.5;margin:1.8em 0 1em}p{margin:0 0 ${e.paragraphSpacing}em;text-indent:${e.paragraphIndent}em;orphans:2;widows:2}.opening{text-indent:0}.scene{font-family:serif;text-align:center;letter-spacing:.15em;margin:1.6em 0;font-size:.8em}.scene-rule{width:3em;border:0;border-top:1px solid currentColor;margin:1.6em auto}.titlepage{text-align:center}.titlepage p{text-indent:0}.titlepage h1{margin-top:3em}.author{margin-top:1.5em}nav ol{padding-left:1.5em}nav li{margin-bottom:.6em}a{color:inherit}`;
+body{font-family:${e.bodyFont === "baskerville" ? "LibreBaskerville,Georgia,serif" : "Georgia,serif"};font-size:${e.fontSize / 16}em;line-height:${e.lineHeight};margin:1em;color:inherit;background:transparent}h1{font-size:1.65em;font-weight:normal;line-height:1.4;text-align:${e.headingStyle === "left" ? "left" : "center"};margin:${e.chapterSpacing}em 0 2em}h2{font-size:1.15em;line-height:1.5;margin:1.8em 0 1em}p{margin:0 0 ${e.paragraphSpacing}em;text-indent:${e.paragraphIndent}em;orphans:2;widows:2}.opening{text-indent:0}.scene{font-family:serif;text-align:center;letter-spacing:.15em;margin:1.6em 0;font-size:.8em}.scene-rule{width:3em;border:0;border-top:1px solid currentColor;margin:1.6em auto}.titlepage{text-align:center}.titlepage p{text-indent:0}.titlepage h1{margin-top:3em}.author{margin-top:1.5em}nav ol{padding-left:1.5em}nav li{margin-bottom:.6em}a{color:inherit}
+${e.template.id === "modern" ? "h1{font-size:1.5em;letter-spacing:-.025em;font-weight:600}.scene-rule{width:4em}" : e.template.id === "gothic" ? "h1{font-size:1.9em;letter-spacing:.09em;text-transform:uppercase}.scene{letter-spacing:.28em;margin:2em 0}" : ""}
+`;
 }
 
 export function buildEpub(
