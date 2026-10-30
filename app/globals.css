@@ -1812,3 +1812,7 @@ aside h2 {
 .structure-layout-grid select,.structure-layout-grid input { width:100%; min-width:0; padding:9px; border:1px solid var(--line); border-radius:4px; background:white; }
 .structure-page-layout p { color:var(--muted); line-height:1.6; font-size:11px; }
 @media(max-width:520px){.structure-layout-grid{grid-template-columns:1fr;}}
+
+.structure-generated-note { font-size:12px; line-height:1.65; padding:10px 12px; border-left:3px solid var(--green); background:#f3f4ee; color:var(--muted); margin:10px 0; }
+.ebook-prose nav ol { padding-left:1.4em; }
+.ebook-prose nav button { border:0; background:transparent; font:inherit; color:inherit; cursor:pointer; text-align:left; padding:4px 0; text-decoration:underline; }
