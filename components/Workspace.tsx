@@ -8,7 +8,7 @@ import EbookPreview from "./EbookPreview";
 import PublishPanel from "./PublishPanel";
 import PrintPanel from "./PrintPanel";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
-import { CLASSIC_PRINT } from "../lib/print-profile";
+import { CLASSIC_PRINT, printPreset, type PrintTemplateId } from "../lib/print-profile";
 import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
@@ -242,6 +242,12 @@ export default function Workspace() {
       throw Error(
         "Book details could not be saved. Resolve the local save error.",
       );
+  }
+  function changePrintTemplate(template: PrintTemplateId) {
+    const b = current.current;
+    if (!b) return;
+    const alignment = b.editions?.print?.alignment ?? "left";
+    edit({ ...b, editions: { ...b.editions, ebook: getEbookEdition(b), print: printPreset(template, alignment) } });
   }
   function changePrintAlignment(alignment: "left" | "justify") {
     const b = current.current;
@@ -557,6 +563,7 @@ export default function Workspace() {
                   getSnapshot={exportSnapshot}
                   onPublish={() => setMode("publish")}
                   onAlignmentChange={changePrintAlignment}
+                  onTemplateChange={changePrintTemplate}
                 />
               ) : null}
               <EbookPreview
