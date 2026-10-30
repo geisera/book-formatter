@@ -29,7 +29,7 @@ export default function Editor({content,onChange}:{content:Record<string,unknown
   if(!picked)return;
   try {
     if(!["image/png","image/jpeg"].includes(picked.type))throw Error("Choose a PNG or JPEG image.");
-    if(picked.size>MAX_IMAGE_BYTES)throw Error("Images must be 1.5 MB or smaller.");
+    if(picked.size>MAX_IMAGE_BYTES)throw Error("Images must be 3 MB or smaller.");
     const src=await new Promise<string>((resolve,reject)=>{
       const reader=new FileReader();
       reader.onerror=()=>reject(Error("Could not read image."));
