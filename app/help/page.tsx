@@ -104,6 +104,20 @@ export default function HelpPage() {
             <p>Exports include chapter navigation, supported inline emphasis, heading and scene treatments, and the saved ebook design. The <strong>Export history</strong> lists recent build records, including their revision and checksum; it does <strong>not</strong> store copies of the downloadable EPUB files.</p>
             <p><strong>Validation limitation:</strong> The browser performs local package checks, but <strong>EPUBCheck is not run on each user export</strong>. Do not regard a local-check pass as formal retailer approval. For distribution, validate the actual downloaded EPUB with EPUBCheck and visually inspect it in a reader.</p>
           </section>
+          <section id="structure">
+            <h2>Organize your book in Structure</h2>
+            <p>Open a local book and select <strong>Structure</strong> to organize sections independently of their manuscript text. Existing chapters are treated as regular chapters unless you assign another type.</p>
+            <ol>
+              <li><strong>Reorder:</strong> drag a section row onto another row, or use <strong>Up</strong> and <strong>Down</strong>. The saved section order determines EPUB navigation and the order of PDF pages.</li>
+              <li><strong>Rename or classify:</strong> change the title and leave the field, or select a section type. Supported types include prologue, chapters, parts, front matter and back matter.</li>
+              <li><strong>Add:</strong> choose a type, enter a title, then select <strong>Add section</strong>. Use <strong>+ After</strong> to insert after a specific section.</li>
+              <li><strong>Split:</strong> choose a split position between existing paragraph or scene-break blocks. The new section is inserted after the original.</li>
+              <li><strong>Merge next:</strong> append the following section's blocks to this section; the first section keeps its title and ID.</li>
+              <li><strong>Delete:</strong> remove a section and its content after confirmation. Maintain regular project backups before destructive changes.</li>
+              <li><strong>Edit text:</strong> open a section in Manuscript mode to edit its contents.</li>
+            </ol>
+            <p>The EPUB export creates navigation entries in section order and assigns appropriate EPUB semantics where supported. PDF export preserves section order; specialized front- and back-matter pagination and automatic generated TOC pages are not yet implemented. A section typed <strong>Table of contents</strong> is editable manuscript content, not an automatically populated TOC page.</p>
+          </section>
           <section id="pdf">
             <h2>Build and inspect a paperback PDF proof</h2>
             <ol>
