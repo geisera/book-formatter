@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { PDFDocument } from "pdf-lib";
 import { createBook, blankChapter, validateBook } from "../lib/model";
-import { CLASSIC_PRINT, getPrintEdition } from "../lib/print-profile";
+import { CLASSIC_PRINT, PRINT_PRESETS, getPrintEdition, printPreset, validatePrintEdition } from "../lib/print-profile";
 import { buildPrintPdf, type PrintFonts } from "../lib/print";
 import { backupBook, restoreBook } from "../lib/backup";
 const fonts = Object.fromEntries(
@@ -119,4 +119,53 @@ describe("bounded PDF justification", () => {
     expect(result.record.warnings.join(" ")).toContain("capped word-space");
     expect(b.chapters).toEqual(before);
   }, 20000);
+});
+
+describe("versioned print templates", () => {
+  it("validates all presets and rejects unversioned or altered profiles", () => {
+    for (const id of ["classic", "modern", "gothic"] as const) {
+      expect(validatePrintEdition(printPreset(id)).template).toEqual({ id, version: 1 });
+      expect(printPreset(id).leading).toBe(PRINT_PRESETS[id].leading);
+    }
+    expect(() => validatePrintEdition({ ...printPreset("gothic"), leading: 60 })).toThrow("Unsupported print profile");
+    expect(() => validatePrintEdition({ ...printPreset("modern"), template: { id: "modern", version: 2 } })).toThrow("Unsupported print template");
+  });
+  it("preserves print design separately from ebook design through local backups", () => {
+    const b = fixture();
+    const original = structuredClone(b.chapters);
+    const ebook = structuredClone(b.editions!.ebook);
+    b.editions!.print = printPreset("gothic", "justify");
+    const restored = restoreBook(backupBook(b));
+    expect(restored.editions!.print).toEqual(b.editions!.print);
+    expect(restored.editions!.ebook).toEqual(ebook);
+    expect(restored.chapters.map(c => c.content)).toEqual(original.map(c => c.content));
+  });
+  for (const template of ["modern", "gothic"] as const) {
+    it(`builds a valid offline ${template} PDF with independent layout and ornaments`, async () => {
+      const b = fixture();
+      const original = structuredClone(b);
+      b.editions!.print = printPreset(template, "justify");
+      b.chapters[0].content = {
+        type: "doc",
+        content: [
+          { type: "paragraph", content: [{ type: "text", text: "A short opening." }] },
+          { type: "scene_break" },
+          ...Array.from({ length: 9 }, () => ({ type: "paragraph", content: [{
+            type: "text", text: "The old road drew near the gate, while the wind shifted. ".repeat(25),
+          }] })),
+        ],
+      };
+      const snapshot = structuredClone(b);
+      const result = await buildPrintPdf(b, fonts, options);
+      const pdf = await PDFDocument.load(result.bytes);
+      expect(pdf.getPageCount()).toBe(result.record.pageCount);
+      expect(result.record.profile.template.id).toBe(template);
+      expect(result.record.profile.alignment).toBe("justify");
+      expect(result.record.checks).toMatchObject({ overflow: 0, splitViolations: 0, fonts: "embedded" });
+      expect(result.record.pages.filter(p => p.kind === "chapter").every(p => p.page % 2 === 1)).toBe(true);
+      expect(result.record.filename).toContain(template);
+      expect(b).toEqual(snapshot);
+      expect(b.editions!.ebook).toEqual(original.editions!.ebook);
+    }, 20000);
+  }
 });
