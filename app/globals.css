@@ -1803,3 +1803,12 @@ aside h2 {
 .ebook-prose .align-justify { text-align:justify; text-indent:0; }
 .toolbar-alignment { display:inline-flex; gap:3px; align-items:center; border-left:1px solid var(--line); padding-left:9px; }
 .toolbar-alignment button { min-width:30px; }
+
+/* Per-section page layout settings */
+.structure-page-layout { border:1px solid var(--line); border-radius:6px; margin:14px 0; background:#f9f8f2; padding:11px 13px; }
+.structure-page-layout summary { cursor:pointer; font-size:12px; font-weight:700; }
+.structure-layout-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:15px 0; }
+.structure-layout-grid label { display:flex; flex-direction:column; gap:6px; font-size:12px; font-weight:600; }
+.structure-layout-grid select,.structure-layout-grid input { width:100%; min-width:0; padding:9px; border:1px solid var(--line); border-radius:4px; background:white; }
+.structure-page-layout p { color:var(--muted); line-height:1.6; font-size:11px; }
+@media(max-width:520px){.structure-layout-grid{grid-template-columns:1fr;}}
