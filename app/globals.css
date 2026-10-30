@@ -1692,3 +1692,13 @@ aside h2 {
     padding: 8px 5px;
   }
 }
+
+/* Versioned ebook design treatments */
+.template-options { display:grid; gap:10px; margin:22px 0; }
+.template-options .template-card { width:100%; margin:0; text-align:left; cursor:pointer; background:#fffef9; border:1px solid var(--line); }
+.template-options .template-card.active { background:#edf1e6; border-color:#9fb294; }
+.template-options .template-card:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+.ebook-page.template-modern .ebook-chapter-header h2 { font-size:1.5em; font-weight:600; letter-spacing:-.025em; }
+.ebook-page.template-modern .ebook-opening-rule { width:40px; }
+.ebook-page.template-gothic .ebook-chapter-header h2 { font-size:1.9em; letter-spacing:.09em; text-transform:uppercase; }
+.ebook-page.template-gothic .ebook-scene { letter-spacing:.28em; margin:2em auto; }
