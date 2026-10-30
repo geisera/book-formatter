@@ -37,5 +37,16 @@ test("organizes and persists sections locally, including reordered export order"
   await page.getByRole("button", { name: /Structure test/ }).click();
   await page.getByRole("button", { name: "Structure", exact: true }).click();
   await expect(page.locator(".structure-item-heading strong")).toHaveText(["1. Before the story", "2. To my readers", "3. Chapter One"]);
+  await page.locator(".structure-item").filter({ hasText: "Before the story" }).getByText("Page Layout").click();
+  await expect(page.getByLabel("Start page for Before the story")).toHaveValue("verso");
+  await expect(page.getByLabel("Vertical position for Before the story")).toHaveValue("center");
+  await expect(page.getByLabel("Spacing before for Before the story")).toHaveValue("24");
+  const row = page.locator(".structure-item").filter({ hasText: "Before the story" });
+  await row.getByText("Page Layout").click();
+  await row.getByLabel("Start page for Before the story").selectOption("verso");
+  await row.getByLabel("Vertical position for Before the story").selectOption("center");
+  await row.getByLabel("Running header for Before the story").selectOption("hide");
+  await row.getByLabel("Page number for Before the story").selectOption("hide");
+  await row.getByLabel("Spacing before for Before the story").fill("24");
   await expect(page.getByRole("checkbox", { name: "Show title on page for Before the story" })).not.toBeChecked();
 });
