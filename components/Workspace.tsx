@@ -241,6 +241,10 @@ export default function Workspace() {
         "Book details could not be saved. Resolve the local save error.",
       );
   }
+  function changePrintAlignment(alignment: "left" | "justify") {
+    const b = current.current;
+    if (b) edit({ ...b, editions: { ...b.editions, ebook: getEbookEdition(b), print: { ...b.editions?.print ?? { schemaVersion: 1, kind: "paperback", template: { id: "classic", version: 1 }, trim: "6x9", font: "baskerville", fontSize: 11, leading: 15.5, inside: 54, outside: 40.5, top: 54, bottom: 54, rectoChapters: true }, alignment } } });
+  }
   function changeEdition(edition: EbookEdition) {
     const b = current.current;
     if (b) edit({ ...b, editions: { ...b.editions, ebook: edition } });
@@ -547,6 +551,7 @@ export default function Workspace() {
                   book={book}
                   getSnapshot={exportSnapshot}
                   onPublish={() => setMode("publish")}
+                  onAlignmentChange={changePrintAlignment}
                 />
               ) : null}
               <EbookPreview
