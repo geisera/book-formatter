@@ -6,16 +6,19 @@ import { preflight, snapshotChecksum } from "../lib/epub";
 import type { PrintFonts, PrintRecord, PrintResult } from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
 import { db } from "../lib/storage";
+import { getPrintEdition, PRINT_PRESETS, type PrintTemplateId } from "../lib/print-profile";
 export default function PrintPanel({
   book,
   getSnapshot,
   onPublish,
   onAlignmentChange,
+  onTemplateChange,
 }: {
   book: Book;
   getSnapshot: () => Promise<Book>;
   onPublish: () => void;
   onAlignmentChange: (alignment: "left" | "justify") => void;
+  onTemplateChange: (template: PrintTemplateId) => void;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -31,6 +34,8 @@ export default function PrintPanel({
     [book],
   );
   const fingerprint = useMemo(() => snapshotChecksum(book), [book]);
+  const profile = getPrintEdition(book);
+  const templateLabel = profile.template.id[0].toUpperCase() + profile.template.id.slice(1);
   function stop() {
     token.current++;
     worker.current?.terminate();
@@ -181,7 +186,7 @@ export default function PrintPanel({
           <div className="eyebrow">OFFLINE PAPERBACK PROOF</div>
           <h2 id="print-title">A book you can hold.</h2>
           <p>
-            Classic 6 × 9-inch interior. Build the PDF on this device, inspect
+            6 × 9-inch interior using your selected print design. Build the PDF on this device, inspect
             its actual pages, then download that same file.
           </p>
         </div>
@@ -189,9 +194,9 @@ export default function PrintPanel({
       </div>
       <div className="print-profile">
         <div>
-          <strong>Independent Classic print profile</strong>
+          <strong>{templateLabel} · print edition</strong>
           <p>
-            Libre Baskerville 11 pt · 15.5 pt leading
+            Libre Baskerville {profile.fontSize} pt · {profile.leading} pt leading
             <br />
             Inside 0.75″ · outside 0.5625″ · top/bottom 0.75″
             <br />
@@ -199,6 +204,29 @@ export default function PrintPanel({
           </p>
         </div>
         <div>
+          <label>
+            Print template
+            <select
+              aria-label="Print template"
+              value={profile.template.id}
+              disabled={busy}
+              onChange={(e) => {
+                onTemplateChange(e.target.value as PrintTemplateId);
+                setResult(null);
+              }}
+            >
+              {(Object.keys(PRINT_PRESETS) as PrintTemplateId[]).map((id) => (
+                <option value={id} key={id}>{id[0].toUpperCase() + id.slice(1)}</option>
+              ))}
+            </select>
+          </label>
+          <p>
+            {profile.template.id === "classic"
+              ? "Centered chapter titles, asterisks, traditional running headers."
+              : profile.template.id === "modern"
+                ? "Left-aligned chapter titles, fine scene rules, minimal running headers."
+                : "Dramatic centered chapter openings, diamond scene ornaments and chapter running headers."}
+          </p>
           <label className="print-justification-toggle">
             <input
               type="checkbox"
@@ -222,7 +250,7 @@ export default function PrintPanel({
             Rebuild the PDF after changing this option.
           </p>
           <p>
-            Print typography is separate from your ebook design. This first
+            Print typography is separate from your ebook design. This
             proof uses a fixed layout for text-only, left-to-right interiors.
           </p>
           <p>
