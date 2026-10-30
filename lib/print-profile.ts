@@ -1,18 +1,21 @@
+export type PrintTemplateId = "classic" | "modern" | "gothic";
 export type PrintEdition = {
   schemaVersion: 1;
   kind: "paperback";
-  template: { id: "classic"; version: 1 };
+  template: { id: PrintTemplateId; version: 1 };
   trim: "6x9";
   font: "baskerville";
-  fontSize: 11;
-  leading: 15.5;
-  inside: 54;
-  outside: 40.5;
-  top: 54;
-  bottom: 54;
+  fontSize: number;
+  leading: number;
+  inside: number;
+  outside: number;
+  top: number;
+  bottom: number;
   rectoChapters: true;
   alignment?: "left" | "justify";
 };
+
+/** Versioned print profiles. The manuscript and ebook edition remain independent. */
 export const CLASSIC_PRINT: PrintEdition = Object.freeze({
   schemaVersion: 1,
   kind: "paperback",
@@ -28,31 +31,41 @@ export const CLASSIC_PRINT: PrintEdition = Object.freeze({
   rectoChapters: true,
   alignment: "left",
 });
+export const MODERN_PRINT: PrintEdition = Object.freeze({
+  ...CLASSIC_PRINT,
+  template: Object.freeze({ id: "modern", version: 1 }),
+  fontSize: 11,
+  leading: 16,
+});
+export const GOTHIC_PRINT: PrintEdition = Object.freeze({
+  ...CLASSIC_PRINT,
+  template: Object.freeze({ id: "gothic", version: 1 }),
+  fontSize: 11,
+  leading: 16.5,
+});
+export const PRINT_PRESETS = Object.freeze({
+  classic: CLASSIC_PRINT,
+  modern: MODERN_PRINT,
+  gothic: GOTHIC_PRINT,
+});
+export function printPreset(id: PrintTemplateId, alignment: "left" | "justify" = "left"): PrintEdition {
+  return { ...PRINT_PRESETS[id], template: { ...PRINT_PRESETS[id].template }, alignment };
+}
 export function validatePrintEdition(value: unknown): PrintEdition {
   if (!value || typeof value !== "object")
     throw Error("Invalid print profile.");
   const p = value as PrintEdition;
-  for (const key of [
-    "schemaVersion",
-    "kind",
-    "trim",
-    "font",
-    "fontSize",
-    "leading",
-    "inside",
-    "outside",
-    "top",
-    "bottom",
-    "rectoChapters",
-  ] as const)
-    if (p[key] !== CLASSIC_PRINT[key])
-      throw Error(
-        "Unsupported print profile. This proof supports Classic 6 × 9 only.",
-      );
-  if (p.alignment !== undefined && !["left", "justify"].includes(p.alignment))
-    throw Error("Unsupported print alignment.");
-  if (!p.template || p.template.id !== "classic" || p.template.version !== 1)
+  if (!p.template || !Object.hasOwn(PRINT_PRESETS, p.template.id) || p.template.version !== 1)
     throw Error("Unsupported print template.");
+  const base = PRINT_PRESETS[p.template.id];
+  for (const key of [
+    "schemaVersion", "kind", "trim", "font", "fontSize", "leading",
+    "inside", "outside", "top", "bottom", "rectoChapters",
+  ] as const)
+    if (p[key] !== base[key])
+      throw Error("Unsupported print profile. Choose a versioned 6 × 9 preset.");
+  if (p.alignment !== undefined && p.alignment !== "left" && p.alignment !== "justify")
+    throw Error("Unsupported print alignment.");
   return p;
 }
 export const getPrintEdition = (book: {
