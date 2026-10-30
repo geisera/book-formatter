@@ -10,10 +10,12 @@ export default function PrintPanel({
   book,
   getSnapshot,
   onPublish,
+  onAlignmentChange,
 }: {
   book: Book;
   getSnapshot: () => Promise<Book>;
   onPublish: () => void;
+  onAlignmentChange: (alignment: "left" | "justify") => void;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -197,6 +199,21 @@ export default function PrintPanel({
           </p>
         </div>
         <div>
+          <label>
+            Body text alignment
+            <select aria-label="Print body text alignment"
+              value={book.editions?.print?.alignment ?? "left"}
+              disabled={busy}
+              onChange={(e) => { onAlignmentChange(e.target.value as "left" | "justify"); setResult(null); }}>
+              <option value="left">Left aligned (ragged right)</option>
+              <option value="justify">Justified — controlled word spacing</option>
+            </select>
+          </label>
+          <p>
+            Justification caps stretched word spaces at 165% of their natural
+            width. Lines that would need larger gaps remain ragged-right.
+            Rebuild the PDF after changing this option.
+          </p>
           <p>
             Print typography is separate from your ebook design. This first
             proof uses a fixed layout for text-only, left-to-right interiors.
