@@ -120,7 +120,7 @@ function fromAst(
     if (kind === "img" || kind === "image" || kind === "imageReference") {
       diagnostic(
         diagnostics,
-        "Images are represented by text placeholders. The original file is retained for later image support.",
+        "An image could not be embedded. Its description is retained as a placeholder; review the original DOCX and import warnings.",
       );
       return [
         {
@@ -157,7 +157,13 @@ function fromAst(
       // Mammoth emits images inline within <p>. Split at each image while keeping
       // its exact reading position relative to the surrounding text.
       const nodes = node.children ?? [];
-      const hasImages = html && nodes.some(c => c.tagName === "img");
+      const containsImage = (child: Ast, level = 0): boolean => {
+        check(depth + level + 1);
+        if (child.tagName === "img") return true;
+        if (["script", "style", "iframe", "object", "embed"].includes(child.tagName ?? "")) return false;
+        return (child.children ?? []).some(next => containsImage(next, level + 1));
+      };
+      const hasImages = html && nodes.some(c => containsImage(c));
       if (hasImages) {
         let pending: Inline[] = [];
         const flush = () => {
@@ -166,14 +172,31 @@ function fromAst(
               ...(heading ? {level: Number(kind[1])} : {}), content:pending});
           pending = [];
         };
-        for (const child of nodes) {
-          if (child.tagName === "img") {
+        const walk = (child: Ast, marks: ("em" | "strong")[] = [], level = 0) => {
+          check(depth + level + 1);
+          const tag = child.tagName ?? child.type;
+          if (tag === "img") {
             flush();
             const image = imageBlock(child);
             if (image) blocks.push(image);
-            else pending.push(...inline(child, [], depth + 1));
-          } else pending.push(...inline(child, [], depth + 1));
-        }
+            else pending.push(...inline(child, marks, depth + level + 1));
+            return;
+          }
+          if (["script", "style", "iframe", "object", "embed"].includes(tag)) {
+            inline(child, marks, depth + level + 1);
+            return;
+          }
+          if (child.children?.some(n => containsImage(n, level + 1))) {
+            const nextMarks = tag === "strong" || tag === "b"
+              ? [...marks, "strong" as const]
+              : tag === "em" || tag === "i"
+                ? [...marks, "em" as const] : marks;
+            for (const next of child.children ?? []) walk(next, nextMarks, level + 1);
+          } else {
+            pending.push(...inline(child, marks, depth + level + 1));
+          }
+        };
+        for (const child of nodes) walk(child);
         flush();
         return;
       }
