@@ -1722,3 +1722,47 @@ aside h2 {
   cursor: pointer;
 }
 .print-justification-toggle input:disabled { cursor: not-allowed; }
+
+/* In-app user documentation */
+.topbar-actions { display:flex; align-items:center; gap:24px; }
+.help-top-link,.help-return { color:var(--green); text-decoration:none; font-size:12px; font-weight:600; }
+.help-top-link { padding:10px 12px; border:1px solid var(--line); border-radius:6px; white-space:nowrap; }
+.help-top-link:hover,.help-return:hover { text-decoration:underline; background:#edf1e6; }
+.help-top-link:focus-visible,.help-return:focus-visible,.help-navigation a:focus-visible { outline:2px solid #a56e30; outline-offset:3px; }
+.help-page { max-width:1220px; padding:52px 30px 90px; margin:0 auto; }
+.help-header { display:flex; justify-content:space-between; align-items:flex-start; gap:30px; padding-bottom:32px; border-bottom:1px solid var(--line); }
+.help-header h1 { font-size:48px; letter-spacing:-1px; margin-bottom:16px; }
+.help-header p:not(.eyebrow) { color:var(--muted); line-height:1.75; max-width:680px; }
+.help-return { flex:none; padding:11px 0; }
+.help-grid { display:grid; grid-template-columns:220px minmax(0,1fr); gap:54px; margin-top:36px; align-items:start; }
+.help-navigation { position:sticky; top:24px; display:flex; flex-direction:column; border:1px solid var(--line); border-radius:8px; padding:18px; background:var(--paper); }
+.help-navigation strong { color:var(--green); font-size:13px; margin-bottom:12px; }
+.help-navigation a { text-decoration:none; color:#53644f; border-radius:4px; font-size:12px; line-height:1.5; padding:7px 8px; }
+.help-navigation a:hover { background:#edf1e6; }
+.help-articles { min-width:0; }
+.help-articles section { scroll-margin-top:22px; border-bottom:1px solid var(--line); padding:4px 0 34px; margin-bottom:34px; }
+.help-articles h2 { font-size:26px; margin:0 0 18px; }
+.help-articles p,.help-articles li,.help-articles dd { color:#4c584d; font-size:14px; line-height:1.85; }
+.help-articles p { margin-bottom:16px; }
+.help-articles li { margin-bottom:9px; }
+.help-articles ol { padding-left:24px; margin:0 0 20px; }
+.help-articles dl { margin:0; }
+.help-articles dt { font-weight:700; color:var(--ink); font-size:13px; margin-top:17px; }
+.help-articles dd { margin:4px 0 10px; }
+.help-articles kbd,.help-articles code { background:#e8ebe1; padding:2px 5px; border-radius:3px; font-size:.9em; }
+.help-footer { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-top:24px; }
+.help-footer a { color:var(--green); }
+@media (max-width:800px) {
+  .help-grid { grid-template-columns:1fr; gap:24px; }
+  .help-navigation { position:static; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .help-navigation strong { grid-column:1/-1; }
+  .help-header { flex-direction:column; gap:8px; }
+  .help-header h1 { font-size:38px; }
+  .topbar-actions { gap:10px; }
+}
+@media (max-width:600px) {
+  .help-page { padding:28px 18px 60px; }
+  .help-navigation { grid-template-columns:1fr 1fr; }
+  .topbar { padding-inline:15px; }
+  .help-top-link { padding:8px; font-size:11px; }
+}
