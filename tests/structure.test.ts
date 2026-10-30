@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createBook, blankChapter, validateBook } from "../lib/model";
+import { createBook, blankChapter, validateBook, showSectionTitle, defaultShowSectionTitle } from "../lib/model";
 import { changeStructure, orderedSections, sectionGroups } from "../lib/structure";
 import { backupBook, restoreBook } from "../lib/backup";
 describe("book structure editor", () => {
@@ -89,5 +89,42 @@ describe("continuous book section numbering", () => {
     const updated = changeStructure(book, {kind:"rename", id: body.id, title:"Opening"}).book;
     expect(updated.chapters.map(c => c.title)).toEqual(["Dedication","Opening","Author biography"]);
     expect(updated.chapters.find(c => c.id === body.id)?.content).toEqual(body.content);
+  });
+});
+
+describe("per-section title visibility", () => {
+  it("defaults by section type while keeping pre-existing chapters visible", () => {
+    expect(defaultShowSectionTitle("chapter")).toBe(true);
+    expect(defaultShowSectionTitle("acknowledgments")).toBe(true);
+    for (const type of ["dedication", "epigraph", "copyright", "title"] as const)
+      expect(defaultShowSectionTitle(type)).toBe(false);
+    const book = createBook("Book", "Author");
+    expect(showSectionTitle(book.chapters[0])).toBe(true);
+    const dedication = changeStructure(book, {kind:"add", title:"For readers", sectionType:"dedication"}).book;
+    expect(showSectionTitle(dedication.chapters[0])).toBe(false);
+  });
+  it("stores explicit overrides through reordering and project backup/restore", () => {
+    let book = createBook("Book", "Author");
+    book.chapters[0].content = {type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Original text"}]}]};
+    const id = book.chapters[0].id;
+    book = changeStructure(book,{kind:"visibility",id,showTitle:false}).book;
+    expect(showSectionTitle(book.chapters[0])).toBe(false);
+    book = changeStructure(book,{kind:"add",title:"Dedication",sectionType:"dedication"}).book;
+    const firstId = book.chapters[0].id;
+    book = changeStructure(book,{kind:"visibility",id:firstId,showTitle:true}).book;
+    expect(book.chapters.map(showSectionTitle)).toEqual([true,false]);
+    const restored = restoreBook(backupBook(book));
+    expect(restored.chapters.map(showSectionTitle)).toEqual([true,false]);
+    expect(restored.chapters[1].content).toEqual(book.chapters[1].content);
+    expect(() => validateBook({...book,chapters:[{...book.chapters[0],showTitle:"maybe"}]})).toThrow("Invalid chapter structure");
+  });
+  it("recomputes defaults on type change until explicitly overridden", () => {
+    let book = createBook("Book", "Author");
+    const id = book.chapters[0].id;
+    book = changeStructure(book,{kind:"type",id,sectionType:"copyright"}).book;
+    expect(showSectionTitle(book.chapters[0])).toBe(false);
+    book = changeStructure(book,{kind:"visibility",id,showTitle:true}).book;
+    book = changeStructure(book,{kind:"type",id,sectionType:"dedication"}).book;
+    expect(showSectionTitle(book.chapters[0])).toBe(true);
   });
 });
