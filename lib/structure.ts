@@ -1,10 +1,11 @@
-import { blankChapter, newId, schema, sectionMatter, type Book, type Chapter, type SectionType } from "./model";
+import { blankChapter, newId, schema, sectionMatter, type Book, type Chapter, type SectionType, type SectionPageLayout } from "./model";
 
 export type StructureAction =
   | { kind: "move"; id: string; to: number }
   | { kind: "rename"; id: string; title: string }
   | { kind: "type"; id: string; sectionType: SectionType }
   | { kind: "visibility"; id: string; showTitle: boolean }
+  | { kind: "layout"; id: string; changes: Partial<SectionPageLayout> }
   | { kind: "add"; title: string; sectionType: SectionType; after?: string }
   | { kind: "delete"; id: string }
   | { kind: "split"; id: string; blockIndex: number; title: string }
@@ -46,6 +47,10 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
       break;
     case "visibility":
       chapters[index] = { ...chapters[index], showTitle: action.showTitle };
+      selectedId = action.id;
+      break;
+    case "layout":
+      chapters[index] = { ...chapters[index], pageLayout: { ...chapters[index].pageLayout, ...action.changes } };
       selectedId = action.id;
       break;
     case "add": {
