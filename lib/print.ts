@@ -1,6 +1,6 @@
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import { schema, validateBook, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
@@ -358,21 +358,26 @@ export async function buildPrintPdf(
     const template = profile.template.id;
     const headingSize = template === "gothic" ? 19 : template === "modern" ? 17 : 18;
     y = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
-    const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
-    const heading = textLines(headingText, headingSize, "bold");
-    if (heading.length > 8)
-      throw Error(
-        "A chapter title is too long for the fixed print opening. Shorten it and retry.",
-      );
-    if (template === "modern") {
-      for (const h of heading) {
-        line(h.runs, 0, headingSize);
-        y -= 25;
+    if (showSectionTitle(chapter)) {
+      const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
+      const heading = textLines(headingText, headingSize, "bold");
+      if (heading.length > 8)
+        throw Error(
+          "A chapter title is too long for the fixed print opening. Shorten it and retry.",
+        );
+      if (template === "modern") {
+        for (const h of heading) {
+          line(h.runs, 0, headingSize);
+          y -= 25;
+        }
+        y -= 16;
+      } else {
+        centered(heading, headingSize, template === "gothic" ? 30 : 25);
+        y -= template === "gothic" ? 36 : 25;
       }
-      y -= 16;
-    } else {
-      centered(heading, headingSize, template === "gothic" ? 30 : 25);
-      y -= template === "gothic" ? 36 : 25;
+      } else {
+      // Retain the section opening and text; only its printed heading is suppressed.
+      y = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
     }
     let opening = true;
     schema.nodeFromJSON(chapter.content).forEach((node) => {
