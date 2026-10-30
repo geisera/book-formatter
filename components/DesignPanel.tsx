@@ -1,5 +1,5 @@
 "use client";
-import { CLASSIC_EDITION, type EbookEdition } from "../lib/edition";
+import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
 export default function DesignPanel({
   edition,
   onChange,
@@ -27,15 +27,19 @@ export default function DesignPanel({
         A considered setting for every page. Your manuscript stays exactly as
         you wrote it.
       </p>
-      <div className="template-card">
-        <span className="template-letter">Aa</span>
-        <div>
-          <strong>Classic</strong>
-          <small>Traditional serif · Version 1</small>
-        </div>
-        <span className="template-check" aria-label="Selected">
-          ✓
-        </span>
+      <div className="template-options" role="group" aria-label="Book design template">
+        {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
+          <button type="button" key={id}
+            className={edition.template.id === id ? "template-card active" : "template-card"}
+            aria-pressed={edition.template.id === id}
+            onClick={() => onChange(presetFor(id))}>
+            <span className="template-letter">Aa</span>
+            <span><strong>{id[0].toUpperCase() + id.slice(1)}</strong>
+              <small>{id === "classic" ? "Traditional literary serif" : id === "modern" ? "Contemporary and restrained" : "Ornamental fantasy and horror"} · Version 1</small>
+            </span>
+            {edition.template.id === id ? <span className="template-check" aria-label="Selected">✓</span> : null}
+          </button>
+        ))}
       </div>
       <fieldset>
         <legend>Typography</legend>
@@ -167,9 +171,9 @@ export default function DesignPanel({
       </fieldset>
       <button
         className="reset-design"
-        onClick={() => onChange({ ...CLASSIC_EDITION })}
+        onClick={() => onChange(presetFor(edition.template.id))}
       >
-        Reset Classic settings
+        Reset selected template settings
       </button>
       <p className="control-note">
         Design settings save locally with this book and are included in its
