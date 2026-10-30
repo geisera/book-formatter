@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-import { schema, type Book, type Chapter } from "../lib/model";
+import { schema, showSectionTitle, type Book, type Chapter } from "../lib/model";
 import { BODY_FONTS, type EbookEdition } from "../lib/edition";
 
 function inlineContent(node: ManuscriptNode): ReactNode[] {
@@ -200,7 +200,7 @@ export default function EbookPreview({
           <header className="ebook-chapter-header">
             <p className="ebook-book-title">{book.title}</p>
             <div className="ebook-opening-rule" aria-hidden="true" />
-            <h2>{chapter?.title}</h2>
+            {chapter && showSectionTitle(chapter) ? <h2>{chapter.title}</h2> : null}
           </header>
           {chapter ? (
             <ChapterContent
