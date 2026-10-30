@@ -1,3 +1,4 @@
+import { CLASSIC_PRINT } from "./print-profile";
 import { CLASSIC_EDITION } from "./edition";
 import {
   blankChapter,
@@ -86,7 +87,7 @@ export function importedBook(
     author: author.trim(),
     updatedAt: importedAt,
     chapters,
-    editions: { ebook: { ...CLASSIC_EDITION } },
+    editions: { ebook: { ...CLASSIC_EDITION }, print: { ...CLASSIC_PRINT } },
     importInfo: {
       filename: draft.filename,
       format: draft.format,

@@ -7,6 +7,7 @@ async function walk(dir) {
     if (entry.isDirectory()) await walk(p);
     else if (
       p.endsWith(".js") ||
+      p.endsWith(".mjs") ||
       p.endsWith(".css") ||
       p.endsWith(".html") ||
       p.endsWith(".svg") ||

@@ -34,3 +34,24 @@ for (const [file, source] of [
     `node_modules/@fontsource/libre-baskerville/files/libre-baskerville-latin-${source}.woff`,
     `public/epub-fonts/${file}`,
   );
+
+await build({
+  entryPoints: ["lib/print.worker.ts"],
+  bundle: true,
+  platform: "browser",
+  conditions: ["worker"],
+  format: "iife",
+  target: "es2022",
+  outfile: "public/print-worker.js",
+  minify: true,
+  legalComments: "linked",
+});
+await copyFile(
+  "node_modules/@fontsource/libre-baskerville/files/libre-baskerville-latin-700-italic.woff",
+  "public/epub-fonts/bold-italic.woff",
+);
+await mkdir("public/pdfjs", { recursive: true });
+await copyFile(
+  "node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+  "public/pdfjs/pdf.worker.min.mjs",
+);

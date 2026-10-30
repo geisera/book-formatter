@@ -5,15 +5,16 @@ import ImportPanel from "./ImportPanel";
 import DesignPanel from "./DesignPanel";
 import EbookPreview from "./EbookPreview";
 import PublishPanel from "./PublishPanel";
+import PrintPanel from "./PrintPanel";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [importing, setImporting] = useState(false);
-  const [mode, setMode] = useState<"manuscript" | "design" | "publish">(
-    "manuscript",
-  );
+  const [mode, setMode] = useState<
+    "manuscript" | "design" | "publish" | "print"
+  >("manuscript");
   const [books, setBooks] = useState<Book[]>([]),
     [book, setBook] = useState<Book | null>(null),
     [chapterId, setChapterId] = useState(""),
@@ -242,7 +243,7 @@ export default function Workspace() {
   }
   function changeEdition(edition: EbookEdition) {
     const b = current.current;
-    if (b) edit({ ...b, editions: { ebook: edition } });
+    if (b) edit({ ...b, editions: { ...b.editions, ebook: edition } });
   }
   return (
     <>
@@ -411,6 +412,7 @@ export default function Workspace() {
               + Add chapter
             </button>
             <div className="aside-bottom">
+              <button onClick={() => setMode("print")}>Print PDF proof</button>
               <button
                 className="export-link"
                 onClick={() => setMode("publish")}
@@ -463,6 +465,12 @@ export default function Workspace() {
                   onClick={() => setMode("publish")}
                 >
                   Publish
+                </button>
+                <button
+                  aria-pressed={mode === "print"}
+                  onClick={() => setMode("print")}
+                >
+                  Print
                 </button>
               </div>
               <div className="workspace-save">
@@ -534,8 +542,15 @@ export default function Workspace() {
                   onMetadata={updateMetadata}
                 />
               ) : null}
+              {mode === "print" ? (
+                <PrintPanel
+                  book={book}
+                  getSnapshot={exportSnapshot}
+                  onPublish={() => setMode("publish")}
+                />
+              ) : null}
               <EbookPreview
-                hidden={mode === "publish"}
+                hidden={mode === "publish" || mode === "print"}
                 book={book}
                 chapter={previewChapter}
                 chapterId={chapterId}

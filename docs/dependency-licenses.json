@@ -290,6 +290,66 @@
     "license": "MIT"
   },
   {
+    "path": "node_modules/@napi-rs/canvas",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-android-arm64",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-darwin-arm64",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-darwin-x64",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-linux-arm-gnueabihf",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-linux-arm64-gnu",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-linux-arm64-musl",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-linux-riscv64-gnu",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-linux-x64-gnu",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-linux-x64-musl",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-win32-arm64-msvc",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@napi-rs/canvas-win32-x64-msvc",
+    "version": "1.1.0",
+    "license": "MIT"
+  },
+  {
     "path": "node_modules/@next/env",
     "version": "16.4.3",
     "license": "MIT"
@@ -342,6 +402,21 @@
   {
     "path": "node_modules/@oxc-project/types",
     "version": "0.156.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@pdf-lib/fontkit",
+    "version": "1.1.1",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@pdf-lib/standard-fonts",
+    "version": "1.0.0",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/@pdf-lib/upng",
+    "version": "1.0.1",
     "license": "MIT"
   },
   {
@@ -1038,6 +1113,21 @@
     "path": "node_modules/parse5",
     "version": "7.3.0",
     "license": "MIT"
+  },
+  {
+    "path": "node_modules/pdf-lib",
+    "version": "1.17.1",
+    "license": "MIT"
+  },
+  {
+    "path": "node_modules/pdf-lib/node_modules/tslib",
+    "version": "1.14.1",
+    "license": "0BSD"
+  },
+  {
+    "path": "node_modules/pdfjs-dist",
+    "version": "6.4.299",
+    "license": "Apache-2.0"
   },
   {
     "path": "node_modules/picocolors",

@@ -1454,3 +1454,241 @@ aside h2 {
     display: none;
   }
 }
+.workspace-body.mode-print {
+  grid-template-columns: minmax(0, 1fr);
+}
+.print-panel {
+  padding: 35px;
+  max-width: 1300px;
+  width: 100%;
+  margin: auto;
+  min-width: 0;
+}
+.print-profile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  border: 1px solid #d1d8c7;
+  background: #fbfcf5;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+.print-profile strong {
+  font: 20px Georgia;
+}
+.print-profile p {
+  font-size: 11px;
+  line-height: 1.9;
+  color: #75816b;
+  margin: 12px 0 0;
+}
+.print-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 25px 0;
+}
+.print-actions .primary {
+  width: auto;
+  display: block;
+  padding: 13px 23px;
+}
+.print-actions > button {
+  font-size: 12px;
+}
+.print-checks {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 11px;
+  color: var(--green);
+  margin: 18px 0;
+}
+.print-checks span {
+  font-size: 10px;
+  color: #78866d;
+}
+.print-notes {
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 20px 0;
+  color: #77816d;
+}
+.print-notes summary {
+  cursor: pointer;
+  color: #607557;
+}
+.print-notes p {
+  font-size: 10px;
+}
+.pdf-proof-viewer {
+  min-width: 0;
+  border: 1px solid #d1d7c9;
+  border-radius: 8px;
+  background: #e5e9dd;
+  padding: 15px;
+}
+.pdf-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 5px 5px 18px;
+  font-size: 10px;
+  color: #6a7b5e;
+}
+.pdf-toolbar label {
+  font-size: 10px;
+  margin: 0;
+}
+.pdf-toolbar input,
+.pdf-toolbar select {
+  display: block;
+  margin-top: 7px;
+  padding: 9px;
+  border: 1px solid #d1d7c9;
+  border-radius: 4px;
+  background: #fffef8;
+  color: var(--ink);
+  font: 11px Arial;
+}
+.pdf-toolbar input {
+  width: 65px;
+}
+.pdf-toolbar > span {
+  padding-bottom: 9px;
+}
+.pdf-toolbar button {
+  padding: 9px 12px;
+  font-size: 11px;
+}
+.pdf-spread {
+  display: flex;
+  gap: 14px;
+  overflow: auto;
+  padding: 15px;
+  align-items: start;
+  background: #d4dccb;
+  border-radius: 4px;
+  min-height: 300px;
+}
+.pdf-leaf {
+  flex: none;
+  margin: 0;
+}
+.pdf-leaf canvas {
+  display: block;
+  background: white;
+  box-shadow: 0 3px 12px #253f2215;
+}
+.pdf-leaf figcaption {
+  font-size: 9px;
+  color: #64765a;
+  margin-top: 11px;
+  text-align: center;
+}
+.pdf-outside {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: #88957e;
+  font: 10px Arial;
+  border: 1px dashed #b9c6ac;
+}
+.print-empty {
+  border: 1px dashed #bdc8b0;
+  text-align: center;
+  border-radius: 8px;
+  padding: 55px 25px;
+  background: #edf0e7;
+}
+.print-empty > span {
+  font: 35px Georgia;
+  color: #7d916f;
+}
+.print-empty h3 {
+  font: 25px Georgia;
+  margin: 20px 0 14px;
+}
+.print-empty p {
+  font-size: 12px;
+  color: #819075;
+  line-height: 1.8;
+}
+.print-blockers {
+  font-size: 12px;
+  background: #f5e9df;
+  padding: 22px;
+  line-height: 1.8;
+  border-radius: 6px;
+}
+.print-blockers h3 {
+  font: 20px Georgia;
+}
+.print-blockers button {
+  margin-top: 8px;
+  font-size: 11px;
+}
+.print-history {
+  margin-top: 25px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: #6d7e60;
+}
+.print-history summary {
+  cursor: pointer;
+}
+.print-history > div {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+.print-history p {
+  font-size: 10px;
+  margin: 6px 0;
+}
+.print-history code {
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 850px) {
+  .print-panel {
+    padding: 24px 18px;
+  }
+  .print-profile {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .pdf-proof-viewer {
+    padding: 10px;
+  }
+  .pdf-spread {
+    padding: 10px;
+  }
+  .workspace-modes {
+    flex-wrap: wrap;
+  }
+  .workspace-modes button {
+    padding: 20px 10px;
+  }
+}
+@media (max-width: 600px) {
+  .print-panel {
+    padding: 22px 12px;
+  }
+  .print-panel .publish-intro h2 {
+    font-size: 28px;
+  }
+  .print-actions .primary {
+    width: 100%;
+  }
+  .pdf-toolbar {
+    gap: 8px;
+  }
+  .pdf-toolbar input,
+  .pdf-toolbar select {
+    padding: 8px 5px;
+  }
+}

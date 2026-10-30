@@ -1,3 +1,4 @@
+import type { PrintRecord } from "./print";
 import type { ExportRecord } from "./epub";
 import Dexie, { type EntityTable } from "dexie";
 import {
@@ -10,10 +11,12 @@ export const db = new Dexie("book-formatter") as Dexie & {
   books: EntityTable<Book, "id">;
   sources: EntityTable<SourceFile, "bookId">;
   exports: EntityTable<ExportRecord, "id">;
+  printExports: EntityTable<PrintRecord, "id">;
 };
 db.version(1).stores({ books: "id, updatedAt" });
 db.version(2).stores({ sources: "bookId" });
 db.version(3).stores({ exports: "id, bookId, createdAt" });
+db.version(4).stores({ printExports: "id,bookId,createdAt" });
 export async function saveImportedBook(
   book: Book,
   source?: SourceFile,

@@ -15,3 +15,6 @@ public/epub-fonts/
 artifacts/
 
 .epubcheck/
+
+public/print-worker.js*
+public/pdfjs/

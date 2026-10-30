@@ -1,3 +1,8 @@
+import {
+  CLASSIC_PRINT,
+  validatePrintEdition,
+  type PrintEdition,
+} from "./print-profile";
 import { CLASSIC_EDITION, validateEdition, type EbookEdition } from "./edition";
 export function newId(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -68,7 +73,7 @@ export type Book = {
   updatedAt: string;
   chapters: Chapter[];
   importInfo?: ImportInfo;
-  editions?: { ebook: EbookEdition };
+  editions?: { ebook: EbookEdition; print?: PrintEdition };
 };
 export function blankChapter(title = "Untitled chapter"): Chapter {
   return {
@@ -87,7 +92,7 @@ export function createBook(title: string, author: string): Book {
     language: "en",
     updatedAt: new Date().toISOString(),
     chapters: [blankChapter("Chapter One")],
-    editions: { ebook: { ...CLASSIC_EDITION } },
+    editions: { ebook: { ...CLASSIC_EDITION }, print: { ...CLASSIC_PRINT } },
   };
 }
 export function validateBook(value: unknown): Book {
@@ -128,10 +133,11 @@ export function validateBook(value: unknown): Book {
     if (
       !b.editions ||
       typeof b.editions !== "object" ||
-      Object.keys(b.editions).some((key) => key !== "ebook")
+      Object.keys(b.editions).some((key) => key !== "ebook" && key !== "print")
     )
       throw Error("Unsupported edition settings.");
     validateEdition(b.editions.ebook);
+    if (b.editions.print !== undefined) validatePrintEdition(b.editions.print);
   }
   const ids = new Set<string>();
   for (const c of b.chapters) {
