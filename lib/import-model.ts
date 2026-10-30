@@ -1,3 +1,4 @@
+import { CLASSIC_EDITION } from "./edition";
 import {
   blankChapter,
   newId,
@@ -85,6 +86,7 @@ export function importedBook(
     author: author.trim(),
     updatedAt: importedAt,
     chapters,
+    editions: { ebook: { ...CLASSIC_EDITION } },
     importInfo: {
       filename: draft.filename,
       format: draft.format,

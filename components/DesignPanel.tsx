@@ -1,0 +1,180 @@
+"use client";
+import { CLASSIC_EDITION, type EbookEdition } from "../lib/edition";
+export default function DesignPanel({
+  edition,
+  onChange,
+  hidden,
+}: {
+  edition: EbookEdition;
+  onChange: (edition: EbookEdition) => void;
+  hidden: boolean;
+}) {
+  function change<K extends keyof EbookEdition>(
+    key: K,
+    value: EbookEdition[K],
+  ) {
+    onChange({ ...edition, [key]: value });
+  }
+  return (
+    <section
+      className="design-panel"
+      aria-label="Ebook design settings"
+      hidden={hidden}
+    >
+      <div className="eyebrow">EBOOK EDITION</div>
+      <h2>Make it yours.</h2>
+      <p className="design-intro">
+        A considered setting for every page. Your manuscript stays exactly as
+        you wrote it.
+      </p>
+      <div className="template-card">
+        <span className="template-letter">Aa</span>
+        <div>
+          <strong>Classic</strong>
+          <small>Traditional serif · Version 1</small>
+        </div>
+        <span className="template-check" aria-label="Selected">
+          ✓
+        </span>
+      </div>
+      <fieldset>
+        <legend>Typography</legend>
+        <label>
+          Body font
+          <select
+            aria-label="Body font"
+            value={edition.bodyFont}
+            onChange={(e) =>
+              change("bodyFont", e.target.value as EbookEdition["bodyFont"])
+            }
+          >
+            <option value="baskerville">Libre Baskerville · included</option>
+            <option value="georgia">Georgia · system font</option>
+          </select>
+        </label>
+        <label>
+          Body size <span className="control-value">{edition.fontSize} px</span>
+          <input
+            aria-label="Body size"
+            type="range"
+            min="14"
+            max="24"
+            step="1"
+            value={edition.fontSize}
+            onChange={(e) => change("fontSize", Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Line spacing{" "}
+          <span className="control-value">{edition.lineHeight.toFixed(2)}</span>
+          <input
+            aria-label="Line spacing"
+            type="range"
+            min="1.2"
+            max="2.2"
+            step="0.05"
+            value={edition.lineHeight}
+            onChange={(e) => change("lineHeight", Number(e.target.value))}
+          />
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Paragraphs</legend>
+        <label>
+          First-line indent{" "}
+          <span className="control-value">
+            {edition.paragraphIndent.toFixed(1)} em
+          </span>
+          <input
+            aria-label="First-line indent"
+            type="range"
+            min="0"
+            max="3"
+            step="0.1"
+            value={edition.paragraphIndent}
+            onChange={(e) => change("paragraphIndent", Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Paragraph spacing{" "}
+          <span className="control-value">
+            {edition.paragraphSpacing.toFixed(1)} em
+          </span>
+          <input
+            aria-label="Paragraph spacing"
+            type="range"
+            min="0"
+            max="1.5"
+            step="0.1"
+            value={edition.paragraphSpacing}
+            onChange={(e) => change("paragraphSpacing", Number(e.target.value))}
+          />
+        </label>
+        <p className="control-note">
+          Opening paragraphs and paragraphs after a scene break have no indent.
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>Chapter details</legend>
+        <label>
+          Chapter heading
+          <select
+            aria-label="Chapter heading"
+            value={edition.headingStyle}
+            onChange={(e) =>
+              change(
+                "headingStyle",
+                e.target.value as EbookEdition["headingStyle"],
+              )
+            }
+          >
+            <option value="centered">Centered</option>
+            <option value="left">Left aligned</option>
+          </select>
+        </label>
+        <label>
+          Chapter opening space{" "}
+          <span className="control-value">
+            {edition.chapterSpacing.toFixed(1)} em
+          </span>
+          <input
+            aria-label="Chapter opening space"
+            type="range"
+            min="1"
+            max="5"
+            step="0.5"
+            value={edition.chapterSpacing}
+            onChange={(e) => change("chapterSpacing", Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Scene ornament
+          <select
+            aria-label="Scene ornament"
+            value={edition.sceneOrnament}
+            onChange={(e) =>
+              change(
+                "sceneOrnament",
+                e.target.value as EbookEdition["sceneOrnament"],
+              )
+            }
+          >
+            <option value="asterisks">* * *</option>
+            <option value="diamonds">◆ ◆ ◆</option>
+            <option value="rule">Fine rule</option>
+          </select>
+        </label>
+      </fieldset>
+      <button
+        className="reset-design"
+        onClick={() => onChange({ ...CLASSIC_EDITION })}
+      >
+        Reset Classic settings
+      </button>
+      <p className="control-note">
+        Design settings save locally with this book and are included in its
+        backup. Reading apps may apply their own font preferences.
+      </p>
+    </section>
+  );
+}

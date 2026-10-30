@@ -705,3 +705,496 @@ aside h2 {
     padding: 18px;
   }
 }
+[hidden] {
+  display: none !important;
+}
+.workspace {
+  grid-template-columns: 220px minmax(0, 1fr);
+}
+.workspace-content {
+  min-width: 0;
+}
+.workspace-modes {
+  min-height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--line);
+  background: #faf9f3;
+}
+.workspace-modes > div {
+  display: flex;
+  gap: 8px;
+}
+.workspace-modes button {
+  border: 0;
+  border-radius: 0;
+  padding: 22px 15px;
+  font-size: 12px;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+}
+.workspace-modes button[aria-pressed="true"] {
+  color: var(--green);
+  border-bottom-color: var(--green);
+  font-weight: bold;
+}
+.workspace-modes > span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.workspace-body {
+  display: grid;
+  grid-template-columns: minmax(350px, 1fr) minmax(310px, 430px);
+  min-height: calc(100vh - 151px);
+}
+.workspace-body.mode-design {
+  grid-template-columns: 310px minmax(0, 1fr);
+}
+.workspace-body .editor-area {
+  min-width: 0;
+  padding: 25px 24px;
+}
+.workspace-body .paper {
+  padding: 36px 32px;
+  min-height: 650px;
+}
+.workspace-body .chapter-title {
+  font-size: 30px;
+}
+.workspace-body .editor-foot {
+  gap: 20px;
+  line-height: 1.6;
+}
+.workspace-body .editor-foot span {
+  display: none;
+}
+.design-panel {
+  padding: 30px 26px;
+  background: #fcfbf6;
+}
+.design-panel > .eyebrow {
+  margin-bottom: 12px;
+}
+.design-panel > h2 {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+.design-intro {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.template-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #edf1e6;
+  border: 1px solid #c4cfb7;
+  border-radius: 6px;
+  padding: 17px 14px;
+  margin: 24px 0;
+}
+.template-letter {
+  font:
+    32px "Libre Baskerville",
+    Georgia,
+    serif;
+  color: var(--green);
+}
+.template-card strong {
+  font: 18px Georgia;
+  display: block;
+}
+.template-card small {
+  font-size: 9px;
+  color: #6c7b66;
+  display: block;
+  margin-top: 6px;
+}
+.template-check {
+  margin-left: auto;
+  color: var(--green);
+}
+.design-panel fieldset {
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 18px 0 0;
+  margin: 20px 0;
+}
+.design-panel legend {
+  font: 18px Georgia;
+  padding: 0 8px 0 0;
+  margin-bottom: 12px;
+}
+.design-panel label {
+  font-size: 11px;
+  margin-bottom: 20px;
+  color: #53644f;
+}
+.design-panel label output {
+  float: right;
+  color: #859079;
+  font-variant-numeric: tabular-nums;
+}
+.design-panel input[type="range"] {
+  padding: 0;
+  border: 0;
+  width: 100%;
+  accent-color: var(--green);
+  margin-top: 12px;
+  height: 18px;
+}
+.design-panel select,
+.reader-controls select,
+.preview-chapter-label select {
+  font: 12px Arial;
+  background: #fffef9;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+.control-note {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #818b78;
+}
+.reset-design {
+  font-size: 11px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+.preview-panel {
+  min-width: 0;
+  padding: 27px 20px 18px;
+  background: #e9ece2;
+  border-left: 1px solid #d5dacb;
+  display: flex;
+  flex-direction: column;
+}
+.preview-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.preview-heading .eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.6px;
+  margin-bottom: 10px;
+}
+.preview-heading h2 {
+  font: 25px Georgia;
+  margin-bottom: 22px;
+}
+.live-indicator {
+  font-size: 9px;
+  color: #54764d;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.reader-controls {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+}
+.reader-controls label {
+  font-size: 10px;
+  color: #7e8873;
+  margin-bottom: 15px;
+}
+.reader-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.preview-chapter-label {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.preview-chapter-label select {
+  margin: 0;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+.reader-zoom {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.reader-zoom button {
+  border: 0;
+  font-size: 10px;
+  padding: 7px 5px;
+  background: transparent;
+}
+.reader-viewport {
+  height: 650px;
+  max-height: 75vh;
+  min-height: 380px;
+  overflow: auto;
+  background: #dce1d4;
+  border-radius: 8px;
+  padding: 14px;
+  scrollbar-gutter: stable;
+}
+.ebook-page {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 0 27px 35px;
+  color: #30352d;
+  background: #fffdf5;
+  box-shadow: 0 3px 16px #34452c12;
+  overflow-wrap: anywhere;
+}
+.ebook-chapter-header {
+  text-align: center;
+  padding-top: var(--chapter-space);
+  margin-bottom: 2em;
+}
+.ebook-book-title {
+  font:
+    9px/1.7 Arial,
+    sans-serif;
+  color: #96957f;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  margin: 0 0 22px;
+}
+.ebook-opening-rule {
+  width: 22px;
+  border-top: 1px solid #b3a475;
+  margin: 0 auto 18px;
+}
+.ebook-chapter-header h2 {
+  font:
+    normal 1.65em/1.4 "Libre Baskerville",
+    Georgia,
+    serif;
+  color: inherit;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+.heading-left .ebook-chapter-header {
+  text-align: left;
+}
+.heading-left .ebook-opening-rule {
+  margin-left: 0;
+}
+.ebook-prose p {
+  font: inherit;
+  line-height: inherit;
+  text-indent: var(--paragraph-indent);
+  margin: 0 0 var(--paragraph-spacing);
+  white-space: pre-wrap;
+}
+.ebook-prose p.opening-paragraph {
+  text-indent: 0;
+}
+.ebook-prose strong {
+  font-weight: 700;
+}
+.ebook-prose em {
+  font-style: italic;
+}
+.ebook-subheading {
+  font:
+    normal 1.15em/1.5 "Libre Baskerville",
+    Georgia,
+    serif;
+  margin: 1.8em 0 1em;
+}
+.ebook-scene {
+  text-align: center;
+  margin: 1.6em auto;
+  font:
+    normal 0.7em/1.8 Georgia,
+    serif;
+  color: #93825a;
+  letter-spacing: 3px;
+}
+.ebook-scene.ornament-rule {
+  width: 45px;
+  border-top: 1px solid currentColor;
+  min-height: 0;
+}
+.theme-dark {
+  background: #29332d;
+}
+.theme-dark .ebook-page {
+  background: #1d2922;
+  color: #e4e6d9;
+  box-shadow: none;
+}
+.theme-dark .ebook-book-title {
+  color: #9fae99;
+}
+.theme-dark .ebook-scene {
+  color: #b1a47c;
+}
+.preview-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 10px;
+  color: #77866b;
+}
+.preview-footer button {
+  font-size: 10px;
+  border: 0;
+  padding: 8px;
+  background: transparent;
+}
+.preview-note {
+  font:
+    9px/1.8 Arial,
+    sans-serif;
+  color: #819074;
+  text-align: center;
+  margin: 9px 0 0;
+}
+.mode-design .preview-panel {
+  padding-inline: 40px;
+}
+.mode-design .reader-viewport {
+  max-height: 900px;
+  height: 780px;
+}
+.mode-design .reader-controls,
+.mode-design .reader-navigation {
+  max-width: 600px;
+  width: 100%;
+  margin-inline: auto;
+}
+.mode-design .preview-heading {
+  max-width: 600px;
+  width: 100%;
+  margin-inline: auto;
+}
+.mode-design .ebook-page {
+  padding-inline: 38px;
+}
+@media (min-width: 1700px) {
+  .workspace-body {
+    grid-template-columns: minmax(450px, 1fr) minmax(360px, 520px);
+  }
+}
+@media (max-width: 1150px) {
+  .workspace-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workspace-body.mode-design {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+  .mode-manuscript .preview-panel {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .mode-manuscript .reader-viewport {
+    max-height: 700px;
+  }
+  .workspace-body .paper {
+    max-width: 760px;
+  }
+  .mode-design .preview-panel {
+    padding-inline: 20px;
+  }
+  .preview-panel .ebook-page {
+    padding-inline: 24px;
+  }
+}
+@media (max-width: 850px) {
+  .workspace {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+  .workspace-body.mode-design {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .design-panel {
+    padding: 25px;
+  }
+  .workspace-modes {
+    padding: 0 15px;
+  }
+  .workspace-modes > span {
+    display: none;
+  }
+  .mode-design .reader-viewport {
+    height: 650px;
+    max-height: 75vh;
+  }
+  .workspace-body .editor-area {
+    padding: 20px 15px;
+  }
+  .workspace-body .paper {
+    padding: 28px 24px;
+  }
+}
+@media (max-width: 600px) {
+  .workspace {
+    display: block;
+  }
+  .workspace-modes {
+    justify-content: center;
+  }
+  .workspace-body .editor-area {
+    padding: 15px;
+  }
+  .preview-panel {
+    padding: 24px 16px;
+  }
+  .reader-viewport {
+    padding: 10px;
+  }
+  .preview-panel .ebook-page {
+    padding-inline: 20px;
+  }
+  .workspace-body .chapter-title {
+    font-size: 26px;
+  }
+  .reader-controls {
+    gap: 8px;
+  }
+  .reader-zoom button {
+    padding: 6px 4px;
+  }
+}
+.workspace-modes .workspace-save {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--muted);
+}
+.design-panel .control-value {
+  float: right;
+  color: #859079;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 850px) {
+  .workspace-modes .workspace-save > span:first-child {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .workspace-modes {
+    justify-content: space-between;
+  }
+  .workspace-modes button {
+    padding-inline: 10px;
+  }
+  .workspace-modes .workspace-save {
+    font-size: 9px;
+  }
+}

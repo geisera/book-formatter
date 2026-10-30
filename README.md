@@ -16,6 +16,9 @@ The managed preview launcher serves the production build, so build before previe
 
 - Local bookshelf; book creation and independent chapter documents.
 - Paragraphs, headings, scene breaks, bold, italic, undo/redo and keyboard shortcuts.
+- Classic ebook design: body font/size/leading, paragraph indents/spacing, headings and ornaments.
+- Live semantic ebook preview with chapter navigation, reading width, light/dark and reader zoom.
+- Edition settings stored independently from chapter text and carried through project backups.
 - Transactional IndexedDB autosave with revision-based conflict protection.
 - Offline app shell and manifest. Wait for “Offline app ready” before disconnecting.
 - Browser-local DOCX, Markdown and text import in a cancellable worker.
@@ -47,13 +50,13 @@ and ProseMirror chapter JSON). Restore regenerates identities for an independent
 copy. Foundation limit: 20 MB compressed, 50 MB expanded. Imported projects add `source.json` (original filename and format) and
 `source/original` (original bytes), referenced from `manifest.source`. Older backups
 without an import remain supported. Source bytes are stored separately from
-frequently saved manuscript content in IndexedDB version 2. Edition settings and
-inline media are not implemented yet.
+frequently saved manuscript content in IndexedDB version 2. Ebook edition settings live under `manuscript.json.editions.ebook`, with independent
+schema/template versions. Inline media and print editions are not implemented yet.
 
 ## Scope
 
 This is the first foundation slice, **not completed PRD Milestone 1**.
-See [the baseline PRD](docs/PRD.md). Remaining M1 work: one design template, local EPUB export and EPUBCheck, full-length novel benchmarks,
+See [the baseline PRD](docs/PRD.md). Remaining M1 work: local EPUB export and EPUBCheck, full-length novel benchmarks,
 PDF feasibility/quality proof, and broader interruption/quota/browser tests.
 Full PWA installation compatibility, including raster icons on browsers requiring
 them, needs a cross-browser pass. No publication-ready exports are claimed.
@@ -87,3 +90,29 @@ The worker can be terminated without affecting an existing manuscript.
 
 The importer has a synthetic 80,000-word unit fixture, not a full performance
 qualification or proof of fidelity for every Word manuscript.
+
+## Design and preview
+
+Open a book, then select **Design** above the workspace. Classic v1 settings apply
+to its ebook edition: included Libre Baskerville or system Georgia, body size
+(14–24 px), leading (1.2–2.2), indent (0–3 em), paragraph spacing (0–1.5 em),
+centered/left chapter titles, chapter opening space (1–5 em), and scene ornament.
+Opening paragraphs and paragraphs after scenes/headings have no first-line indent.
+Settings autosave with the book, without modifying chapter JSON. Books/backups
+from earlier versions use Classic defaults until the author changes their design.
+
+The desktop workspace places the semantic ebook preview beside the editor or
+design controls. Smaller screens stack panels. The editor stays mounted while
+switching modes so its undo history is preserved. The preview renders React text
+from ProseMirror JSON, never from the editor DOM or imported HTML. Deferred
+content updates display an updating indicator. Only the selected chapter renders.
+
+Phone/ereader/tablet width, light/dark theme, and reader text zoom are temporary
+preview controls, not saved design choices. Width is capped to available space;
+this is a reflowable simulation, not a specific device or print proof. EPUB/PDF
+export and print pagination remain outstanding.
+
+Fonts are self-hosted and precached for offline use; see [font records](docs/fonts.md).
+No remote font service or manuscript upload is used. New tests verify offline
+import → design → preview → backup → restore, unchanged semantic content, old
+backup compatibility, invalid settings, and editor undo across modes.

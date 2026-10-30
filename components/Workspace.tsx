@@ -1,12 +1,16 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useDeferredValue } from "react";
 import Editor from "./Editor";
 import ImportPanel from "./ImportPanel";
+import DesignPanel from "./DesignPanel";
+import EbookPreview from "./EbookPreview";
+import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [importing, setImporting] = useState(false);
+  const [mode, setMode] = useState<"manuscript" | "design">("manuscript");
   const [books, setBooks] = useState<Book[]>([]),
     [book, setBook] = useState<Book | null>(null),
     [chapterId, setChapterId] = useState(""),
@@ -72,6 +76,7 @@ export default function Workspace() {
   function open(b: Book) {
     current.current = b;
     setBook(b);
+    setMode("manuscript");
     setChapterId(b.chapters[0].id);
     setStatus("Saved locally");
     failed.current = false;
@@ -204,6 +209,11 @@ export default function Workspace() {
     }
   }
   const chapter = book?.chapters.find((c) => c.id === chapterId);
+  const previewChapter = useDeferredValue(chapter);
+  function changeEdition(edition: EbookEdition) {
+    const b = current.current;
+    if (b) edit({ ...b, editions: { ebook: edition } });
+  }
   return (
     <>
       {importing ? (
@@ -397,57 +407,94 @@ export default function Workspace() {
               </p>
             </div>
           </aside>
-          <section className="editor-area">
-            <div className="editor-meta">
-              <span>MANUSCRIPT / {chapter?.title}</span>
-              <span
-                role="status"
-                className={status === "Save failed" ? "failed" : "saved"}
-              >
-                {status}
-              </span>
-            </div>
-            {chapter ? (
-              <article className="paper">
-                <div className="eyebrow">
-                  CHAPTER {book.chapters.indexOf(chapter) + 1}
+          <div className="workspace-content">
+            <nav className="workspace-modes" aria-label="Workspace mode">
+              <div>
+                <button
+                  aria-pressed={mode === "manuscript"}
+                  onClick={() => setMode("manuscript")}
+                >
+                  Manuscript
+                </button>
+                <button
+                  aria-pressed={mode === "design"}
+                  onClick={() => setMode("design")}
+                >
+                  Design
+                </button>
+              </div>
+              <div className="workspace-save">
+                <span>Classic · ebook edition</span>
+                <span
+                  role="status"
+                  className={status === "Save failed" ? "failed" : "saved"}
+                >
+                  {status}
+                </span>
+              </div>
+            </nav>
+            <div className={`workspace-body mode-${mode}`}>
+              <section className="editor-area" hidden={mode !== "manuscript"}>
+                <div className="editor-meta">
+                  <span>MANUSCRIPT / {chapter?.title}</span>
+                  <span>Chapter text</span>
                 </div>
-                <input
-                  className="chapter-title"
-                  aria-label="Chapter title"
-                  value={chapter.title}
-                  onChange={(e) =>
-                    edit({
-                      ...book,
-                      chapters: book.chapters.map((c) =>
-                        c.id === chapter.id
-                          ? { ...c, title: e.target.value }
-                          : c,
-                      ),
-                    })
-                  }
-                />
-                <Editor
-                  key={`${book.id}-${chapter.id}`}
-                  content={chapter.content}
-                  onChange={(content) => {
-                    const b = current.current;
-                    if (b)
-                      edit({
-                        ...b,
-                        chapters: b.chapters.map((c) =>
-                          c.id === chapter.id ? { ...c, content } : c,
-                        ),
-                      });
-                  }}
-                />
-              </article>
-            ) : null}
-            <p className="editor-foot">
-              A quiet space for your story.{" "}
-              <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
-            </p>
-          </section>
+                {chapter ? (
+                  <article className="paper">
+                    <div className="eyebrow">
+                      CHAPTER {book.chapters.indexOf(chapter) + 1}
+                    </div>
+                    <input
+                      className="chapter-title"
+                      aria-label="Chapter title"
+                      value={chapter.title}
+                      onChange={(e) =>
+                        edit({
+                          ...book,
+                          chapters: book.chapters.map((c) =>
+                            c.id === chapter.id
+                              ? { ...c, title: e.target.value }
+                              : c,
+                          ),
+                        })
+                      }
+                    />
+                    <Editor
+                      key={`${book.id}-${chapter.id}`}
+                      content={chapter.content}
+                      onChange={(content) => {
+                        const b = current.current;
+                        if (b)
+                          edit({
+                            ...b,
+                            chapters: b.chapters.map((c) =>
+                              c.id === chapter.id ? { ...c, content } : c,
+                            ),
+                          });
+                      }}
+                    />
+                  </article>
+                ) : null}
+                <p className="editor-foot">
+                  A quiet space for your story.{" "}
+                  <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
+                </p>
+              </section>
+              <DesignPanel
+                hidden={mode !== "design"}
+                edition={getEbookEdition(book)}
+                onChange={changeEdition}
+              />
+              <EbookPreview
+                book={book}
+                chapter={previewChapter}
+                chapterId={chapterId}
+                edition={getEbookEdition(book)}
+                onNavigate={setChapterId}
+                updating={previewChapter !== chapter}
+              />
+            </div>
+          </div>
         </main>
       )}
     </>

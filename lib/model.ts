@@ -1,3 +1,4 @@
+import { CLASSIC_EDITION, validateEdition, type EbookEdition } from "./edition";
 export function newId(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
   const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -66,6 +67,7 @@ export type Book = {
   updatedAt: string;
   chapters: Chapter[];
   importInfo?: ImportInfo;
+  editions?: { ebook: EbookEdition };
 };
 export function blankChapter(title = "Untitled chapter"): Chapter {
   return {
@@ -83,6 +85,7 @@ export function createBook(title: string, author: string): Book {
     author,
     updatedAt: new Date().toISOString(),
     chapters: [blankChapter("Chapter One")],
+    editions: { ebook: { ...CLASSIC_EDITION } },
   };
 }
 export function validateBook(value: unknown): Book {
@@ -116,6 +119,15 @@ export function validateBook(value: unknown): Book {
       )
     )
       throw Error("Invalid import information.");
+  }
+  if (b.editions !== undefined) {
+    if (
+      !b.editions ||
+      typeof b.editions !== "object" ||
+      Object.keys(b.editions).some((key) => key !== "ebook")
+    )
+      throw Error("Unsupported edition settings.");
+    validateEdition(b.editions.ebook);
   }
   const ids = new Set<string>();
   for (const c of b.chapters) {
