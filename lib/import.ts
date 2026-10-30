@@ -1,3 +1,4 @@
+import { decodeImage, MAX_PROJECT_IMAGES_BYTES } from "./images";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import rehypeParse from "rehype-parse";
@@ -46,11 +47,33 @@ function fromAst(
 ): ImportBlock[] {
   const blocks: ImportBlock[] = [];
   let visited = 0;
+  let importedImages = 0;
+  let importedImageBytes = 0;
   function check(depth: number) {
     if (++visited > 500_000 || depth > 100)
       throw Error(
         "The manuscript is too deeply nested or complex to import safely.",
       );
+  }
+  function imageBlock(node: Ast): ImportBlock | null {
+    if (!html || node.tagName !== "img") return null;
+    const src = node.properties?.src;
+    if (typeof src !== "string" || !src.startsWith("data:image/")) return null;
+    try {
+      const decoded = decodeImage(src);
+      importedImageBytes += src.length;
+      if (importedImageBytes > MAX_PROJECT_IMAGES_BYTES)
+        throw Error("DOCX embedded images exceed the 12 MB project limit. Resize the images and try again.");
+      importedImages++;
+      const alt = typeof node.properties?.alt === "string" && node.properties.alt.trim()
+        ? node.properties.alt.trim().slice(0,500) : `Imported illustration ${importedImages}`;
+      if (!node.properties?.alt) diagnostic(diagnostics, "Some imported images had no alternative text. Review their descriptions.");
+      return {type:"image", attrs:{src,alt,width:100,align:"center",caption:""}};
+    } catch(error) {
+      if (error instanceof Error && error.message.includes("12 MB project limit")) throw error;
+      diagnostic(diagnostics, "An embedded image could not be imported (unsupported or over 1.5 MB); a placeholder was retained.");
+      return null;
+    }
   }
   function inline(
     node: Ast,
@@ -131,22 +154,37 @@ function fromAst(
     const kind = html ? (node.tagName ?? node.type) : node.type;
     const heading = html ? /^h[1-6]$/.test(kind) : kind === "heading";
     if (heading || kind === "p" || kind === "paragraph") {
-      const content = (node.children ?? []).flatMap((c) =>
-        inline(c, [], depth + 1),
-      );
-      const text = content
-        .map((c) => c.text)
-        .join("")
-        .trim();
+      // Mammoth emits images inline within <p>. Split at each image while keeping
+      // its exact reading position relative to the surrounding text.
+      const nodes = node.children ?? [];
+      const hasImages = html && nodes.some(c => c.tagName === "img");
+      if (hasImages) {
+        let pending: Inline[] = [];
+        const flush = () => {
+          if (pending.some(c => c.text.trim()))
+            blocks.push({type: heading ? "heading" : "paragraph",
+              ...(heading ? {level: Number(kind[1])} : {}), content:pending});
+          pending = [];
+        };
+        for (const child of nodes) {
+          if (child.tagName === "img") {
+            flush();
+            const image = imageBlock(child);
+            if (image) blocks.push(image);
+            else pending.push(...inline(child, [], depth + 1));
+          } else pending.push(...inline(child, [], depth + 1));
+        }
+        flush();
+        return;
+      }
+      const content = nodes.flatMap((c) => inline(c, [], depth + 1));
+      const text = content.map(c => c.text).join("").trim();
       if (scene.test(text)) blocks.push({ type: "scene_break" });
-      else
-        blocks.push({
-          type: heading ? "heading" : "paragraph",
-          ...(heading
-            ? { level: html ? Number(kind[1]) : (node.depth ?? 1) }
-            : {}),
-          ...(content.length ? { content } : {}),
-        });
+      else blocks.push({
+        type: heading ? "heading" : "paragraph",
+        ...(heading ? { level: html ? Number(kind[1]) : (node.depth ?? 1) } : {}),
+        ...(content.length ? { content } : {}),
+      });
       return;
     }
     if (kind === "hr" || kind === "thematicBreak") {
@@ -212,7 +250,9 @@ function fromAst(
       return;
     }
     if (kind === "img") {
-      blocks.push({ type: "paragraph", content: inline(node, [], depth + 1) });
+      const embedded = imageBlock(node);
+      if (embedded) blocks.push(embedded);
+      else blocks.push({ type: "paragraph", content: inline(node, [], depth + 1) });
       return;
     }
     for (const child of node.children ?? []) visit(child, depth + 1);
@@ -309,7 +349,7 @@ function finish(draft: ImportDraft): ImportDraft {
       "No chapter headings were detected. This manuscript will import as a single section.",
       "info",
     );
-  if (!draft.blocks.some((b) => blockText(b).trim()))
+  if (!draft.blocks.some((b) => blockText(b).trim() || b.type === "image"))
     throw Error("No readable manuscript text was found.");
   if (draft.blocks.length > 100_000)
     throw Error("This manuscript has too many paragraphs to import safely.");
@@ -391,7 +431,18 @@ export async function importBytes(
       {
         externalFileAccess: false,
         includeEmbeddedStyleMap: false,
-        convertImage: mammoth.images.imgElement(async () => ({ src: "" })),
+        convertImage: mammoth.images.imgElement(async (image) => {
+          if (!["image/png","image/jpeg"].includes(image.contentType)) {
+            diagnostic(diagnostics, "Unsupported DOCX image types were kept as text placeholders.");
+            return {src:""};
+          }
+          const base64 = await image.read("base64");
+          if (base64.length > 2_000_000) {
+            diagnostic(diagnostics, "DOCX images larger than 1.5 MB were kept as placeholders.");
+            return {src:""};
+          }
+          return {src:`data:${image.contentType};base64,${base64}`};
+        }),
       },
     );
     if (result.messages.some((m) => m.type === "error"))
