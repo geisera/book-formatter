@@ -487,7 +487,7 @@ export async function importBytes(
     const converted = parseConvertedHtml(result.value, filename, diagnostics);
     const embedded = converted.blocks.filter(b => b.type === "image").length;
     const placeholders = converted.blocks.reduce((total,b) =>
-      total + (blockText(b).match(/\\[Image: /g)?.length ?? 0), 0);
+      total + blockText(b).split("[Image: ").length - 1, 0);
     if (embedded || placeholders)
       diagnostic(converted.diagnostics,
         `Image import summary: ${embedded} embedded; ${placeholders} placeholders. Inspect the warnings above for conversion limitations.`,
