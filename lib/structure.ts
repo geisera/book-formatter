@@ -9,14 +9,26 @@ export type StructureAction =
   | { kind: "split"; id: string; blockIndex: number; title: string }
   | { kind: "merge"; id: string };
 
+/** The displayed sequence is also the stored/export sequence: front, body, then back. */
+export function orderedSections(book: Book): Chapter[] {
+  const sections = book.chapters;
+  return (["front", "body", "back"] as const).flatMap(matter =>
+    sections.filter(c => sectionMatter(c.sectionType ?? "chapter") === matter),
+  );
+}
+
 export function changeStructure(book: Book, action: StructureAction): { book: Book; selectedId?: string } {
-  const chapters = [...book.chapters];
+  const chapters = orderedSections(book);
   const index = "id" in action ? chapters.findIndex(c => c.id === action.id) : -1;
   if ("id" in action && index === -1) throw Error("Section was not found.");
   let selectedId: string | undefined;
   switch (action.kind) {
     case "move": {
       if (!Number.isInteger(action.to) || action.to < 0 || action.to >= chapters.length) throw Error("Invalid destination.");
+      const source = chapters[index];
+      const destination = chapters[action.to];
+      if (sectionMatter(source.sectionType ?? "chapter") !== sectionMatter(destination.sectionType ?? "chapter"))
+        throw Error("Change the section type to move it into another matter group.");
       const [section] = chapters.splice(index, 1);
       chapters.splice(action.to, 0, section);
       selectedId = section.id;
@@ -72,12 +84,13 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
     }
   }
   if (chapters.length > 10000) throw Error("Too many sections.");
-  return { book: { ...book, chapters }, selectedId };
+  return { book: { ...book, chapters: orderedSections({ ...book, chapters }) }, selectedId };
 }
 export function sectionGroups(book: Book) {
+  const chapters = orderedSections(book);
   return {
-    front: book.chapters.filter(c => sectionMatter(c.sectionType ?? "chapter") === "front"),
-    body: book.chapters.filter(c => sectionMatter(c.sectionType ?? "chapter") === "body"),
-    back: book.chapters.filter(c => sectionMatter(c.sectionType ?? "chapter") === "back"),
+    front: chapters.filter(c => sectionMatter(c.sectionType ?? "chapter") === "front"),
+    body: chapters.filter(c => sectionMatter(c.sectionType ?? "chapter") === "body"),
+    back: chapters.filter(c => sectionMatter(c.sectionType ?? "chapter") === "back"),
   };
 }
