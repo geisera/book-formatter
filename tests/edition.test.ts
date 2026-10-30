@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { createBook, validateBook } from "../lib/model";
 import {
   CLASSIC_EDITION,
+  EDITION_PRESETS,
+  presetFor,
   getEbookEdition,
   validateEdition,
 } from "../lib/edition";
@@ -80,5 +82,30 @@ describe("independent ebook designs", () => {
         editions: { ebook: { ...CLASSIC_EDITION, fontSize: 100 } },
       }),
     ).toThrow();
+  });
+});
+
+describe("three versioned ebook presets", () => {
+  it("validates every template and preserves distinct typography", () => {
+    for (const id of ["classic", "modern", "gothic"] as const) {
+      expect(validateEdition(presetFor(id)).template).toEqual({ id, version: 1 });
+      expect(presetFor(id)).toEqual(EDITION_PRESETS[id]);
+    }
+    expect(EDITION_PRESETS.modern.headingStyle).toBe("left");
+    expect(EDITION_PRESETS.gothic.sceneOrnament).toBe("diamonds");
+  });
+  it("preserves content and edition on backup and restore", () => {
+    const book = createBook("Design Test", "Writer");
+    const before = JSON.stringify(book.chapters);
+    book.editions!.ebook = presetFor("gothic");
+    const restored = restoreBook(backupBook(book));
+    expect(restored.editions!.ebook.template.id).toBe("gothic");
+    expect(JSON.stringify(restored.chapters)).toBe(before);
+  });
+  it("rejects unknown template identifiers", () => {
+    expect(() => validateEdition({
+      ...presetFor("modern"),
+      template: { id: "unknown", version: 1 },
+    })).toThrow();
   });
 });
