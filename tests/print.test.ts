@@ -5,6 +5,7 @@ import { createBook, blankChapter, validateBook } from "../lib/model";
 import { CLASSIC_PRINT, PRINT_PRESETS, getPrintEdition, printPreset, validatePrintEdition } from "../lib/print-profile";
 import { buildPrintPdf, type PrintFonts } from "../lib/print";
 import { backupBook, restoreBook } from "../lib/backup";
+import { presetFor } from "../lib/edition";
 const fonts = Object.fromEntries(
   [
     ["regular", "regular"],
@@ -134,16 +135,19 @@ describe("versioned print templates", () => {
     const b = fixture();
     const original = structuredClone(b.chapters);
     const ebook = structuredClone(b.editions!.ebook);
+    b.editions!.ebook = presetFor("gothic");
     b.editions!.print = printPreset("gothic", "justify");
     const restored = restoreBook(backupBook(b));
     expect(restored.editions!.print).toEqual(b.editions!.print);
-    expect(restored.editions!.ebook).toEqual(ebook);
+    expect(restored.editions!.ebook).toEqual(presetFor("gothic"));
+    expect(ebook.template.id).toBe("classic");
     expect(restored.chapters.map(c => c.content)).toEqual(original.map(c => c.content));
   });
   for (const template of ["modern", "gothic"] as const) {
     it(`builds a valid offline ${template} PDF with independent layout and ornaments`, async () => {
       const b = fixture();
       const original = structuredClone(b);
+      b.editions!.ebook = presetFor(template);
       b.editions!.print = printPreset(template, "justify");
       b.chapters[0].content = {
         type: "doc",
@@ -165,7 +169,34 @@ describe("versioned print templates", () => {
       expect(result.record.pages.filter(p => p.kind === "chapter").every(p => p.page % 2 === 1)).toBe(true);
       expect(result.record.filename).toContain(template);
       expect(b).toEqual(snapshot);
-      expect(b.editions!.ebook).toEqual(original.editions!.ebook);
+      expect(b.editions!.ebook).toEqual(presetFor(template));
+      expect(original.editions!.ebook.template.id).toBe("classic");
     }, 20000);
   }
+});
+
+describe("Design is the source of truth for print templates", () => {
+  it("derives a matching PDF preset and retains independent justification", () => {
+    for (const template of ["classic", "modern", "gothic"] as const) {
+      const b = fixture();
+      b.editions!.ebook = presetFor(template);
+      b.editions!.print = { ...CLASSIC_PRINT, alignment: "justify" };
+      const effective = getPrintEdition(b);
+      expect(effective.template.id).toBe(template);
+      expect(effective.leading).toBe(PRINT_PRESETS[template].leading);
+      expect(effective.alignment).toBe("justify");
+      expect(getPrintEdition(restoreBook(backupBook(b)))).toEqual(effective);
+    }
+  });
+  it("uses the ebook choice on existing projects with an obsolete separate print selection", async () => {
+    const b = fixture();
+    b.editions!.ebook = presetFor("modern");
+    b.editions!.print = printPreset("gothic", "justify");
+    const before = structuredClone(b);
+    const pdf = await buildPrintPdf(b, fonts, options);
+    expect(pdf.record.profile.template.id).toBe("modern");
+    expect(pdf.record.profile.leading).toBe(PRINT_PRESETS.modern.leading);
+    expect(pdf.record.profile.alignment).toBe("justify");
+    expect(b).toEqual(before);
+  }, 20000);
 });
