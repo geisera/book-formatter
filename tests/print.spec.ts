@@ -154,3 +154,31 @@ test("imports and builds a full-length novel with no network and proves the actu
     JSON.stringify(saved.book),
   );
 });
+
+test("switches independent print designs and restores selection offline", async ({ page, context }) => {
+  await page.goto("/");
+  await expect(page.getByText("Offline app ready")).toBeVisible();
+  await context.setOffline(true);
+  await page.getByLabel("Book title", { exact: true }).fill("Template selection");
+  await page.getByLabel("Author name", { exact: true }).fill("Test Author");
+  await page.getByRole("button", { name: "Create local book" }).click();
+  await page.getByRole("textbox", { name: "Chapter manuscript" })
+    .fill("An opening scene. ".repeat(90));
+  await page.getByRole("button", { name: "Print", exact: true }).click();
+  const picker = page.getByLabel("Print template");
+  await expect(picker).toHaveValue("classic");
+  await picker.selectOption("modern");
+  await expect(page.getByText("Modern · print edition")).toBeVisible();
+  await page.getByLabel("Justify body text").check();
+  await expect(page.getByRole("status").filter({ hasText: /Saved locally/ })).toBeVisible();
+  await picker.selectOption("gothic");
+  await expect(page.getByLabel("Justify body text")).toBeChecked();
+  await expect(page.getByText("Gothic · print edition")).toBeVisible();
+  await page.getByRole("button", { name: "Build 6 × 9 PDF proof" }).click();
+  await expect(page.getByRole("button", { name: "Download PDF proof" })).toBeVisible({ timeout: 30000 });
+  await page.reload();
+  await page.getByRole("button", { name: /Template selection/ }).click();
+  await page.getByRole("button", { name: "Print", exact: true }).click();
+  await expect(page.getByLabel("Print template")).toHaveValue("gothic");
+  await expect(page.getByLabel("Justify body text")).toBeChecked();
+});
