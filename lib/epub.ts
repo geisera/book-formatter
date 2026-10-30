@@ -2,7 +2,7 @@ import { zipSync, strToU8, unzipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-import { schema, validateBook, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
 export const EPUB_RENDERER = "epub-1.1.0";
 export type ExportIssue = {
@@ -271,7 +271,7 @@ export function buildEpub(
       xhtml(
         c.title,
         language,
-        `<section epub:type="${c.sectionType === "prologue" ? "prologue" : c.sectionType === "epilogue" ? "epilogue" : c.sectionType === "part" ? "part" : c.sectionType === "preface" ? "preface" : c.sectionType === "copyright" ? "copyright-page" : c.sectionType === "dedication" ? "dedication" : c.sectionType === "epigraph" ? "epigraph" : c.sectionType === "toc" ? "toc" : "chapter"}" aria-labelledby="chapter-title"><h1 id="chapter-title">${xml(c.title)}</h1>${chapterBody(c.content, edition)}</section>`,
+        `<section epub:type="${c.sectionType === "prologue" ? "prologue" : c.sectionType === "epilogue" ? "epilogue" : c.sectionType === "part" ? "part" : c.sectionType === "preface" ? "preface" : c.sectionType === "copyright" ? "copyright-page" : c.sectionType === "dedication" ? "dedication" : c.sectionType === "epigraph" ? "epigraph" : c.sectionType === "toc" ? "toc" : "chapter"}" ${showSectionTitle(c) ? 'aria-labelledby="chapter-title"' : 'aria-label="${xml(c.title)}"'}>${showSectionTitle(c) ? `<h1 id="chapter-title">${xml(c.title)}</h1>` : ""}${chapterBody(c.content, edition)}</section>`,
       ),
     ),
   );
