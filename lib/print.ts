@@ -526,9 +526,12 @@ export async function buildPrintPdf(
       const numberWidth = measure(pageLabel, "regular", 10);
       const reserved = numberWidth + 15;
       let label = entry.title;
-      while (label && measure(label, "regular", 10) > contentWidth - reserved - 8)
-        label = label.slice(0, -1);
-      if (label !== entry.title) label = label.trimEnd() + "...";
+      const labelWidth = contentWidth - reserved - 8;
+      if (measure(label, "regular", 10) > labelWidth) {
+        while (label && measure(label.trimEnd() + "...", "regular", 10) > labelWidth)
+          label = label.slice(0, -1);
+        label = label.trimEnd() + "...";
+      }
       draw(label, proof.left, y, 10);
       draw(pageLabel, proof.right - numberWidth, y, 10);
       proof.lineCount++;
