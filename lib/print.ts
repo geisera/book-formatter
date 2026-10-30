@@ -386,7 +386,7 @@ export async function buildPrintPdf(
     doc.forEach(node => {
       if (node.type.name === "image") {
         const asset = embedded.get(node.attrs.src)!;
-        estimated += Math.min(350, contentWidth * node.attrs.width / 100 * asset.height / asset.width) + 22;
+        estimated += Math.min(350, contentWidth * node.attrs.width / 100 * asset.height / asset.width) + 22 + (node.attrs.caption ? 40 : 0);
       } else if (node.type.name === "scene_break") estimated += leading * 4;
       else if (node.type.name === "heading") estimated += wrap(units(node), 0, 13).length * 19 + 30;
       else if (node.textContent.trim()) estimated += Math.max(1, wrap(units(node), 14).length + 1) * leading;
@@ -423,7 +423,9 @@ export async function buildPrintPdf(
         const maxHeight = HEIGHT - profile.top - profile.bottom - 120;
         const scale = Math.min(maxWidth / asset.width, maxHeight / asset.height);
         const width = asset.width * scale, height = asset.height * scale;
-        if (y - height - 12 < bottom + activeLayout.spaceAfter) bodyPage();
+        const captionLines = node.attrs.caption ? textLines(node.attrs.caption, 9, "italic") : [];
+        const captionHeight = captionLines.length * 13;
+        if (y - height - captionHeight - 20 < bottom + activeLayout.spaceAfter) bodyPage();
         const x = node.attrs.align === "left" ? proof.left
           : node.attrs.align === "right" ? proof.right - width
           : proof.left + (contentWidth - width) / 2;
@@ -434,7 +436,15 @@ export async function buildPrintPdf(
         proof.minY = Math.min(proof.minY,imgY);
         proof.maxY = Math.max(proof.maxY,y);
         proof.lineCount++;
-        y = imgY - leading * 1.5;
+        y = imgY - 13;
+        for (const l of captionLines) {
+          const start = proof.left + (contentWidth - l.width) / 2;
+          let cursor = start;
+          for (const run of l.runs) { draw(run.text, cursor, y, 9, run.face); cursor += measure(run.text, run.face, 9); }
+          proof.lineCount++;
+          y -= 13;
+        }
+        y -= leading * 0.7;
         opening = true;
         return;
       }
