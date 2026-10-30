@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { afterEach, describe, it, expect } from "vitest";
-import { zipSync, strToU8 } from "fflate";
+import { zipSync, unzipSync, strFromU8, strToU8 } from "fflate";
 import {
   importBytes,
   inspectDocx,
@@ -132,6 +132,26 @@ describe("semantic manuscript import", () => {
     expect(draft.blocks.some(b=>b.type==="image")).toBe(false);
     expect(JSON.stringify(draft.blocks)).toContain("[Image: Bad source]");
     expect(JSON.stringify(draft.blocks)).not.toContain("example.org");
+  });
+  it("imports a real DOCX drawing relationship into an embedded raster block", async () => {
+    const archive=unzipSync(docxFixture());
+    const imageBase64="iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
+    archive["word/media/illustration.png"]=Uint8Array.from(atob(imageBase64),c=>c.charCodeAt(0));
+    const originalXml=strFromU8(archive["word/document.xml"]);
+    const drawing='<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><wp:extent cx="127000" cy="127000"/><wp:docPr id="1" name="Image 1" descr="Map of the fictional city"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="illustration.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdImage1"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:prstGeom prst="rect"/></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
+    archive["word/document.xml"]=strToU8(originalXml.replace("</w:body>",drawing+"</w:body>"));
+    archive["word/_rels/document.xml.rels"]=strToU8(strFromU8(archive["word/_rels/document.xml.rels"]).replace("</Relationships>",'<Relationship Id="rIdImage1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/illustration.png"/></Relationships>'));
+    archive["[Content_Types].xml"]=strToU8(strFromU8(archive["[Content_Types].xml"]).replace("</Types>",'<Default Extension="png" ContentType="image/png"/></Types>'));
+    const bytes=zipSync(archive);
+    const draft=await importBytes(bytes,"illustrated.docx");
+    const images=draft.blocks.filter(b=>b.type==="image");
+    expect(images).toHaveLength(1);
+    expect(images[0].attrs?.src).toMatch(/^data:image\\/png;base64,/);
+    const chapters=splitChapters(draft,"auto");
+    expect(chapters.some(c=>JSON.stringify(c.content).includes('Map of the fictional city'))).toBe(true);
+    const project=importedBook(draft,chapters,"Illustrated","Author",bytes);
+    const restored=restoreProject(backupBook(project.book,project.source));
+    expect(restored.book.chapters[0].content).toEqual(project.book.chapters[0].content);
   });
   it("stores original bytes atomically and carries them through backup/restore", async () => {
     const bytes = strToU8("# One\n\nA story.");
