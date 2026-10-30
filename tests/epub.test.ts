@@ -83,6 +83,20 @@ describe("local EPUB generation", () => {
       strFromU8(unzipSync(generated.bytes)["EPUB/chapter-0001.xhtml"]),
     ).toContain("◆ ◆ ◆");
   });
+  it("hides section headings but retains content and table-of-contents titles", () => {
+    const b = fixture();
+    b.chapters[0].showTitle = false;
+    const files = unzipSync(buildEpub(b, fonts, options).bytes);
+    const section = strFromU8(files["EPUB/chapter-0001.xhtml"]);
+    const nav = strFromU8(files["EPUB/nav.xhtml"]);
+    expect(section).not.toContain('<h1 id="chapter-title">');
+    expect(section).toContain('aria-label="Chapter One"');
+    expect(section).toContain("A café");
+    expect(nav).toContain(">Chapter One</a>");
+    b.chapters[0].showTitle = true;
+    expect(strFromU8(unzipSync(buildEpub(b, fonts, options).bytes)["EPUB/chapter-0001.xhtml"]))
+      .toContain('<h1 id="chapter-title">Chapter One</h1>');
+  });
   it("supports system fonts without bundling unlicensed system binaries", () => {
     const b = fixture();
     b.editions = {
