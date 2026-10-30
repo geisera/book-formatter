@@ -1,3 +1,4 @@
+import { validateImageAttrs, embeddedImages, MAX_PROJECT_IMAGES_BYTES } from "./images";
 import {
   CLASSIC_PRINT,
   validatePrintEdition,
@@ -36,6 +37,16 @@ export const schema = new Schema({
       attrs: { level: { default: 2 }, ...blockAlignment },
       toDOM: (node) => ["h2", blockDomAttributes(node), 0],
       parseDOM: [{ tag: "h2", getAttrs: (dom) => ({ align: (dom as HTMLElement).style.textAlign || null }) }],
+    },
+    image: {
+      group: "block",
+      atom: true,
+      draggable: true,
+      attrs: {src: {}, alt: {default: ""}, width: {default: 100}, align: {default: "center"}},
+      toDOM: node => ["figure", {class: "manuscript-image", style: `text-align:${node.attrs.align}`},
+        ["img", {src: node.attrs.src, alt: node.attrs.alt, style: `width:${node.attrs.width}%;height:auto`}]
+      ],
+      parseDOM: [],
     },
     scene_break: {
       group: "block",
@@ -194,6 +205,7 @@ export function validateBook(value: unknown): Book {
     if (b.editions.print !== undefined) validatePrintEdition(b.editions.print);
   }
   const ids = new Set<string>();
+  let imageBytes = 0;
   for (const c of b.chapters) {
     if (
       !c ||
@@ -208,6 +220,11 @@ export function validateBook(value: unknown): Book {
     ids.add(c.id);
     const manuscript = schema.nodeFromJSON(c.content);
     manuscript.check();
+    for (const attrs of embeddedImages(c.content)) {
+      validateImageAttrs(attrs as unknown as Record<string, unknown>);
+      imageBytes += attrs.src.length;
+      if (imageBytes > MAX_PROJECT_IMAGES_BYTES) throw Error("Embedded images exceed the 12 MB project limit.");
+    }
     manuscript.descendants(node => {
       if ((node.type.name === "paragraph" || node.type.name === "heading") &&
           node.attrs.align !== null && !TEXT_ALIGNMENTS.includes(node.attrs.align))
