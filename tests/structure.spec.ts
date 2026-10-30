@@ -12,10 +12,18 @@ test("organizes and persists sections locally, including reordered export order"
   await page.getByLabel("New section type").selectOption("prologue");
   await page.getByLabel("Section title").fill("Before the story");
   await page.getByRole("button", { name: "+ Add section" }).click();
-  await expect(page.getByText("Before the story", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "↑ Up" }).last().click();
   const items = page.locator(".structure-item-heading strong");
-  await expect(items.first()).toContainText("Before the story");
+  await expect(items).toHaveText(["1. Chapter One", "2. Before the story"]);
+  await page.getByLabel("New section type").selectOption("dedication");
+  await page.getByLabel("Section title").fill("To my readers");
+  await page.getByRole("button", { name: "+ Add section" }).click();
+  await expect(items).toHaveText(["1. To my readers", "2. Chapter One", "3. Before the story"]);
+  await page.locator(".structure-item").filter({ hasText: "Before the story" })
+    .getByLabel("Type of Before the story").selectOption("preface");
+  await expect(items).toHaveText(["1. To my readers", "2. Before the story", "3. Chapter One"]);
+  await page.locator(".structure-item").filter({ hasText: "Before the story" })
+    .getByRole("button", { name: "↑ Up" }).click();
+  await expect(items).toHaveText(["1. Before the story", "2. To my readers", "3. Chapter One"]);
   await page.getByRole("button", { name: "Edit text" }).first().click();
   await expect(page.getByLabel("Chapter title")).toHaveValue("Before the story");
   await page.getByRole("textbox", { name: "Chapter manuscript" }).fill("An introductory account.");
@@ -24,5 +32,5 @@ test("organizes and persists sections locally, including reordered export order"
   await page.reload();
   await page.getByRole("button", { name: /Structure test/ }).click();
   await page.getByRole("button", { name: "Structure", exact: true }).click();
-  await expect(page.locator(".structure-item-heading strong").first()).toContainText("Before the story");
+  await expect(page.locator(".structure-item-heading strong")).toHaveText(["1. Before the story", "2. To my readers", "3. Chapter One"]);
 });
