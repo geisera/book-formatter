@@ -1,10 +1,10 @@
-import { PDFDocument, grayscale, type PDFFont, type PDFPage } from "pdf-lib";
+import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { schema, validateBook, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-export const PRINT_RENDERER = "print-proof-1.1.0";
+export const PRINT_RENDERER = "print-proof-1.2.0";
 export type PrintFonts = {
   regular: Uint8Array;
   italic: Uint8Array;
@@ -355,22 +355,54 @@ export async function buildPrintPdf(
     chapterTitle = chapter.title;
     if ((pages.length + 1) % 2 === 0) newPage("blank");
     newPage("chapter");
-    y = HEIGHT - profile.top - 75;
-    const heading = textLines(chapter.title, 18, "bold");
+    const template = profile.template.id;
+    const headingSize = template === "gothic" ? 19 : template === "modern" ? 17 : 18;
+    y = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
+    const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
+    const heading = textLines(headingText, headingSize, "bold");
     if (heading.length > 8)
       throw Error(
         "A chapter title is too long for the fixed print opening. Shorten it and retry.",
       );
-    centered(heading, 18, 25);
-    y -= 25;
+    if (template === "modern") {
+      for (const h of heading) {
+        line(h.runs, 0, headingSize);
+        y -= 25;
+      }
+      y -= 16;
+    } else {
+      centered(heading, headingSize, template === "gothic" ? 30 : 25);
+      y -= template === "gothic" ? 36 : 25;
+    }
     let opening = true;
     schema.nodeFromJSON(chapter.content).forEach((node) => {
       if (node.type.name === "scene_break") {
         if (slots() < 5) bodyPage();
         y -= leading;
-        const ornament = "* * *";
-        const w = measure(ornament, "regular", 11);
-        draw(ornament, proof.left + (contentWidth - w) / 2, y, 11);
+        if (template === "modern") {
+          page.drawLine({
+            start: { x: proof.left + contentWidth / 2 - 22, y },
+            end: { x: proof.left + contentWidth / 2 + 22, y },
+            thickness: 0.65,
+            color: grayscale(0.35),
+          });
+        } else if (template === "gothic") {
+          // Vector diamonds avoid depending on a font's ornamental Unicode glyph coverage.
+          for (const dx of [-15, 0, 15]) {
+            page.drawRectangle({
+              x: proof.left + contentWidth / 2 + dx - 3.5,
+              y: y - 3.5,
+              width: 7,
+              height: 7,
+              rotate: degrees(45),
+              color: grayscale(0.25),
+            });
+          }
+        } else {
+          const ornament = "* * *";
+          const w = measure(ornament, "regular", 11);
+          draw(ornament, proof.left + (contentWidth - w) / 2, y, 11);
+        }
         proof.lineCount++;
         y -= leading * 2;
         opening = true;
@@ -442,10 +474,14 @@ export async function buildPrintPdf(
     );
     proof.footer = number;
     if (proof.kind === "body") {
-      let header = proof.page % 2 ? book.title : book.author;
+      let header = profile.template.id === "modern"
+        ? (proof.page % 2 ? book.title : "")
+        : profile.template.id === "gothic"
+          ? (proof.page % 2 ? chapterTitle : book.title)
+          : (proof.page % 2 ? book.title : book.author);
       while (header.length && measure(header, "regular", 8) > contentWidth)
         header = header.slice(0, -1);
-      if (header !== (proof.page % 2 ? book.title : book.author)) {
+      if (header && measure(header, "regular", 8) > contentWidth) {
         header = header.trimEnd();
         while (
           header.length &&
@@ -482,12 +518,12 @@ export async function buildPrintPdf(
   pdf.setModificationDate(created);
   pdf.setLanguage(book.language ?? "en");
   pdf.setKeywords([
-    "Classic 6x9 no bleed",
+    `${profile.template.id} 6x9 no bleed`,
     `revision:${book.revision}`,
     `snapshot:${inputChecksum}`,
   ]);
   const bytes = await pdf.save({ useObjectStreams: false });
-  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}-6x9-proof.pdf`;
+  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}-${profile.template.id}-6x9-proof.pdf`;
   return {
     bytes,
     record: {
