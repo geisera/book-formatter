@@ -42,6 +42,7 @@ const ChapterContent = memo(function ChapterContent({
       blocks.push(<figure key={index} className={`ebook-illustration align-${node.attrs.align}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={node.attrs.src} alt={node.attrs.alt} style={{width:`${node.attrs.width}%`,maxWidth:"100%",height:"auto"}} />
+        {node.attrs.caption ? <figcaption>{node.attrs.caption}</figcaption> : null}
       </figure>);
       opening = true;
     } else if (node.type.name === "scene_break") {
