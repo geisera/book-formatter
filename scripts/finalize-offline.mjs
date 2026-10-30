@@ -26,7 +26,7 @@ const hash = createHash("sha256");
 for (const p of assets.sort()) hash.update(await readFile(p));
 let sw = await readFile("public/sw.js", "utf8");
 sw = sw.replace(
-  /book-formatter-v\\d+/,
+  /book-formatter-v\d+/,
   `book-formatter-${hash.digest("hex").slice(0, 16)}`,
 );
 sw = sw.replace(
