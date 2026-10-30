@@ -78,7 +78,7 @@ export function defaultSectionLayout(type: SectionType = "chapter"): SectionPage
     start: matter === "body" ? "recto" : "next",
     vertical: ["dedication", "epigraph", "half-title", "title"].includes(type) ? "center" : "top",
     header: matter === "front" ? "hide" : "auto",
-    pageNumber: matter === "front" ? "hide" : "auto",
+    pageNumber: matter === "front" ? (["toc", "preface"].includes(type) ? "show" : "hide") : "auto",
     spaceBefore: 0,
     spaceAfter: 0,
   };
