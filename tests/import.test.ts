@@ -110,6 +110,29 @@ describe("semantic manuscript import", () => {
       ),
     ).toThrow("entities");
   });
+  it("turns embedded DOCX image data into ordered manuscript image blocks", () => {
+    const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
+    const draft=parseConvertedHtml(
+      `<h1>Chapter One</h1><p>Before <img src="${src}" alt="Map of the valley"/> after</p><p>Following paragraph.</p>`,
+      "illustrated.docx"
+    );
+    expect(draft.blocks.map(b=>b.type)).toEqual(["heading","paragraph","image","paragraph","paragraph"]);
+    const chapters=splitChapters(draft,"auto");
+    const doc=schema.nodeFromJSON(chapters[0].content);
+    expect(doc.child(0).textContent).toContain("Before");
+    expect(doc.child(1).type.name).toBe("image");
+    expect(doc.child(1).attrs.alt).toBe("Map of the valley");
+    expect(doc.child(2).textContent).toContain("after");
+    expect(doc.child(3).textContent).toContain("Following");
+    const project=importedBook(draft,chapters,"Test","Author",strToU8("source"));
+    expect(restoreProject(backupBook(project.book,project.source)).book.chapters[0].content).toEqual(chapters[0].content);
+  });
+  it("keeps remote DOCX image references as inert placeholders", () => {
+    const draft=parseConvertedHtml('<p>Start <img src="https://example.org/track.png" alt="Bad source"/> end.</p>',"bad.docx");
+    expect(draft.blocks.some(b=>b.type==="image")).toBe(false);
+    expect(JSON.stringify(draft.blocks)).toContain("[Image: Bad source]");
+    expect(JSON.stringify(draft.blocks)).not.toContain("example.org");
+  });
   it("stores original bytes atomically and carries them through backup/restore", async () => {
     const bytes = strToU8("# One\n\nA story.");
     const d = await importBytes(bytes, "novel.md");
