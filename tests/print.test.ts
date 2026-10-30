@@ -98,3 +98,25 @@ describe("offline print proof", () => {
     );
   });
 });
+
+describe("bounded PDF justification", () => {
+  it("accepts justified print preferences and preserves them in backups", () => {
+    const b = fixture();
+    b.editions!.print = { ...CLASSIC_PRINT, alignment: "justify" };
+    expect(validateBook(b).editions!.print?.alignment).toBe("justify");
+    expect(getPrintEdition(restoreBook(backupBook(b))).alignment).toBe("justify");
+    expect(() => validateBook({ ...b, editions: {
+      ...b.editions, print: { ...CLASSIC_PRINT, alignment: "unsupported" },
+    } })).toThrow("Unsupported print alignment");
+  });
+  it("generates a justified proof without modifying manuscript content", async () => {
+    const b = fixture();
+    b.editions!.print = { ...CLASSIC_PRINT, alignment: "justify" };
+    const before = structuredClone(b.chapters);
+    const result = await buildPrintPdf(b, fonts, options);
+    expect(result.record.profile.alignment).toBe("justify");
+    expect(result.record.checks.overflow).toBe(0);
+    expect(result.record.warnings.join(" ")).toContain("capped word-space");
+    expect(b.chapters).toEqual(before);
+  }, 20000);
+});
