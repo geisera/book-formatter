@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { SECTION_TYPES, sectionMatter, type Book, type SectionType } from "../lib/model";
+import { SECTION_TYPES, sectionMatter, showSectionTitle, type Book, type SectionType } from "../lib/model";
 import { orderedSections, sectionGroups, type StructureAction } from "../lib/structure";
 
 const labels: Record<SectionType, string> = {
@@ -86,6 +86,12 @@ export default function StructurePanel({
                     </select>
                   </label>
                 </div>
+                <label className="structure-title-visibility">
+                  <input type="checkbox" aria-label={`Show title on page for ${section.title}`}
+                    checked={showSectionTitle(section)}
+                    onChange={e => dispatch({kind:"visibility",id:section.id,showTitle:e.target.checked})} />
+                  Show section title on page
+                </label>
                 <div className="structure-item-actions">
                   <button type="button" disabled={positionInGroup === 0} onClick={() => dispatch({kind:"move",id:section.id,to:index-1})}>↑ Up</button>
                   <button type="button" disabled={positionInGroup === groups[matter].length - 1} onClick={() => dispatch({kind:"move",id:section.id,to:index+1})}>↓ Down</button>
@@ -107,7 +113,7 @@ export default function StructurePanel({
           </ol>
         </div>
       ))}
-      <p className="control-note">Sections are numbered continuously from Front Matter through Body Matter to Back Matter. Drag within a group or use Up/Down; to change groups, change the section type. Section IDs remain stable when renamed or reordered. Splitting occurs between text blocks, not within a paragraph. The EPUB navigation follows the book order.</p>
+      <p className="control-note">Sections are numbered continuously from Front Matter through Body Matter to Back Matter. Drag within a group or use Up/Down; to change groups, change the section type. Section IDs remain stable when renamed or reordered. Splitting occurs between text blocks, not within a paragraph. The EPUB navigation follows the book order. Hiding a title affects the rendered page in EPUB and PDF, not the section name in navigation.</p>
     </section>
   );
 }
