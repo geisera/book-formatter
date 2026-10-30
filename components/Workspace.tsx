@@ -474,7 +474,7 @@ export default function Workspace() {
                 </button>
               </div>
               <div className="workspace-save">
-                <span>Classic · ebook edition</span>
+                <span>{getEbookEdition(book).template.id.replace(/^./, (c) => c.toUpperCase())} · ebook edition</span>
                 <span
                   role="status"
                   className={status === "Save failed" ? "failed" : "saved"}
