@@ -477,7 +477,7 @@ export async function buildPrintPdf(
       let header = profile.template.id === "modern"
         ? (proof.page % 2 ? book.title : "")
         : profile.template.id === "gothic"
-          ? (proof.page % 2 ? chapterTitle : book.title)
+          ? (proof.page % 2 ? (proof.chapterTitle ?? book.title) : book.title)
           : (proof.page % 2 ? book.title : book.author);
       while (header.length && measure(header, "regular", 8) > contentWidth)
         header = header.slice(0, -1);
