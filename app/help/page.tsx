@@ -53,7 +53,7 @@ export default function HelpPage() {
             <p>On the bookshelf, enter a <strong>Book title</strong> and optionally an <strong>Author name</strong>, then select <strong>Create local book</strong>. The new book contains an initial chapter. Select a book card on <strong>Your bookshelf</strong> to reopen it.</p>
             <p>Inside a book, the left sidebar lists chapters. Select a chapter to edit it, or choose <strong>+ Add chapter</strong>. Edit a chapter's title using the <strong>Chapter title</strong> field above its text. Use <strong>← Bookshelf</strong> to return to your projects.</p>
             <p>Edits are autosaved locally. Check the header for <strong>Saving locally…</strong>, <strong>Saved locally</strong>, or <strong>Save failed</strong>. Do not close the page during an unresolved save failure; download a backup and review the error.</p>
-            <p>The current foundation does not provide chapter reordering, project deletion, or cloud account synchronization controls.</p>
+            <p>Cloud account synchronization is not provided; project data and embedded images remain in this browser unless exported in a backup.</p>
           </section>
           <section id="import">
             <h2>Import a manuscript</h2>
@@ -75,6 +75,7 @@ export default function HelpPage() {
               <dt>Bold / Italic</dt><dd>Select text and choose <strong>B</strong> or <strong>I</strong>. Keyboard shortcuts: <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>B</kbd> and <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>I</kbd>.</dd>
               <dt>Heading / Paragraph</dt><dd>Place the caret in a block and choose <strong>Heading</strong> or <strong>Paragraph</strong>.</dd>
               <dt>Scene break</dt><dd>Choose <strong>Scene break</strong> where you want a scene separator inserted. Its final appearance depends on ebook design settings.</dd>
+              <dt>Images and illustrations</dt><dd>Choose <strong>Insert image</strong> from the manuscript toolbar, select a PNG or JPEG (up to 1.5 MB), and enter descriptive alternative text. Click the inserted image to select it, then use <strong>Image width</strong> (25%, 50%, 75%, 100%), <strong>Image alignment</strong> (left, center, right), or <strong>Edit alt text</strong>. Delete a selected illustration with Backspace/Delete. Images are embedded locally in the manuscript and included in EPUB, PDF and project backups. The combined embedded-image limit is 12 MB per project. SVG, GIF, WebP, external image URLs, and importing images automatically from DOCX are not supported yet. Keep a separate copy of high-resolution originals for print production.</dd>
               <dt>Undo / Redo</dt><dd>Use the toolbar buttons, or the usual keyboard shortcuts (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Z</kbd> to undo).</dd>
               <dt>Chapter names</dt><dd>Edit the <strong>Chapter title</strong> field above the editor; it is separate from the body text.</dd>
             </dl>
