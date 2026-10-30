@@ -151,7 +151,7 @@ describe("semantic manuscript import", () => {
     expect(chapters.some(c=>JSON.stringify(c.content).includes('Map of the fictional city'))).toBe(true);
     const project=importedBook(draft,chapters,"Illustrated","Author",bytes);
     const restored=restoreProject(backupBook(project.book,project.source));
-    expect(restored.book.chapters[0].content).toEqual(project.book.chapters[0].content);
+    expect(restored.book.chapters.map(c=>c.content)).toEqual(project.book.chapters.map(c=>c.content));
   });
   it("stores original bytes atomically and carries them through backup/restore", async () => {
     const bytes = strToU8("# One\n\nA story.");
