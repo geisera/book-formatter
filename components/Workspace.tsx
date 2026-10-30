@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useDeferredValue } from "react";
+import Link from "next/link";
 import Editor from "./Editor";
 import ImportPanel from "./ImportPanel";
 import DesignPanel from "./DesignPanel";
@@ -267,15 +268,18 @@ export default function Workspace() {
           <span className="brand-icon">▤</span> Book Formatter
           <span className="badge">FOUNDATION</span>
         </button>
-        <div className="connection">
-          {offline ? "● Offline" : "● Local workspace"}
-          <span>
-            {!offlineSupported
-              ? "Offline installation requires HTTPS"
-              : installed
-                ? "Offline app ready"
-                : "Preparing offline app…"}
-          </span>
+        <div className="topbar-actions">
+          <Link className="help-top-link" href="/help/" aria-label="Open help and documentation">Help &amp; Docs</Link>
+          <div className="connection">
+            {offline ? "● Offline" : "● Local workspace"}
+            <span>
+              {!offlineSupported
+                ? "Offline installation requires HTTPS"
+                : installed
+                  ? "Offline app ready"
+                  : "Preparing offline app…"}
+            </span>
+          </div>
         </div>
       </header>
       {error ? (
