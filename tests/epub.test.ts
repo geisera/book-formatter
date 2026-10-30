@@ -110,6 +110,16 @@ describe("local EPUB generation", () => {
     expect(chapter).toContain("Centered dedication");
     expect(strFromU8(files["EPUB/style.css"])).toContain(".align-center{text-align:center");
   });
+  it("emits compatible page-start and section spacing without promising physical EPUB pages", () => {
+    const b=fixture();
+    b.chapters[0].pageLayout={start:"verso",vertical:"bottom",header:"hide",pageNumber:"hide",spaceBefore:24,spaceAfter:12};
+    const files=unzipSync(buildEpub(b,fonts,options).bytes);
+    const chapter=strFromU8(files["EPUB/chapter-0001.xhtml"]);
+    expect(chapter).toContain('class="section-layout"');
+    expect(chapter).toContain('break-before:page;page-break-before:always');
+    expect(chapter).toContain('padding-top:2em;padding-bottom:1em');
+    expect(strFromU8(files["EPUB/nav.xhtml"])).toContain(">Chapter One</a>");
+  });
   it("supports system fonts without bundling unlicensed system binaries", () => {
     const b = fixture();
     b.editions = {
