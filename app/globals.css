@@ -1766,3 +1766,26 @@ aside h2 {
   .topbar { padding-inline:15px; }
   .help-top-link { padding:8px; font-size:11px; }
 }
+
+/* Local-first Structure Editor */
+.structure-panel { padding:36px 38px 70px; overflow:auto; min-width:0; max-height:calc(100vh - 100px); }
+.structure-panel h2 { font-size:30px; margin:8px 0 12px; }
+.structure-panel > p { font-size:13px; line-height:1.7; color:var(--muted); }
+.structure-add { display:grid; grid-template-columns:minmax(150px,1fr) minmax(220px,2fr) auto; align-items:end; gap:12px; padding:18px; border:1px solid var(--line); border-radius:8px; margin:22px 0 30px; background:#f8f7f0; }
+.structure-add label,.structure-item-fields label { display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--ink); font-weight:600; }
+.structure-add input,.structure-add select,.structure-item-fields input,.structure-item-fields select { width:100%; padding:9px 10px; min-width:0; border:1px solid var(--line); border-radius:4px; background:#fff; }
+.structure-group { margin:28px 0; }
+.structure-group h3 { font-size:18px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+.structure-group h3 small { font-size:12px; color:var(--muted); }
+.structure-group ol { list-style:none; padding:0; margin:0; }
+.structure-item { border:1px solid var(--line); border-radius:7px; background:#fffefb; padding:16px; margin:12px 0; }
+.structure-item.active { border-color:var(--green); }
+.structure-item-heading { display:flex; align-items:center; gap:12px; margin-bottom:13px; }
+.structure-item-heading strong { flex:1; font-size:14px; overflow-wrap:anywhere; }
+.structure-item-heading button,.structure-item-actions button { border:1px solid var(--line); padding:6px 9px; border-radius:4px; font-size:12px; }
+.structure-item-fields { display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-bottom:12px; }
+.structure-item-actions { display:flex; flex-wrap:wrap; gap:7px; margin:12px 0; }
+.structure-item-actions button:disabled { opacity:.4; cursor:not-allowed; }
+.structure-item > small { color:var(--muted); font-size:11px; }
+@media(max-width:800px) { .structure-panel { padding:24px 16px; max-height:none; } .structure-add { grid-template-columns:1fr; } }
+@media(max-width:480px) { .structure-item-fields { grid-template-columns:1fr; } .structure-item-heading { flex-wrap:wrap; } }
