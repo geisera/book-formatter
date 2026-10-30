@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createBook, blankChapter, validateBook, showSectionTitle, defaultShowSectionTitle } from "../lib/model";
+import { createBook, blankChapter, validateBook, showSectionTitle, defaultShowSectionTitle, getSectionLayout } from "../lib/model";
 import { changeStructure, orderedSections, sectionGroups } from "../lib/structure";
 import { backupBook, restoreBook } from "../lib/backup";
 describe("book structure editor", () => {
@@ -126,5 +126,26 @@ describe("per-section title visibility", () => {
     book = changeStructure(book,{kind:"visibility",id,showTitle:true}).book;
     book = changeStructure(book,{kind:"type",id,sectionType:"dedication"}).book;
     expect(showSectionTitle(book.chapters[0])).toBe(true);
+  });
+});
+
+describe("section page layout settings", () => {
+  it("uses publishing defaults without changing existing projects", () => {
+    const book=createBook("Book","Author");
+    expect(getSectionLayout(book.chapters[0])).toMatchObject({start:"recto",vertical:"top",header:"auto",pageNumber:"auto",spaceBefore:0});
+    const dedication=changeStructure(book,{kind:"add",title:"Dedication",sectionType:"dedication"}).book.chapters[0];
+    expect(getSectionLayout(dedication)).toMatchObject({start:"next",vertical:"center",header:"hide",pageNumber:"hide"});
+  });
+  it("saves overridden layout through reorder and backup", () => {
+    let b=createBook("Book","Author");
+    const id=b.chapters[0].id;
+    b=changeStructure(b,{kind:"layout",id,changes:{start:"verso",vertical:"bottom",header:"hide",pageNumber:"show",spaceBefore:12,spaceAfter:18}}).book;
+    b=changeStructure(b,{kind:"add",title:"End",sectionType:"about-author"}).book;
+    b=changeStructure(b,{kind:"move",id,to:0}).book;
+    const restored=restoreBook(backupBook(b));
+    expect(getSectionLayout(restored.chapters[0])).toEqual(getSectionLayout(b.chapters[0]));
+    expect(getSectionLayout(restored.chapters[0]).start).toBe("verso");
+    expect(() => validateBook({...b,chapters:[{...b.chapters[0],pageLayout:{start:"unbounded"}}]})).toThrow("Invalid section page layout");
+    expect(() => validateBook({...b,chapters:[{...b.chapters[0],pageLayout:{spaceAfter:121}}]})).toThrow("Invalid section page layout");
   });
 });
