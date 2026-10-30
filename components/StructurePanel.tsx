@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { SECTION_TYPES, sectionMatter, showSectionTitle, type Book, type SectionType } from "../lib/model";
+import { SECTION_TYPES, sectionMatter, showSectionTitle, getSectionLayout, type Book, type SectionType } from "../lib/model";
 import { orderedSections, sectionGroups, type StructureAction } from "../lib/structure";
 
 const labels: Record<SectionType, string> = {
@@ -60,6 +60,7 @@ export default function StructurePanel({
               const index = ordered.findIndex(c => c.id === section.id);
               const positionInGroup = groups[matter].findIndex(c => c.id === section.id);
               const blocks = (section.content.content as unknown[] | undefined) ?? [];
+              const layout = getSectionLayout(section);
               return <li className={selectedId === section.id ? "structure-item active" : "structure-item"}
                 key={section.id} draggable onDragStart={e => { setDragId(section.id); e.dataTransfer.effectAllowed = "move"; }}
                 onDragOver={e => e.preventDefault()} onDrop={e => {
@@ -92,6 +93,48 @@ export default function StructurePanel({
                     onChange={e => dispatch({kind:"visibility",id:section.id,showTitle:e.target.checked})} />
                   Show section title on page
                 </label>
+                <details className="structure-page-layout">
+                  <summary>Page Layout</summary>
+                  <div className="structure-layout-grid">
+                    <label>Start page
+                      <select aria-label={`Start page for ${section.title}`} value={layout.start}
+                        onChange={e=>dispatch({kind:"layout",id:section.id,changes:{start:e.target.value as typeof layout.start}})}>
+                        <option value="next">Next page</option>
+                        <option value="recto">Right-hand (recto)</option>
+                        <option value="verso">Left-hand (verso)</option>
+                      </select>
+                    </label>
+                    <label>Vertical position
+                      <select aria-label={`Vertical position for ${section.title}`} value={layout.vertical}
+                        onChange={e=>dispatch({kind:"layout",id:section.id,changes:{vertical:e.target.value as typeof layout.vertical}})}>
+                        <option value="top">Top</option><option value="center">Center</option><option value="bottom">Bottom</option>
+                      </select>
+                    </label>
+                    <label>Running header
+                      <select aria-label={`Running header for ${section.title}`} value={layout.header}
+                        onChange={e=>dispatch({kind:"layout",id:section.id,changes:{header:e.target.value as typeof layout.header}})}>
+                        <option value="auto">Automatic</option><option value="show">Show</option><option value="hide">Hide</option>
+                      </select>
+                    </label>
+                    <label>Page number
+                      <select aria-label={`Page number for ${section.title}`} value={layout.pageNumber}
+                        onChange={e=>dispatch({kind:"layout",id:section.id,changes:{pageNumber:e.target.value as typeof layout.pageNumber}})}>
+                        <option value="auto">Automatic</option><option value="show">Show</option><option value="hide">Hide</option>
+                      </select>
+                    </label>
+                    <label>Spacing before (pt)
+                      <input type="number" min="0" max="120" step="1"
+                        aria-label={`Spacing before for ${section.title}`} value={layout.spaceBefore}
+                        onChange={e=>dispatch({kind:"layout",id:section.id,changes:{spaceBefore:Number(e.target.value)}})}/>
+                    </label>
+                    <label>Spacing after (pt)
+                      <input type="number" min="0" max="120" step="1"
+                        aria-label={`Spacing after for ${section.title}`} value={layout.spaceAfter}
+                        onChange={e=>dispatch({kind:"layout",id:section.id,changes:{spaceAfter:Number(e.target.value)}})}/>
+                    </label>
+                  </div>
+                  <p>Exact page sides, vertical placement, headers and folios apply to PDF. EPUB uses compatible spacing and page breaks; reading devices control physical pages.</p>
+                </details>
                 <div className="structure-item-actions">
                   <button type="button" disabled={positionInGroup === 0} onClick={() => dispatch({kind:"move",id:section.id,to:index-1})}>↑ Up</button>
                   <button type="button" disabled={positionInGroup === groups[matter].length - 1} onClick={() => dispatch({kind:"move",id:section.id,to:index+1})}>↓ Down</button>
