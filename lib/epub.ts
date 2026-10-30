@@ -118,14 +118,14 @@ export function preflight(book: Book): ExportIssue[] {
     add(
       "warning",
       "Imported manuscript",
-      "The import report contains conversion warnings; images remain text placeholders.",
+      "The import report contains conversion warnings; some DOCX images or layouts may require review.",
       "Review the import report and compare the manuscript with the original file.",
     );
   add(
     "warning",
     "Publication proof",
     "Cover art is not available in this export version.",
-    "Review the text-only ebook in a reader before distribution.",
+    "Review the exported ebook in a reader before distribution.",
   );
   return issues;
 }
