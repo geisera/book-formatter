@@ -139,7 +139,7 @@ describe("local EPUB generation", () => {
     const b = fixture();
     const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
     b.chapters[0].content={type:"doc",content:[
-      {type:"image",attrs:{src,alt:"Blue rectangle illustration",width:50,align:"right"}},
+      {type:"image",attrs:{src,alt:"Blue rectangle illustration",width:50,align:"right",caption:"Figure 1: A & B"}},
     ]};
     expect(validateBook(b)).toBe(b);
     const files=unzipSync(buildEpub(b,fonts,options).bytes);
@@ -147,6 +147,7 @@ describe("local EPUB generation", () => {
     expect(chapter).toContain('src="images/image-0001.png"');
     expect(chapter).toContain('alt="Blue rectangle illustration"');
     expect(chapter).toContain('width:50%');
+    expect(chapter).toContain("<figcaption>Figure 1: A &amp; B</figcaption>");
     expect(files["EPUB/images/image-0001.png"].length).toBeGreaterThan(30);
     expect(strFromU8(files["EPUB/package.opf"])).toContain('href="images/image-0001.png" media-type="image/png"');
     const invalid={...b,chapters:b.chapters.map(c=>({...c,content:{type:"doc",content:[{type:"image",attrs:{src:"https://bad.example/test.png",alt:"Unsafe",width:50,align:"center"}}]}}))};
