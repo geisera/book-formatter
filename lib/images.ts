@@ -1,12 +1,12 @@
 /** Local, self-contained raster images. No remote URLs, SVG or scripts. */
 export type ImageAlign = "left" | "center" | "right";
 export type ImageWidth = 25 | 50 | 75 | 100;
-export const MAX_IMAGE_BYTES = 1_500_000;
+export const MAX_IMAGE_BYTES = 3_000_000;
 export const MAX_PROJECT_IMAGES_BYTES = 12_000_000;
 export type ImageAttrs = { src: string; alt: string; width: ImageWidth; align: ImageAlign; caption?: string };
 export function decodeImage(src: string): {bytes: Uint8Array; mediaType: "image/png" | "image/jpeg"; extension: "png" | "jpg"} {
   if (typeof src !== "string" || src.length > Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 128)
-    throw Error("Image exceeds the 1.5 MB per-image limit.");
+    throw Error("Image exceeds the 3 MB per-image limit.");
   const match = /^data:(image\/(?:png|jpeg));base64,([A-Za-z0-9+/]+={0,2})$/.exec(src);
   if (!match) throw Error("Only embedded PNG and JPEG images are supported.");
   let bytes: Uint8Array;
@@ -15,7 +15,7 @@ export function decodeImage(src: string): {bytes: Uint8Array; mediaType: "image/
     bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
   } catch { throw Error("Image data is damaged."); }
   if (!bytes.length || bytes.length > MAX_IMAGE_BYTES)
-    throw Error("Image exceeds the 1.5 MB per-image limit.");
+    throw Error("Image exceeds the 3 MB per-image limit.");
   const png = match[1] === "image/png";
   const valid = png
     ? bytes.length >= 24 && [137,80,78,71,13,10,26,10].every((b,i) => bytes[i] === b)
