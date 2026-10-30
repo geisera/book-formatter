@@ -199,16 +199,23 @@ export default function PrintPanel({
           </p>
         </div>
         <div>
-          <label>
-            Body text alignment
-            <select aria-label="Print body text alignment"
-              value={book.editions?.print?.alignment ?? "left"}
+          <label className="print-justification-toggle">
+            <input
+              type="checkbox"
+              checked={(book.editions?.print?.alignment ?? "left") === "justify"}
               disabled={busy}
-              onChange={(e) => { onAlignmentChange(e.target.value as "left" | "justify"); setResult(null); }}>
-              <option value="left">Left aligned (ragged right)</option>
-              <option value="justify">Justified — controlled word spacing</option>
-            </select>
+              onChange={(e) => {
+                onAlignmentChange(e.target.checked ? "justify" : "left");
+                setResult(null);
+              }}
+            />
+            <span>Justify body text</span>
           </label>
+          <p role="status">
+            {(book.editions?.print?.alignment ?? "left") === "justify"
+              ? "Justification on — controlled word spacing."
+              : "Justification off — left-aligned text with a ragged right edge."}
+          </p>
           <p>
             Justification caps stretched word spaces at 165% of their natural
             width. Lines that would need larger gaps remain ragged-right.
