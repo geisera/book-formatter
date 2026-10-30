@@ -1,7 +1,7 @@
 export type EbookEdition = {
   schemaVersion: 1;
   kind: "ebook";
-  template: { id: "classic"; version: 1 };
+  template: { id: "classic" | "modern" | "gothic"; version: 1 };
   bodyFont: "baskerville" | "georgia";
   fontSize: number;
   lineHeight: number;
@@ -36,7 +36,7 @@ export function validateEdition(value: unknown): EbookEdition {
     e.schemaVersion !== 1 ||
     e.kind !== "ebook" ||
     !e.template ||
-    e.template.id !== "classic" ||
+    !["classic", "modern", "gothic"].includes(e.template.id) ||
     e.template.version !== 1 ||
     !["baskerville", "georgia"].includes(e.bodyFont) ||
     !["centered", "left"].includes(e.headingStyle) ||
@@ -65,3 +65,24 @@ export function getEbookEdition(book: {
 }): EbookEdition {
   return book.editions?.ebook ?? CLASSIC_EDITION;
 }
+
+export const MODERN_EDITION: EbookEdition = Object.freeze({
+  ...CLASSIC_EDITION,
+  template: Object.freeze({ id: "modern", version: 1 }),
+  bodyFont: "georgia", fontSize: 18, lineHeight: 1.6,
+  paragraphIndent: 1.1, paragraphSpacing: 0.15,
+  headingStyle: "left", sceneOrnament: "rule", chapterSpacing: 2,
+});
+export const GOTHIC_EDITION: EbookEdition = Object.freeze({
+  ...CLASSIC_EDITION,
+  template: Object.freeze({ id: "gothic", version: 1 }),
+  fontSize: 17, lineHeight: 1.75,
+  paragraphIndent: 1.6, paragraphSpacing: 0,
+  headingStyle: "centered", sceneOrnament: "diamonds", chapterSpacing: 4.5,
+});
+export const EDITION_PRESETS = {
+  classic: CLASSIC_EDITION, modern: MODERN_EDITION, gothic: GOTHIC_EDITION,
+} as const;
+export type EditionTemplate = keyof typeof EDITION_PRESETS;
+export const presetFor = (id: EditionTemplate): EbookEdition =>
+  ({ ...EDITION_PRESETS[id], template: { ...EDITION_PRESETS[id].template } });
