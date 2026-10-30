@@ -94,7 +94,7 @@ export function preflight(book: Book): ExportIssue[] {
         "The section title is missing.",
         "Rename this section in Manuscript mode.",
       );
-    if (!schema.nodeFromJSON(chapter.content).textContent.trim())
+    if (chapter.sectionType !== "toc" && !schema.nodeFromJSON(chapter.content).textContent.trim())
       add(
         "error",
         location,
