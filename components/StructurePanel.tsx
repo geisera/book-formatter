@@ -87,6 +87,9 @@ export default function StructurePanel({
                     </select>
                   </label>
                 </div>
+                {section.sectionType === "toc" ? (
+                  <p className="structure-generated-note">Generated contents: EPUB links and PDF page numbers are built automatically from the current section order. Text typed into this section is not used in the generated contents.</p>
+                ) : null}
                 <label className="structure-title-visibility">
                   <input type="checkbox" aria-label={`Show title on page for ${section.title}`}
                     checked={showSectionTitle(section)}
