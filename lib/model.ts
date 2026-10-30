@@ -15,21 +15,27 @@ export function newId(): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 import { Schema } from "prosemirror-model";
+export const TEXT_ALIGNMENTS = ["left", "center", "right", "justify"] as const;
+export type TextAlignment = (typeof TEXT_ALIGNMENTS)[number];
+const blockAlignment = { align: { default: null } };
+const blockDomAttributes = (node: { attrs: { align?: TextAlignment | null } }) =>
+  node.attrs.align ? { style: `text-align: ${node.attrs.align}` } : {};
 export const schema = new Schema({
   nodes: {
     doc: { content: "block+" },
     paragraph: {
       group: "block",
       content: "inline*",
-      toDOM: () => ["p", 0],
-      parseDOM: [{ tag: "p" }],
+      attrs: blockAlignment,
+      toDOM: (node) => ["p", blockDomAttributes(node), 0],
+      parseDOM: [{ tag: "p", getAttrs: (dom) => ({ align: (dom as HTMLElement).style.textAlign || null }) }],
     },
     heading: {
       group: "block",
       content: "inline*",
-      attrs: { level: { default: 2 } },
-      toDOM: () => ["h2", 0],
-      parseDOM: [{ tag: "h2" }],
+      attrs: { level: { default: 2 }, ...blockAlignment },
+      toDOM: (node) => ["h2", blockDomAttributes(node), 0],
+      parseDOM: [{ tag: "h2", getAttrs: (dom) => ({ align: (dom as HTMLElement).style.textAlign || null }) }],
     },
     scene_break: {
       group: "block",
@@ -162,7 +168,13 @@ export function validateBook(value: unknown): Book {
     )
       throw Error("Invalid chapter structure.");
     ids.add(c.id);
-    schema.nodeFromJSON(c.content).check();
+    const manuscript = schema.nodeFromJSON(c.content);
+    manuscript.check();
+    manuscript.descendants(node => {
+      if ((node.type.name === "paragraph" || node.type.name === "heading") &&
+          node.attrs.align !== null && !TEXT_ALIGNMENTS.includes(node.attrs.align))
+        throw Error("Unsupported text alignment.");
+    });
   }
   return b;
 }
