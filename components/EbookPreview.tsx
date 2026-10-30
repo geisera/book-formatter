@@ -38,7 +38,13 @@ const ChapterContent = memo(function ChapterContent({
   const blocks: ReactNode[] = [];
   let opening = true;
   doc.forEach((node, _, index) => {
-    if (node.type.name === "scene_break") {
+    if (node.type.name === "image") {
+      blocks.push(<figure key={index} className={`ebook-illustration align-${node.attrs.align}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={node.attrs.src} alt={node.attrs.alt} style={{width:`${node.attrs.width}%`,maxWidth:"100%",height:"auto"}} />
+      </figure>);
+      opening = true;
+    } else if (node.type.name === "scene_break") {
       blocks.push(
         <div
           key={index}
