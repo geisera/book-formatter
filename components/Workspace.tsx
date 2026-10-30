@@ -7,6 +7,7 @@ import EbookPreview from "./EbookPreview";
 import PublishPanel from "./PublishPanel";
 import PrintPanel from "./PrintPanel";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
+import { CLASSIC_PRINT } from "../lib/print-profile";
 import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
@@ -243,7 +244,7 @@ export default function Workspace() {
   }
   function changePrintAlignment(alignment: "left" | "justify") {
     const b = current.current;
-    if (b) edit({ ...b, editions: { ...b.editions, ebook: getEbookEdition(b), print: { ...b.editions?.print ?? { schemaVersion: 1, kind: "paperback", template: { id: "classic", version: 1 }, trim: "6x9", font: "baskerville", fontSize: 11, leading: 15.5, inside: 54, outside: 40.5, top: 54, bottom: 54, rectoChapters: true }, alignment } } });
+    if (b) edit({ ...b, editions: { ...b.editions, ebook: getEbookEdition(b), print: { ...(b.editions?.print ?? CLASSIC_PRINT), alignment } } });
   }
   function changeEdition(edition: EbookEdition) {
     const b = current.current;
