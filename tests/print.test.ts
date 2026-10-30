@@ -106,6 +106,35 @@ describe("offline print proof", () => {
     expect(page?.minX).toBeGreaterThanOrEqual(page!.left);
     expect(page?.maxX).toBeLessThanOrEqual(page!.right);
   }, 20000);
+  it("honors section parity and per-section header and folio visibility", async () => {
+    const b = fixture();
+    const first = b.chapters[0];
+    first.pageLayout = {start:"verso",vertical:"center",header:"hide",pageNumber:"hide",spaceBefore:8,spaceAfter:8};
+    const second = b.chapters[1];
+    second.pageLayout = {start:"recto",header:"show",pageNumber:"show"};
+    const result = await buildPrintPdf(b,fonts,options);
+    const firstPages=result.record.pages.filter(p=>p.chapterId===first.id && p.kind!=="blank");
+    const secondPages=result.record.pages.filter(p=>p.chapterId===second.id && p.kind!=="blank");
+    expect(firstPages[0].page % 2).toBe(0);
+    expect(firstPages.every(p=>p.header===undefined && p.footer===undefined)).toBe(true);
+    expect(secondPages[0].page % 2).toBe(1);
+    expect(secondPages[0].header).toBeDefined();
+    expect(secondPages[0].footer).toBe(String(secondPages[0].page));
+    expect(result.record.checks.overflow).toBe(0);
+  },20000);
+  it("vertically offsets short dedication without losing body text", async () => {
+    const b=fixture();
+    b.chapters[0].showTitle=false;
+    b.chapters[0].content={type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"For the readers."}]}]};
+    b.chapters[0].pageLayout={vertical:"bottom",pageNumber:"hide",header:"hide",start:"next"};
+    const lower=await buildPrintPdf(b,fonts,options);
+    const low=lower.record.pages.find(p=>p.chapterId===b.chapters[0].id && p.kind==="chapter")!;
+    b.chapters[0].pageLayout={...b.chapters[0].pageLayout,vertical:"top"};
+    const upper=await buildPrintPdf(b,fonts,options);
+    const high=upper.record.pages.find(p=>p.chapterId===b.chapters[0].id && p.kind==="chapter")!;
+    expect(low.minY).toBeLessThan(high.minY);
+    expect(low.lineCount).toBe(high.lineCount);
+  },20000);
   it("blocks unsupported glyphs and prevents silently replacing manuscript characters", async () => {
     const b = fixture();
     b.chapters[0].content = {
