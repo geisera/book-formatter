@@ -21,11 +21,12 @@ export default function DesignPanel({
       aria-label="Ebook design settings"
       hidden={hidden}
     >
-      <div className="eyebrow">EBOOK EDITION</div>
+      <div className="eyebrow">BOOK DESIGN · EPUB + PDF</div>
       <h2>Make it yours.</h2>
       <p className="design-intro">
-        A considered setting for every page. Your manuscript stays exactly as
-        you wrote it.
+        Choose one template for ebook and print. The typography controls below
+        customize the ebook edition; print uses its own page geometry and justification.
+        Your manuscript is unchanged.
       </p>
       <div className="template-options" role="group" aria-label="Book design template">
         {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
@@ -176,8 +177,9 @@ export default function DesignPanel({
         Reset selected template settings
       </button>
       <p className="control-note">
-        Design settings save locally with this book and are included in its
-        backup. Reading apps may apply their own font preferences.
+        The selected template applies to both EPUB and PDF. Ebook typography
+        settings save locally with the book; PDF-specific settings remain
+        independent. Reading apps may override ebook fonts.
       </p>
     </section>
   );
