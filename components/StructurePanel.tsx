@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { SECTION_TYPES, sectionMatter, type Book, type SectionType } from "../lib/model";
-import { sectionGroups, type StructureAction } from "../lib/structure";
+import { orderedSections, sectionGroups, type StructureAction } from "../lib/structure";
 
 const labels: Record<SectionType, string> = {
   chapter: "Chapter", prologue: "Prologue", epilogue: "Epilogue", interlude: "Interlude",
@@ -23,6 +23,7 @@ export default function StructurePanel({
   const [error, setError] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
   const groups = sectionGroups(book);
+  const ordered = orderedSections(book);
   const dispatch = (action: StructureAction) => {
     try { onAction(action); setError(""); } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to change structure.");
@@ -56,7 +57,8 @@ export default function StructurePanel({
           {groups[matter].length === 0 ? <p className="muted">No sections yet.</p> : null}
           <ol>
             {groups[matter].map(section => {
-              const index = book.chapters.findIndex(c => c.id === section.id);
+              const index = ordered.findIndex(c => c.id === section.id);
+              const positionInGroup = groups[matter].findIndex(c => c.id === section.id);
               const blocks = (section.content.content as unknown[] | undefined) ?? [];
               return <li className={selectedId === section.id ? "structure-item active" : "structure-item"}
                 key={section.id} draggable onDragStart={e => { setDragId(section.id); e.dataTransfer.effectAllowed = "move"; }}
@@ -85,14 +87,14 @@ export default function StructurePanel({
                   </label>
                 </div>
                 <div className="structure-item-actions">
-                  <button type="button" disabled={index === 0} onClick={() => dispatch({kind:"move",id:section.id,to:index-1})}>↑ Up</button>
-                  <button type="button" disabled={index === book.chapters.length-1} onClick={() => dispatch({kind:"move",id:section.id,to:index+1})}>↓ Down</button>
+                  <button type="button" disabled={positionInGroup === 0} onClick={() => dispatch({kind:"move",id:section.id,to:index-1})}>↑ Up</button>
+                  <button type="button" disabled={positionInGroup === groups[matter].length - 1} onClick={() => dispatch({kind:"move",id:section.id,to:index+1})}>↓ Down</button>
                   <button type="button" onClick={() => dispatch({kind:"add",sectionType:section.sectionType ?? "chapter",title:"New section",after:section.id})}>+ After</button>
                   <button type="button" disabled={blocks.length < 2} onClick={() => {
                     const answer = window.prompt(`Split after which paragraph/block? (1–${blocks.length-1})`, String(Math.floor(blocks.length/2)));
                     if (answer !== null) dispatch({kind:"split",id:section.id,blockIndex:Number(answer),title:`${section.title} (continued)`});
                   }}>Split…</button>
-                  <button type="button" disabled={index === book.chapters.length-1} onClick={() => {
+                  <button type="button" disabled={index === ordered.length-1} onClick={() => {
                     if (window.confirm("Merge this section with the next? The next section title will be removed.")) dispatch({kind:"merge",id:section.id});
                   }}>Merge next</button>
                   <button type="button" disabled={book.chapters.length === 1} onClick={() => {
@@ -105,7 +107,7 @@ export default function StructurePanel({
           </ol>
         </div>
       ))}
-      <p className="control-note">Section IDs remain stable when renamed or reordered. Drag rows or use the Up/Down buttons. Splitting occurs between text blocks, not within a paragraph. The EPUB navigation follows the book order.</p>
+      <p className="control-note">Sections are numbered continuously from Front Matter through Body Matter to Back Matter. Drag within a group or use Up/Down; to change groups, change the section type. Section IDs remain stable when renamed or reordered. Splitting occurs between text blocks, not within a paragraph. The EPUB navigation follows the book order.</p>
     </section>
   );
 }
