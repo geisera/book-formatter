@@ -1,4 +1,4 @@
-import { decodeImage, MAX_PROJECT_IMAGES_BYTES } from "./images";
+import { decodeImage, MAX_IMAGE_BYTES, MAX_PROJECT_IMAGES_BYTES } from "./images";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import rehypeParse from "rehype-parse";
@@ -71,7 +71,7 @@ function fromAst(
       return {type:"image", attrs:{src,alt,width:100,align:"center",caption:""}};
     } catch(error) {
       if (error instanceof Error && error.message.includes("12 MB project limit")) throw error;
-      diagnostic(diagnostics, "An embedded image could not be imported (unsupported or over 1.5 MB); a placeholder was retained.");
+      diagnostic(diagnostics, "An embedded image could not be imported (unsupported or over 3 MB); a placeholder was retained.");
       return null;
     }
   }
@@ -443,8 +443,8 @@ export async function importBytes(
             return {src:""};
           }
           const base64 = await image.read("base64");
-          if (base64.length > 2_000_000) {
-            diagnostic(diagnostics, "DOCX images larger than 1.5 MB were kept as placeholders.");
+          if (base64.length > Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 4) {
+            diagnostic(diagnostics, "DOCX images larger than 3 MB were kept as placeholders.");
             return {src:""};
           }
           return {src:`data:${image.contentType};base64,${base64}`};
