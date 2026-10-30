@@ -1702,3 +1702,23 @@ aside h2 {
 .ebook-page.template-modern .ebook-opening-rule { width:40px; }
 .ebook-page.template-gothic .ebook-chapter-header h2 { font-size:1.9em; letter-spacing:.09em; text-transform:uppercase; }
 .ebook-page.template-gothic .ebook-scene { letter-spacing:.28em; margin:2em auto; }
+
+/* Explicit print justification on/off control. */
+.print-justification-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.print-justification-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+.print-justification-toggle input:disabled { cursor: not-allowed; }
