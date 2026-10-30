@@ -58,7 +58,11 @@ function fromAst(
   function imageBlock(node: Ast): ImportBlock | null {
     if (!html || node.tagName !== "img") return null;
     const src = node.properties?.src;
-    if (typeof src !== "string" || !src.startsWith("data:image/")) return null;
+    if (typeof src !== "string" || !src.startsWith("data:image/")) {
+      if (html) diagnostic(diagnostics,
+        "An image has no embedded PNG/JPEG data. It may be linked, unsupported, or omitted by Word conversion; check the original DOCX.");
+      return null;
+    }
     try {
       const decoded = decodeImage(src);
       importedImageBytes += src.length;
@@ -71,7 +75,7 @@ function fromAst(
       return {type:"image", attrs:{src,alt,width:100,align:"center",caption:""}};
     } catch(error) {
       if (error instanceof Error && error.message.includes("12 MB project limit")) throw error;
-      diagnostic(diagnostics, "An embedded image could not be imported (unsupported or over 3 MB); a placeholder was retained.");
+      diagnostic(diagnostics, `Embedded image rejected: ${error instanceof Error ? error.message : "invalid image data"}. A text placeholder was retained.`);
       return null;
     }
   }
@@ -462,12 +466,12 @@ export async function importBytes(
         includeEmbeddedStyleMap: false,
         convertImage: mammoth.images.imgElement(async (image) => {
           if (!["image/png","image/jpeg"].includes(image.contentType)) {
-            diagnostic(diagnostics, "Unsupported DOCX image types were kept as text placeholders.");
+            diagnostic(diagnostics, `Unsupported DOCX image type ${image.contentType || "(unspecified)"}. Only embedded PNG and JPEG are supported; the image was replaced with a placeholder.`);
             return {src:""};
           }
           const base64 = await image.read("base64");
           if (base64.length > Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 4) {
-            diagnostic(diagnostics, "DOCX images larger than 3 MB were kept as placeholders.");
+            diagnostic(diagnostics, `DOCX image exceeds 3 MB (base64 data is ${base64.length.toLocaleString()} characters). The image was replaced with a placeholder.`);
             return {src:""};
           }
           return {src:`data:${image.contentType};base64,${base64}`};
@@ -480,7 +484,15 @@ export async function importBytes(
       );
     for (const message of result.messages)
       diagnostic(diagnostics, message.message);
-    return parseConvertedHtml(result.value, filename, diagnostics);
+    const converted = parseConvertedHtml(result.value, filename, diagnostics);
+    const embedded = converted.blocks.filter(b => b.type === "image").length;
+    const placeholders = converted.blocks.reduce((total,b) =>
+      total + (blockText(b).match(/\\[Image: /g)?.length ?? 0), 0);
+    if (embedded || placeholders)
+      diagnostic(converted.diagnostics,
+        `Image import summary: ${embedded} embedded; ${placeholders} placeholders. Inspect the warnings above for conversion limitations.`,
+        "info");
+    return converted;
   }
   if (!["txt", "md", "markdown"].includes(ext ?? ""))
     throw Error("Choose a .docx, .md, .markdown or .txt file.");
