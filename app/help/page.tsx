@@ -108,12 +108,13 @@ export default function HelpPage() {
             <h2>Build and inspect a paperback PDF proof</h2>
             <ol>
               <li>Open <strong>Print</strong> or choose <strong>Print PDF proof</strong> in the sidebar.</li>
+              <li>Select <strong>Print template</strong>: Classic, Modern, or Gothic. This selection is independent of your ebook design and is saved locally with the project.</li>
               <li>Choose whether to check <strong>Justify body text</strong>. Unchecked gives a ragged right edge; checked enables controlled justification.</li>
               <li>Select <strong>Build 6 × 9 PDF proof</strong>. The local worker generates a text-only paperback interior.</li>
               <li>Inspect the resulting pages: use the <strong>Page</strong> number, <strong>Facing pages / Single page</strong> view, <strong>Zoom</strong>, and previous/next controls.</li>
-              <li>Choose <strong>Download PDF proof</strong> to save the same PDF bytes shown in the preview. Rebuild after changing the book or justification setting.</li>
+              <li>Choose <strong>Download PDF proof</strong> to save the same PDF bytes shown in the preview. Rebuild after changing the book, print template, or justification setting.</li>
             </ol>
-            <p>The current fixed Classic profile uses <strong>6 × 9 inches</strong>, Libre Baskerville 11 pt, 15.5 pt leading, mirrored gutters, page numbers, and right-hand chapter openings. Print settings are independent of ebook design.</p>
+            <p>The available versioned print profiles are <strong>Classic</strong> (centered chapter titles, asterisk scene breaks, traditional headers), <strong>Modern</strong> (left-aligned chapter headings, fine scene rules, minimal headers), and <strong>Gothic</strong> (dramatic centered chapter openings, diamond ornaments, chapter running headers). All use a <strong>6 × 9-inch</strong> no-bleed interior, embedded Libre Baskerville fonts, mirrored gutters, page numbers, and right-hand chapter openings. The templates have independent line-spacing settings; print selection does not change ebook design.</p>
             <p>When justification is on, expanded spaces are capped at 165% of natural word-space width. Lines requiring bigger gaps remain ragged-right; the last paragraph line is not stretched. This reduces conspicuous gaps but does not implement automatic hyphenation.</p>
             <p><strong>This is a feasibility proof, not a certified retailer-ready interior.</strong> Automatic hyphenation, inline illustrations, complex-script shaping, covers, and PDF/X are not supported. Inspect the final PDF and physical print proofs before submitting to a retailer.</p>
             <p>The local <strong>Print history</strong> stores recent build metadata and checksums, not the PDF files themselves.</p>
