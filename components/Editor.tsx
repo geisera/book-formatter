@@ -1,5 +1,5 @@
-import { decodeImage, MAX_IMAGE_BYTES, type ImageAlign, type ImageWidth } from "../lib/images";
 "use client";
+import { decodeImage, MAX_IMAGE_BYTES, type ImageAlign, type ImageWidth } from "../lib/images";
 import {useEffect,useRef,useState} from "react";
 import {EditorState,NodeSelection} from "prosemirror-state";
 import {EditorView} from "prosemirror-view";
