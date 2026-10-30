@@ -13,7 +13,7 @@ import {
   splitChapters,
   suggestedSplit,
 } from "../lib/import-model";
-import { schema } from "../lib/model";
+import { schema, createBook } from "../lib/model";
 import { db, saveImportedBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 import { docxFixture } from "./fixtures";
@@ -154,4 +154,18 @@ describe("semantic manuscript import", () => {
         .split(/\s+/),
     ).toHaveLength(80_000);
   });
+});
+
+it("does not generate a backup larger than the restore expansion limit", () => {
+  const book = createBook("Large", "");
+  book.chapters[0].content = {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text: "x".repeat(50_000_001) }],
+      },
+    ],
+  };
+  expect(() => backupBook(book)).toThrow("expanded backup limit");
 });

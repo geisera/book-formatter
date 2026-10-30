@@ -28,6 +28,13 @@ export function backupBook(book: Book, source?: SourceFile): Uint8Array {
       JSON.stringify({ filename: source.filename, format: source.format }),
     );
   }
+  if (
+    Object.values(files).reduce((total, file) => total + file.length, 0) >
+    50_000_000
+  )
+    throw Error(
+      "This project exceeds the 50 MB expanded backup limit. A restorable backup could not be created.",
+    );
   const bytes = zipSync(files);
   if (bytes.length > 20_000_000)
     throw Error(
