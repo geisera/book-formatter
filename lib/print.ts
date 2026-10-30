@@ -1,6 +1,6 @@
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import { schema, validateBook, showSectionTitle, type TextAlignment, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, getSectionLayout, type SectionPageLayout, type TextAlignment, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
@@ -102,6 +102,7 @@ export async function buildPrintPdf(
     chapterId = "",
     chapterTitle = "",
     splitViolations = 0;
+  let activeLayout: SectionPageLayout = getSectionLayout(book.chapters[0]);
   const widths = new Map<string, number>();
   function measure(text: string, face: Face, fontSize: number): number {
     const key = `${face}/${fontSize}/${text}`;
@@ -218,7 +219,7 @@ export async function buildPrintPdf(
     proof.lineCount++;
   }
   function slots() {
-    return Math.max(0, Math.floor((y - bottom) / leading) + 1);
+    return Math.max(0, Math.floor((y - bottom - activeLayout.spaceAfter) / leading) + 1);
   }
   function bodyPage() {
     newPage("body");
@@ -354,11 +355,26 @@ export async function buildPrintPdf(
   for (const chapter of book.chapters) {
     chapterId = chapter.id;
     chapterTitle = chapter.title;
-    if ((pages.length + 1) % 2 === 0) newPage("blank");
+    activeLayout = getSectionLayout(chapter);
+    if (activeLayout.start !== "next" && (pages.length + 1) % 2 !== (activeLayout.start === "recto" ? 1 : 0)) newPage("blank");
     newPage("chapter");
     const template = profile.template.id;
     const headingSize = template === "gothic" ? 19 : template === "modern" ? 17 : 18;
-    y = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
+    const topBaseline = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
+    // Estimate short-section height before drawing; on multi-page sections top alignment is safer.
+    // Use conservative line counts and reserve some headroom to avoid orphaned layout.
+    const doc = schema.nodeFromJSON(chapter.content);
+    let estimated = showSectionTitle(chapter) ? 110 : 0;
+    doc.forEach(node => {
+      if (node.type.name === "scene_break") estimated += leading * 4;
+      else if (node.type.name === "heading") estimated += wrap(units(node), 0, 13).length * 19 + 30;
+      else if (node.textContent.trim()) estimated += Math.max(1, wrap(units(node), 14).length + 1) * leading;
+    });
+    const room = Math.max(0, topBaseline - bottom - activeLayout.spaceBefore - activeLayout.spaceAfter - estimated - 28);
+    const offset = estimated < topBaseline - bottom - 28
+      ? activeLayout.vertical === "center" ? room / 2 : activeLayout.vertical === "bottom" ? room : 0
+      : 0;
+    y = topBaseline - activeLayout.spaceBefore - offset;
     if (showSectionTitle(chapter)) {
       const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
       const heading = textLines(headingText, headingSize, "bold");
@@ -376,12 +392,9 @@ export async function buildPrintPdf(
         centered(heading, headingSize, template === "gothic" ? 30 : 25);
         y -= template === "gothic" ? 36 : 25;
       }
-      } else {
-      // Retain the section opening and text; only its printed heading is suppressed.
-      y = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
     }
     let opening = true;
-    schema.nodeFromJSON(chapter.content).forEach((node) => {
+    doc.forEach((node) => {
       if (node.type.name === "scene_break") {
         if (slots() < 5) bodyPage();
         y -= leading;
@@ -472,6 +485,13 @@ export async function buildPrintPdf(
     proof = pages[i];
     page = pdf.getPage(i);
     if (proof.kind === "blank" || proof.kind === "title") continue;
+    const section = book.chapters.find(c => c.id === proof.chapterId);
+    const settings = section ? getSectionLayout(section) : activeLayout;
+    const numbered = settings.pageNumber === "show" ||
+      (settings.pageNumber === "auto" && section?.sectionType !== "copyright" && section?.sectionType !== "dedication" &&
+       section?.sectionType !== "epigraph" && section?.sectionType !== "preface" && section?.sectionType !== "title" &&
+       section?.sectionType !== "half-title" && section?.sectionType !== "toc");
+    if (numbered) {
     const number = String(i + 1);
     const numberWidth = measure(number, "regular", 9);
     draw(
@@ -483,7 +503,9 @@ export async function buildPrintPdf(
       false,
     );
     proof.footer = number;
-    if (proof.kind === "body") {
+    }
+    if (settings.header !== "hide" && (settings.header === "show" || proof.kind === "body") &&
+        (settings.header === "show" || !section || getSectionLayout(section).header === "auto")) {
       let header = profile.template.id === "modern"
         ? (proof.page % 2 ? book.title : "")
         : profile.template.id === "gothic"
