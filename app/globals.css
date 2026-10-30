@@ -1830,3 +1830,7 @@ aside h2 {
 .toolbar-image-controls label { display:inline-flex; gap:5px; align-items:center; font-size:11px; }
 .toolbar-image-controls select { font-size:12px; padding:4px; max-width:110px; }
 .image-error { color:#9b3030; font-size:12px; padding:8px 12px; }
+
+/* Captions travel with their illustrations in editor and reader. */
+.ProseMirror figure.manuscript-image figcaption,.ebook-illustration figcaption { font-size:.83em; font-style:italic; line-height:1.5; text-align:center; margin:.45em auto 0; color:var(--muted); max-width:100%; }
+.ebook-illustration {break-inside:avoid;page-break-inside:avoid}
