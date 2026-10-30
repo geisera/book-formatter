@@ -92,6 +92,20 @@ describe("offline print proof", () => {
     book.chapters[0].showTitle = true;
     await expect(buildPrintPdf(book, fonts, options)).rejects.toThrow("chapter title is too long");
   }, 20000);
+  it("renders centered and right-aligned text inside print margins", async () => {
+    const book = fixture();
+    book.chapters[0].content = {type:"doc",content:[
+      {type:"paragraph",attrs:{align:"center"},content:[{type:"text",text:"A centered dedication"}]},
+      {type:"paragraph",attrs:{align:"right"},content:[{type:"text",text:"An author's signature"}]},
+      {type:"paragraph",attrs:{align:"left"},content:[{type:"text",text:"Ordinary left-aligned text"}]},
+    ]};
+    const built = await buildPrintPdf(book, fonts, options);
+    expect(built.record.checks.overflow).toBe(0);
+    const page = built.record.pages.find(p => p.chapterId === book.chapters[0].id && p.kind === "chapter");
+    expect(page?.lineCount).toBeGreaterThan(3);
+    expect(page?.minX).toBeGreaterThanOrEqual(page!.left);
+    expect(page?.maxX).toBeLessThanOrEqual(page!.right);
+  }, 20000);
   it("blocks unsupported glyphs and prevents silently replacing manuscript characters", async () => {
     const b = fixture();
     b.chapters[0].content = {
