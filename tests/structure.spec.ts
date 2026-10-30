@@ -21,6 +21,10 @@ test("organizes and persists sections locally, including reordered export order"
   await page.locator(".structure-item").filter({ hasText: "Before the story" })
     .getByLabel("Type of Before the story").selectOption("preface");
   await expect(items).toHaveText(["1. To my readers", "2. Before the story", "3. Chapter One"]);
+  const titleToggle = page.getByRole("checkbox", { name: "Show title on page for Before the story" });
+  await expect(titleToggle).toBeChecked();
+  await titleToggle.uncheck();
+  await expect(titleToggle).not.toBeChecked();
   await page.locator(".structure-item").filter({ hasText: "Before the story" })
     .getByRole("button", { name: "↑ Up" }).click();
   await expect(items).toHaveText(["1. Before the story", "2. To my readers", "3. Chapter One"]);
@@ -33,4 +37,5 @@ test("organizes and persists sections locally, including reordered export order"
   await page.getByRole("button", { name: /Structure test/ }).click();
   await page.getByRole("button", { name: "Structure", exact: true }).click();
   await expect(page.locator(".structure-item-heading strong")).toHaveText(["1. Before the story", "2. To my readers", "3. Chapter One"]);
+  await expect(page.getByRole("checkbox", { name: "Show title on page for Before the story" })).not.toBeChecked();
 });
