@@ -83,6 +83,15 @@ describe("offline print proof", () => {
       }),
     ).toThrow("Unsupported print profile");
   });
+  it("omits the heading when disabled without losing PDF body content", async () => {
+    const book = fixture();
+    book.chapters[0].title = "A very long section heading ".repeat(65);
+    book.chapters[0].showTitle = false;
+    const hidden = await buildPrintPdf(book, fonts, options);
+    expect(hidden.record.pages.some(p => p.chapterId === book.chapters[0].id && p.kind === "chapter" && p.lineCount > 0)).toBe(true);
+    book.chapters[0].showTitle = true;
+    await expect(buildPrintPdf(book, fonts, options)).rejects.toThrow("chapter title is too long");
+  }, 20000);
   it("blocks unsupported glyphs and prevents silently replacing manuscript characters", async () => {
     const b = fixture();
     b.chapters[0].content = {
