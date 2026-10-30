@@ -97,6 +97,19 @@ describe("local EPUB generation", () => {
     expect(strFromU8(unzipSync(buildEpub(b, fonts, options).bytes)["EPUB/chapter-0001.xhtml"]))
       .toContain('<h1 id="chapter-title">Chapter One</h1>');
   });
+  it("preserves centered and right-aligned paragraphs through EPUB export", () => {
+    const b = fixture();
+    b.chapters[0].content = { type:"doc", content:[
+      {type:"paragraph",attrs:{align:"center"},content:[{type:"text",text:"Centered dedication"}]},
+      {type:"paragraph",attrs:{align:"right"},content:[{type:"text",text:"Signed by the author"}]},
+    ]};
+    const files = unzipSync(buildEpub(b, fonts, options).bytes);
+    const chapter = strFromU8(files["EPUB/chapter-0001.xhtml"]);
+    expect(chapter).toContain('class="opening align-center"');
+    expect(chapter).toContain('class="align-right"');
+    expect(chapter).toContain("Centered dedication");
+    expect(strFromU8(files["EPUB/style.css"])).toContain(".align-center{text-align:center");
+  });
   it("supports system fonts without bundling unlicensed system binaries", () => {
     const b = fixture();
     b.editions = {
