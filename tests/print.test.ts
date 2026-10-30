@@ -135,6 +135,24 @@ describe("offline print proof", () => {
     expect(low.minY).toBeLessThan(high.minY);
     expect(low.lineCount).toBe(high.lineCount);
   },20000);
+  it("generates a PDF table of contents with front roman and body Arabic folios", async () => {
+    const b = fixture();
+    const toc = { ...blankChapter("Contents"), sectionType: "toc" as const };
+    const preface = { ...blankChapter("Preface"), sectionType: "preface" as const,
+      content: { type:"doc", content:[{type:"paragraph", content:[{type:"text",text:"A few words before we begin."}]}]} };
+    b.chapters = [preface, toc, ...b.chapters];
+    const built = await buildPrintPdf(b, fonts, options);
+    const tocPage = built.record.pages.find(p => p.chapterId === toc.id && p.kind === "chapter");
+    const first = built.record.pages.find(p => p.chapterId === b.chapters[2].id && p.kind === "chapter");
+    expect(tocPage).toBeDefined();
+    expect(tocPage?.lineCount).toBeGreaterThanOrEqual(3);
+    expect(tocPage?.footer).toMatch(/^[ivxlcdm]+$/);
+    expect(first?.footer).toBe("1");
+    expect(first?.page).toBeGreaterThan(tocPage!.page);
+    const pdf = await PDFDocument.load(built.bytes);
+    expect(pdf.getPageCount()).toBe(built.record.pageCount);
+    expect(built.record.checks.overflow).toBe(0);
+  }, 20000);
   it("blocks unsupported glyphs and prevents silently replacing manuscript characters", async () => {
     const b = fixture();
     b.chapters[0].content = {
