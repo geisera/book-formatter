@@ -11,6 +11,7 @@ export type PrintEdition = {
   top: 54;
   bottom: 54;
   rectoChapters: true;
+  alignment?: "left" | "justify";
 };
 export const CLASSIC_PRINT: PrintEdition = Object.freeze({
   schemaVersion: 1,
@@ -25,6 +26,7 @@ export const CLASSIC_PRINT: PrintEdition = Object.freeze({
   top: 54,
   bottom: 54,
   rectoChapters: true,
+  alignment: "left",
 });
 export function validatePrintEdition(value: unknown): PrintEdition {
   if (!value || typeof value !== "object")
@@ -47,6 +49,8 @@ export function validatePrintEdition(value: unknown): PrintEdition {
       throw Error(
         "Unsupported print profile. This proof supports Classic 6 × 9 only.",
       );
+  if (p.alignment !== undefined && !["left", "justify"].includes(p.alignment))
+    throw Error("Unsupported print alignment.");
   if (!p.template || p.template.id !== "classic" || p.template.version !== 1)
     throw Error("Unsupported print template.");
   return p;
