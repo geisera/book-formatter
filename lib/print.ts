@@ -1,4 +1,5 @@
-import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage } from "pdf-lib";
+import { decodeImage, embeddedImages } from "./images";
+import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage, type PDFImage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter, type SectionPageLayout, type TextAlignment, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
@@ -80,6 +81,12 @@ export async function buildPrintPdf(
   const glyphs = Object.fromEntries(
     Object.entries(fonts).map(([k, v]) => [k, new Set(v.getCharacterSet())]),
   ) as Record<Face, Set<number>>;
+  const embedded = new Map<string,PDFImage>();
+  for (const section of book.chapters) for (const image of embeddedImages(section.content)) {
+    if (embedded.has(image.src)) continue;
+    const source = decodeImage(image.src);
+    embedded.set(image.src, source.mediaType === "image/png" ? await pdf.embedPng(source.bytes) : await pdf.embedJpg(source.bytes));
+  }
   const WIDTH = 432,
     HEIGHT = 648,
     contentWidth = WIDTH - profile.inside - profile.outside,
@@ -89,7 +96,7 @@ export async function buildPrintPdf(
   const pages: PageProof[] = [],
     warnings = new Set<string>([
       "Feasibility proof only: reader/retailer approval and a physical print proof are still required.",
-      "Automatic hyphenation, images and complex-script shaping are not supported.",
+      "Automatic hyphenation and complex-script shaping are not supported.",
       ...(profile.alignment === "justify" ? ["Justification uses capped word-space expansion; lines requiring excessive gaps remain ragged-right."] : []),
     ]);
   if (book.importInfo?.diagnostics.some((d) => d.severity === "warning"))
@@ -377,7 +384,10 @@ export async function buildPrintPdf(
     const doc = schema.nodeFromJSON(chapter.content);
     let estimated = showSectionTitle(chapter) ? 110 : 0;
     doc.forEach(node => {
-      if (node.type.name === "scene_break") estimated += leading * 4;
+      if (node.type.name === "image") {
+        const asset = embedded.get(node.attrs.src)!;
+        estimated += Math.min(350, contentWidth * node.attrs.width / 100 * asset.height / asset.width) + 22;
+      } else if (node.type.name === "scene_break") estimated += leading * 4;
       else if (node.type.name === "heading") estimated += wrap(units(node), 0, 13).length * 19 + 30;
       else if (node.textContent.trim()) estimated += Math.max(1, wrap(units(node), 14).length + 1) * leading;
     });
@@ -406,6 +416,28 @@ export async function buildPrintPdf(
     }
     let opening = true;
     doc.forEach((node) => {
+      if (node.type.name === "image") {
+        const asset = embedded.get(node.attrs.src);
+        if (!asset) throw Error("Embedded print image could not be loaded.");
+        const maxWidth = contentWidth * node.attrs.width / 100;
+        const maxHeight = HEIGHT - profile.top - profile.bottom - 120;
+        const scale = Math.min(maxWidth / asset.width, maxHeight / asset.height);
+        const width = asset.width * scale, height = asset.height * scale;
+        if (y - height - 12 < bottom + activeLayout.spaceAfter) bodyPage();
+        const x = node.attrs.align === "left" ? proof.left
+          : node.attrs.align === "right" ? proof.right - width
+          : proof.left + (contentWidth - width) / 2;
+        const imgY = y - height;
+        page.drawImage(asset,{x,y:imgY,width,height});
+        proof.minX = Math.min(proof.minX,x);
+        proof.maxX = Math.max(proof.maxX,x+width);
+        proof.minY = Math.min(proof.minY,imgY);
+        proof.maxY = Math.max(proof.maxY,y);
+        proof.lineCount++;
+        y = imgY - leading * 1.5;
+        opening = true;
+        return;
+      }
       if (node.type.name === "scene_break") {
         if (slots() < 5) bodyPage();
         y -= leading;
