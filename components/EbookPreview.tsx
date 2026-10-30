@@ -58,14 +58,14 @@ const ChapterContent = memo(function ChapterContent({
       opening = true;
     } else if (node.type.name === "heading") {
       blocks.push(
-        <h3 key={index} className="ebook-subheading">
+        <h3 key={index} className={`ebook-subheading${node.attrs.align ? ` align-${node.attrs.align}` : ""}`}>
           {inlineContent(node)}
         </h3>,
       );
       opening = true;
     } else {
       blocks.push(
-        <p key={index} className={opening ? "opening-paragraph" : undefined}>
+        <p key={index} className={[opening ? "opening-paragraph" : "", node.attrs.align ? `align-${node.attrs.align}` : ""].filter(Boolean).join(" ") || undefined}>
           {inlineContent(node)}
         </p>,
       );
