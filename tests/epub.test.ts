@@ -120,6 +120,21 @@ describe("local EPUB generation", () => {
     expect(chapter).toContain('padding-top:2em;padding-bottom:1em');
     expect(strFromU8(files["EPUB/nav.xhtml"])).toContain(">Chapter One</a>");
   });
+  it("generates a linked TOC from reordered book sections without typed contents text", () => {
+    const b = fixture();
+    const toc = { ...b.chapters[0], id: "toc-1", title: "Contents", sectionType: "toc" as const, content: { type: "doc", content: [{ type: "paragraph" }] } };
+    const extra = { ...b.chapters[0], id: "chapter-2", title: "Afterward & Beyond", sectionType: "epilogue" as const };
+    b.chapters = [toc, extra, b.chapters[0]];
+    const bytes = buildEpub(b, fonts, options).bytes;
+    const files = unzipSync(bytes);
+    const generated = strFromU8(files["EPUB/chapter-0001.xhtml"]);
+    expect(generated).toContain('epub:type="toc"');
+    expect(generated).toContain('href="chapter-0002.xhtml"');
+    expect(generated).toContain('Afterward &amp; Beyond');
+    expect(generated).toContain('href="chapter-0003.xhtml"');
+    expect(generated).not.toContain('href="chapter-0001.xhtml"');
+    expect(strFromU8(files["EPUB/nav.xhtml"])).toContain('>Contents</a>');
+  });
   it("supports system fonts without bundling unlicensed system binaries", () => {
     const b = fixture();
     b.editions = {
