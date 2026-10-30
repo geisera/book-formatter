@@ -134,6 +134,22 @@ describe("semantic manuscript import", () => {
     expect(draft.blocks[0].attrs?.caption).toBe("Figure 1: The watchtower.");
     expect(splitChapters(draft,"none")[0].content).toMatchObject({type:"doc"});
   });
+  it("imports images nested inside hyperlinks and formatting wrappers without placeholders", () => {
+    const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
+    const draft=parseConvertedHtml(
+      `<h1>Chapter One</h1><p>Before <a href="https://example.org/"><strong>linked <img src="${src}"/></strong></a> after</p><p><em><img src="${src}" alt="Nested illustration"/></em></p>`,
+      "nested-illustrations.docx",
+    );
+    const images=draft.blocks.filter(block=>block.type==="image");
+    expect(images).toHaveLength(2);
+    expect(images[0].attrs?.alt).toBe("Imported illustration 1");
+    expect(images[1].attrs?.alt).toBe("Nested illustration");
+    expect(draft.blocks.map(b=>b.type)).toEqual(["heading","paragraph","image","paragraph","image"]);
+    expect(JSON.stringify(draft.blocks)).not.toContain("[Image:");
+    const chapter=splitChapters(draft,"auto")[0];
+    expect(schema.nodeFromJSON(chapter.content).child(1).type.name).toBe("image");
+    expect(draft.diagnostics.some(d=>d.message.includes("alternative text"))).toBe(true);
+  });
   it("keeps remote DOCX image references as inert placeholders", () => {
     const draft=parseConvertedHtml('<p>Start <img src="https://example.org/track.png" alt="Bad source"/> end.</p>',"bad.docx");
     expect(draft.blocks.some(b=>b.type==="image")).toBe(false);
