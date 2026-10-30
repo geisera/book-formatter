@@ -202,11 +202,16 @@ export default function EbookPreview({
             <div className="ebook-opening-rule" aria-hidden="true" />
             {chapter && showSectionTitle(chapter) ? <h2>{chapter.title}</h2> : null}
           </header>
-          {chapter ? (
-            <ChapterContent
-              chapter={chapter}
-              ornament={edition.sceneOrnament}
-            />
+          {chapter?.sectionType === "toc" ? (
+            <nav aria-label="Generated table of contents" className="ebook-prose">
+              <ol>
+                {book.chapters.filter(c => c.id !== chapter.id && c.sectionType !== "toc").map(c => (
+                  <li key={c.id}><button type="button" onClick={() => onNavigate(c.id)}>{c.title}</button></li>
+                ))}
+              </ol>
+            </nav>
+          ) : chapter ? (
+            <ChapterContent chapter={chapter} ornament={edition.sceneOrnament} />
           ) : null}
         </article>
       </div>
