@@ -1,6 +1,6 @@
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import { schema, validateBook, showSectionTitle, getSectionLayout, type SectionPageLayout, type TextAlignment, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter, type SectionPageLayout, type TextAlignment, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
@@ -103,6 +103,7 @@ export async function buildPrintPdf(
     chapterTitle = "",
     splitViolations = 0;
   let activeLayout: SectionPageLayout = getSectionLayout(book.chapters[0]);
+  const contentsPages: { index: number; entries: typeof book.chapters }[] = [];
   const widths = new Map<string, number>();
   function measure(text: string, face: Face, fontSize: number): number {
     const key = `${face}/${fontSize}/${text}`;
@@ -357,6 +358,16 @@ export async function buildPrintPdf(
     chapterTitle = chapter.title;
     activeLayout = getSectionLayout(chapter);
     if (activeLayout.start !== "next" && (pages.length + 1) % 2 !== (activeLayout.start === "recto" ? 1 : 0)) newPage("blank");
+    if (chapter.sectionType === "toc") {
+      // Allocate pages first; actual folios become known after pagination completes.
+      const entries = book.chapters.filter(section => section.id !== chapter.id && section.sectionType !== "toc");
+      const capacity = 16;
+      for (let start = 0; start < Math.max(1, entries.length); start += capacity) {
+        newPage(start === 0 ? "chapter" : "body");
+        contentsPages.push({index: pages.length - 1, entries: entries.slice(start, start + capacity)});
+      }
+      continue;
+    }
     newPage("chapter");
     const template = profile.template.id;
     const headingSize = template === "gothic" ? 19 : template === "modern" ? 17 : 18;
@@ -480,6 +491,50 @@ export async function buildPrintPdf(
       opening = false;
     });
   }
+  // Roman folios in front matter; Arabic numerals restart at 1 for main matter.
+  const firstFront = pages.findIndex(p => p.chapterId && book.chapters.some(
+    c => c.id === p.chapterId && sectionMatter(c.sectionType ?? "chapter") === "front"
+  ) && p.kind !== "blank");
+  const firstMain = pages.findIndex(p => p.chapterId && book.chapters.some(
+    c => c.id === p.chapterId && sectionMatter(c.sectionType ?? "chapter") !== "front"
+  ) && p.kind !== "blank");
+  function roman(value: number): string {
+    const symbols: [number,string][] = [[1000,"m"],[900,"cm"],[500,"d"],[400,"cd"],[100,"c"],[90,"xc"],[50,"l"],[40,"xl"],[10,"x"],[9,"ix"],[5,"v"],[4,"iv"],[1,"i"]];
+    let result = "";
+    for (const [amount,symbol] of symbols) while (value >= amount) { result += symbol; value -= amount; }
+    return result;
+  }
+  function folio(index: number, sectionId?: string): string {
+    const section = book.chapters.find(c => c.id === sectionId);
+    const front = section && sectionMatter(section.sectionType ?? "chapter") === "front";
+    if (front) return roman(index - (firstFront >= 0 ? firstFront : 0) + 1);
+    return String(index - (firstMain >= 0 ? firstMain : 0) + 1);
+  }
+  for (const item of contentsPages) {
+    proof = pages[item.index];
+    page = pdf.getPage(item.index);
+    activeLayout = getSectionLayout(book.chapters.find(c => c.id === proof.chapterId)!);
+    y = HEIGHT - profile.top - 86 - activeLayout.spaceBefore;
+    if (proof.kind === "chapter" && showSectionTitle(book.chapters.find(c => c.id === proof.chapterId)!)) {
+      centered(textLines(proof.chapterTitle ?? "Contents", 18, "bold"), 18, 27);
+      y -= 18;
+    }
+    for (const entry of item.entries) {
+      const start = pages.findIndex(p => p.chapterId === entry.id && p.kind === "chapter");
+      if (start < 0) throw Error("A table of contents entry has no printable page.");
+      const pageLabel = folio(start, entry.id);
+      const numberWidth = measure(pageLabel, "regular", 10);
+      const reserved = numberWidth + 15;
+      let label = entry.title;
+      while (label && measure(label, "regular", 10) > contentWidth - reserved - 8)
+        label = label.slice(0, -1);
+      if (label !== entry.title) label = label.trimEnd() + "...";
+      draw(label, proof.left, y, 10);
+      draw(pageLabel, proof.right - numberWidth, y, 10);
+      proof.lineCount++;
+      y -= 21;
+    }
+  }
   if (pages.length % 2) newPage("blank");
   for (let i = 0; i < pages.length; i++) {
     proof = pages[i];
@@ -488,11 +543,9 @@ export async function buildPrintPdf(
     const section = book.chapters.find(c => c.id === proof.chapterId);
     const settings = section ? getSectionLayout(section) : activeLayout;
     const numbered = settings.pageNumber === "show" ||
-      (settings.pageNumber === "auto" && section?.sectionType !== "copyright" && section?.sectionType !== "dedication" &&
-       section?.sectionType !== "epigraph" && section?.sectionType !== "preface" && section?.sectionType !== "title" &&
-       section?.sectionType !== "half-title" && section?.sectionType !== "toc");
+      (settings.pageNumber === "auto" && !!section && sectionMatter(section.sectionType ?? "chapter") !== "front");
     if (numbered) {
-    const number = String(i + 1);
+    const number = folio(i, section?.id);
     const numberWidth = measure(number, "regular", 9);
     draw(
       number,
