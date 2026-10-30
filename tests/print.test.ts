@@ -158,7 +158,7 @@ describe("offline print proof", () => {
     const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
     b.chapters[0].content={type:"doc",content:[
       {type:"paragraph",content:[{type:"text",text:"Before the illustration."}]},
-      {type:"image",attrs:{src,alt:"An illustrated scene",width:75,align:"center"}},
+      {type:"image",attrs:{src,alt:"An illustrated scene",width:75,align:"center",caption:"Figure 1: Valley map"}},
       {type:"paragraph",content:[{type:"text",text:"After the illustration."}]},
     ]};
     const restored=restoreBook(backupBook(b));
