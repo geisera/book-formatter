@@ -115,6 +115,7 @@ export default function HelpPage() {
               <li><strong>Merge next:</strong> append the following section's blocks to this section; the first section keeps its title and ID.</li>
               <li><strong>Delete:</strong> remove a section and its content after confirmation. Maintain regular project backups before destructive changes.</li>
               <li><strong>Edit text:</strong> open a section in Manuscript mode to edit its contents.</li>
+              <li><strong>Show section title on page:</strong> toggle this option for each section. When off, EPUB and PDF omit the visible section heading while retaining its title for navigation, editing, and table-of-contents entries. Existing chapters remain titled by default; dedication, epigraph, copyright, and title-page sections start without visible headings.</li>
             </ol>
             <p>The EPUB export creates navigation entries in section order and assigns appropriate EPUB semantics where supported. PDF export preserves section order; specialized front- and back-matter pagination and automatic generated TOC pages are not yet implemented. A section typed <strong>Table of contents</strong> is editable manuscript content, not an automatically populated TOC page.</p>
           </section>
