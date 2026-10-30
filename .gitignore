@@ -9,3 +9,9 @@ test-results/
 *.tsbuildinfo
 
 public/import-worker.js*
+
+public/epub-worker.js*
+public/epub-fonts/
+artifacts/
+
+.epubcheck/

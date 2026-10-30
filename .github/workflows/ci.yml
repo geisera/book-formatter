@@ -15,6 +15,23 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Install verified EPUBCheck 5.4.0
+        run: |
+          mkdir -p .epubcheck
+          curl --fail --silent --show-error --location https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip --output .epubcheck/release.zip
+          echo "33350c61038e71dfb3d45a76aed04bf5481e6d5500cb780f6e98db8bbd15a28c  .epubcheck/release.zip" | sha256sum --check -
+          unzip -q .epubcheck/release.zip -d .epubcheck
+      - run: npm run check:epub
+        env:
+          EPUBCHECK_JAR: ${{ github.workspace }}/.epubcheck/epubcheck-5.4.0/epubcheck.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: epub-validation-proofs
+          path: artifacts/epub/
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

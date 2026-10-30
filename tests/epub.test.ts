@@ -1,0 +1,129 @@
+import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { unzipSync, strFromU8 } from "fflate";
+import {
+  buildEpub,
+  preflight,
+  snapshotChecksum,
+  type FontAssets,
+} from "../lib/epub";
+import { createBook } from "../lib/model";
+import { getEbookEdition } from "../lib/edition";
+function fixture() {
+  const book = createBook("A title & <escape>", "Author");
+  book.id = "fixture";
+  book.updatedAt = "2026-10-30T12:00:00Z";
+  book.chapters[0].content = {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: "A café & <script> “hello”.",
+            marks: [{ type: "em" }, { type: "strong" }],
+          },
+        ],
+      },
+      { type: "scene_break" },
+      { type: "paragraph", content: [{ type: "text", text: "A new scene." }] },
+    ],
+  };
+  return book;
+}
+const options = { id: "test-export", createdAt: "2026-10-30T12:00:00Z" };
+const fonts: FontAssets = {
+  regular: new Uint8Array(readFileSync("public/epub-fonts/regular.woff")),
+  italic: new Uint8Array(readFileSync("public/epub-fonts/italic.woff")),
+  bold: new Uint8Array(readFileSync("public/epub-fonts/bold.woff")),
+  license: new Uint8Array(
+    readFileSync("public/licenses/Libre-Baskerville-OFL.txt"),
+  ),
+};
+describe("local EPUB generation", () => {
+  it("packages uncompressed mimetype first, navigation and escaped semantic XHTML", () => {
+    const b = fixture(),
+      before = structuredClone(b);
+    const { bytes, record } = buildEpub(b, fonts, options);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    expect(view.getUint32(0, true)).toBe(0x04034b50);
+    expect(view.getUint16(8, true)).toBe(0);
+    expect(view.getUint16(28, true)).toBe(0);
+    expect(strFromU8(bytes.slice(30, 38))).toBe("mimetype");
+    const files = unzipSync(bytes);
+    expect(strFromU8(files.mimetype)).toBe("application/epub+zip");
+    expect(strFromU8(files["EPUB/nav.xhtml"])).toContain(
+      'href="chapter-0001.xhtml"',
+    );
+    expect(strFromU8(files["EPUB/chapter-0001.xhtml"])).toContain(
+      "<em><strong>A café &amp; &lt;script&gt; “hello”.</strong></em>",
+    );
+    expect(strFromU8(files["EPUB/package.opf"])).toContain('version="3.0"');
+    expect(files["EPUB/fonts/regular.woff"]).toEqual(fonts.regular);
+    expect(files["EPUB/fonts/OFL.txt"]).toEqual(fonts.license);
+    expect(record.inputChecksum).toBe(snapshotChecksum(b));
+    expect(record.epubCheck).toBe("not-run");
+    expect(b).toEqual(before);
+  });
+  it("reproduces byte-identical files for the same snapshot, assets and build options", () => {
+    const b = fixture();
+    expect(buildEpub(b, fonts, options).record.artifactChecksum).toBe(
+      buildEpub(b, fonts, options).record.artifactChecksum,
+    );
+    const modified = {
+      ...b,
+      editions: {
+        ebook: { ...getEbookEdition(b), sceneOrnament: "diamonds" as const },
+      },
+    };
+    const generated = buildEpub(modified, fonts, options);
+    expect(generated.record.inputChecksum).not.toBe(snapshotChecksum(b));
+    expect(
+      strFromU8(unzipSync(generated.bytes)["EPUB/chapter-0001.xhtml"]),
+    ).toContain("◆ ◆ ◆");
+  });
+  it("supports system fonts without bundling unlicensed system binaries", () => {
+    const b = fixture();
+    b.editions = {
+      ebook: {
+        ...getEbookEdition(b),
+        bodyFont: "georgia",
+        sceneOrnament: "rule",
+      },
+    };
+    const files = unzipSync(buildEpub(b, undefined, options).bytes);
+    expect(files["EPUB/fonts/regular.woff"]).toBeUndefined();
+    expect(strFromU8(files["EPUB/style.css"])).not.toContain("@font-face");
+    expect(strFromU8(files["EPUB/chapter-0001.xhtml"])).toContain(
+      '<hr class="scene-rule"/>',
+    );
+  });
+  it("blocks empty content and missing metadata, and rejects missing fonts or invalid XML characters", () => {
+    const empty = createBook("Book", "");
+    expect(preflight(empty).filter((i) => i.severity === "error")).toHaveLength(
+      2,
+    );
+    expect(() => buildEpub(empty, fonts, options)).toThrow("preflight");
+    expect(() => buildEpub(fixture(), undefined, options)).toThrow(
+      "font files",
+    );
+    expect(() =>
+      buildEpub(
+        fixture(),
+        { ...fonts, regular: new TextEncoder().encode("<html>Sign in</html>") },
+        options,
+      ),
+    ).toThrow("font file");
+    const b = fixture();
+    b.language = "not a language";
+    expect(
+      preflight(b).some(
+        (x) => x.location === "Book details" && x.severity === "error",
+      ),
+    ).toBe(true);
+    b.language = "en";
+    b.title = "bad\u0001title";
+    expect(() => buildEpub(b, fonts, options)).toThrow("XML");
+  });
+});

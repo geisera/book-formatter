@@ -4,13 +4,16 @@ import Editor from "./Editor";
 import ImportPanel from "./ImportPanel";
 import DesignPanel from "./DesignPanel";
 import EbookPreview from "./EbookPreview";
+import PublishPanel from "./PublishPanel";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [importing, setImporting] = useState(false);
-  const [mode, setMode] = useState<"manuscript" | "design">("manuscript");
+  const [mode, setMode] = useState<"manuscript" | "design" | "publish">(
+    "manuscript",
+  );
   const [books, setBooks] = useState<Book[]>([]),
     [book, setBook] = useState<Book | null>(null),
     [chapterId, setChapterId] = useState(""),
@@ -98,7 +101,11 @@ export default function Workspace() {
         const saved = await saveBook(next, next.revision);
         pending.current--;
         if (current.current?.id === next.id) {
-          current.current = { ...current.current, revision: saved.revision };
+          current.current = {
+            ...current.current,
+            revision: saved.revision,
+            updatedAt: saved.updatedAt,
+          };
           setBook(current.current);
           setStatus(pending.current ? "Saving locally…" : "Saved locally");
           failed.current = pending.current > 0;
@@ -210,6 +217,29 @@ export default function Workspace() {
   }
   const chapter = book?.chapters.find((c) => c.id === chapterId);
   const previewChapter = useDeferredValue(chapter);
+  async function exportSnapshot(): Promise<Book> {
+    await queue.current;
+    if (failed.current || blocked.current)
+      throw Error(
+        "The current book has unsaved changes. Resolve the save error before exporting.",
+      );
+    if (!current.current) throw Error("Open a book before exporting.");
+    return structuredClone(current.current);
+  }
+  async function updateMetadata(metadata: {
+    title: string;
+    author: string;
+    language: string;
+  }) {
+    const b = current.current;
+    if (!b) throw Error("Open a book first.");
+    edit({ ...b, ...metadata });
+    await queue.current;
+    if (failed.current)
+      throw Error(
+        "Book details could not be saved. Resolve the local save error.",
+      );
+  }
   function changeEdition(edition: EbookEdition) {
     const b = current.current;
     if (b) edit({ ...b, editions: { ebook: edition } });
@@ -381,6 +411,12 @@ export default function Workspace() {
               + Add chapter
             </button>
             <div className="aside-bottom">
+              <button
+                className="export-link"
+                onClick={() => setMode("publish")}
+              >
+                Export EPUB
+              </button>
               {book.importInfo ? (
                 <>
                   <button onClick={original}>↓ Download original</button>
@@ -421,6 +457,12 @@ export default function Workspace() {
                   onClick={() => setMode("design")}
                 >
                   Design
+                </button>
+                <button
+                  aria-pressed={mode === "publish"}
+                  onClick={() => setMode("publish")}
+                >
+                  Publish
                 </button>
               </div>
               <div className="workspace-save">
@@ -485,7 +527,15 @@ export default function Workspace() {
                 edition={getEbookEdition(book)}
                 onChange={changeEdition}
               />
+              {mode === "publish" ? (
+                <PublishPanel
+                  book={book}
+                  getSnapshot={exportSnapshot}
+                  onMetadata={updateMetadata}
+                />
+              ) : null}
               <EbookPreview
+                hidden={mode === "publish"}
                 book={book}
                 chapter={previewChapter}
                 chapterId={chapterId}

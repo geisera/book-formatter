@@ -81,6 +81,7 @@ export default function EbookPreview({
   edition,
   onNavigate,
   updating,
+  hidden,
 }: {
   book: Book;
   chapter: Chapter | undefined;
@@ -88,6 +89,7 @@ export default function EbookPreview({
   edition: EbookEdition;
   onNavigate: (id: string) => void;
   updating: boolean;
+  hidden?: boolean;
 }) {
   const [width, setWidth] = useState("420"),
     [theme, setTheme] = useState("light"),
@@ -107,7 +109,11 @@ export default function EbookPreview({
     width: `${width}px`,
   } as CSSProperties;
   return (
-    <section className="preview-panel" aria-label="Ebook preview">
+    <section
+      className="preview-panel"
+      aria-label="Ebook preview"
+      hidden={hidden}
+    >
       <div className="preview-heading">
         <div>
           <div className="eyebrow">LIVE EBOOK PREVIEW</div>

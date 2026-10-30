@@ -64,6 +64,7 @@ export type Book = {
   revision: number;
   title: string;
   author: string;
+  language?: string;
   updatedAt: string;
   chapters: Chapter[];
   importInfo?: ImportInfo;
@@ -83,6 +84,7 @@ export function createBook(title: string, author: string): Book {
     revision: 0,
     title,
     author,
+    language: "en",
     updatedAt: new Date().toISOString(),
     chapters: [blankChapter("Chapter One")],
     editions: { ebook: { ...CLASSIC_EDITION } },
@@ -104,6 +106,8 @@ export function validateBook(value: unknown): Book {
     b.chapters.length > 10000
   )
     throw Error("Unsupported or damaged project.");
+  if (b.language !== undefined && typeof b.language !== "string")
+    throw Error("Invalid publication language.");
   if (b.importInfo) {
     const info = b.importInfo;
     if (

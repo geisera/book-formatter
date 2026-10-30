@@ -335,6 +335,11 @@
     "license": "MIT"
   },
   {
+    "path": "node_modules/@noble/hashes",
+    "version": "2.4.0",
+    "license": "MIT"
+  },
+  {
     "path": "node_modules/@oxc-project/types",
     "version": "0.156.0",
     "license": "MIT"

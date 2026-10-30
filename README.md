@@ -56,7 +56,7 @@ schema/template versions. Inline media and print editions are not implemented ye
 ## Scope
 
 This is the first foundation slice, **not completed PRD Milestone 1**.
-See [the baseline PRD](docs/PRD.md). Remaining M1 work: local EPUB export and EPUBCheck, full-length novel benchmarks,
+See [the baseline PRD](docs/PRD.md). Remaining M1 work: full-length novel editing benchmarks,
 PDF feasibility/quality proof, and broader interruption/quota/browser tests.
 Full PWA installation compatibility, including raster icons on browsers requiring
 them, needs a cross-browser pass. No publication-ready exports are claimed.
@@ -109,10 +109,46 @@ content updates display an updating indicator. Only the selected chapter renders
 
 Phone/ereader/tablet width, light/dark theme, and reader text zoom are temporary
 preview controls, not saved design choices. Width is capped to available space;
-this is a reflowable simulation, not a specific device or print proof. EPUB/PDF
-export and print pagination remain outstanding.
+this is a reflowable simulation, not a specific device or print proof. Local EPUB export is available from Publish. Print/PDF export and pagination remain outstanding.
 
 Fonts are self-hosted and precached for offline use; see [font records](docs/fonts.md).
 No remote font service or manuscript upload is used. New tests verify offline
 import → design → preview → backup → restore, unchanged semantic content, old
 backup compatibility, invalid settings, and editor undo across modes.
+
+## Local EPUB export
+
+Open a book and choose **Publish** (or **Export EPUB** in the sidebar). Check its
+title, author and BCP 47 language tag. Resolve missing metadata and empty sections,
+review import/layout warnings, then choose **Generate & download EPUB**.
+The app waits for committed local saves, copies an immutable snapshot, loads only
+self-hosted cached font assets and builds the EPUB in a cancellable Web Worker.
+No manuscript is uploaded. Missing cached font/worker files fail with retry guidance.
+
+The EPUB 3.3-targeted package contains an uncompressed first `mimetype` entry,
+container/OPF, title page, navigation, separate XHTML chapters, Classic CSS,
+licensed Libre Baskerville WOFF files (when selected) and the OFL notice.
+System Georgia is not bundled. Reader font preferences can override CSS. The
+EPUB package uses `version="3.0"`, as required for EPUB 3, not `3.3`.
+Cover art and inline image embedding are not supported yet; image placeholders
+remain ordinary text, with preflight warnings.
+
+`META-INF/book-formatter-build.json` records manuscript schema, book ID, revision,
+renderer, template/design settings, timestamp and SHA-256 input fingerprint.
+Export history is a separate IndexedDB v3 table. It stores the last 20 displayed
+records with exact snapshot and artifact fingerprints, not copies of the EPUB
+files. Older records remain in the database. History is local to this browser
+and is not currently included in project backups; manuscript language/design
+settings continue to travel with backups. A different manuscript/design snapshot
+marks an earlier export accordingly.
+
+Browser-local checks are deliberately limited. Each generated file's history
+says **EPUBCheck not run**; no publication-ready label is assigned. The official
+EPUBCheck tool is run separately on our test fixtures and actual offline
+browser-generated fixture in CI. User manuscripts are never submitted to that
+CI job. See [validation evidence and limits](docs/epub-validation.md).
+
+To validate locally, install the verified official EPUBCheck 5.4.0 distribution,
+set `EPUBCHECK_JAR` to its JAR path, and run `npm run check:epub`. Java 17+ is
+used in CI. Reports and fixture EPUBs are generated in ignored `artifacts/epub/`.
+The source and dependencies remain pinned in the lockfile.

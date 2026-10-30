@@ -12,6 +12,7 @@ async function walk(dir) {
       p.endsWith(".svg") ||
       p.endsWith(".webmanifest") ||
       p.endsWith(".woff2") ||
+      p.endsWith(".woff") ||
       (p.endsWith(".txt") &&
         (p.startsWith("out/licenses/") || p.endsWith(".LICENSE.txt")))
     )

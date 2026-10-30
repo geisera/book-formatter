@@ -11,3 +11,26 @@ await build({
   minify: true,
   legalComments: "linked",
 });
+
+await build({
+  entryPoints: ["lib/epub.worker.ts"],
+  bundle: true,
+  platform: "browser",
+  conditions: ["worker"],
+  format: "iife",
+  target: "es2022",
+  outfile: "public/epub-worker.js",
+  minify: true,
+  legalComments: "linked",
+});
+const { mkdir, copyFile } = await import("node:fs/promises");
+await mkdir("public/epub-fonts", { recursive: true });
+for (const [file, source] of [
+  ["regular.woff", "400-normal"],
+  ["italic.woff", "400-italic"],
+  ["bold.woff", "700-normal"],
+])
+  await copyFile(
+    `node_modules/@fontsource/libre-baskerville/files/libre-baskerville-latin-${source}.woff`,
+    `public/epub-fonts/${file}`,
+  );

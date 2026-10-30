@@ -1198,3 +1198,259 @@ aside h2 {
     font-size: 9px;
   }
 }
+.workspace-body.mode-publish {
+  grid-template-columns: minmax(0, 1fr);
+}
+.publish-panel {
+  padding: 38px;
+  max-width: 1200px;
+  width: 100%;
+  margin: auto;
+}
+.publish-intro {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+.publish-intro .eyebrow {
+  margin-bottom: 12px;
+}
+.publish-intro h2 {
+  font: 34px Georgia;
+  margin-bottom: 14px;
+}
+.publish-intro p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 560px;
+}
+.format-stamp {
+  border: 1px solid #c5cfb8;
+  border-radius: 5px;
+  padding: 9px 12px;
+  white-space: nowrap;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--green);
+  margin-top: 5px;
+}
+.publish-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.publish-card {
+  padding: 26px;
+  background: #fffef9;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  min-width: 0;
+}
+.publish-card h3 {
+  font: 23px Georgia;
+  margin-bottom: 20px;
+}
+.publish-card label {
+  font-size: 11px;
+}
+.publish-card form > button {
+  font-size: 12px;
+}
+.publish-card p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #75816b;
+}
+.publish-card p.control-note {
+  font-size: 10px;
+}
+.preflight-summary {
+  font-size: 12px;
+  color: var(--green);
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+.preflight-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+.preflight-issues {
+  padding: 0;
+  list-style: none;
+  margin: 0;
+}
+.preflight-issues li {
+  border-top: 1px solid var(--line);
+  padding-top: 17px;
+  margin-top: 17px;
+}
+.preflight-issues strong {
+  display: block;
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 5px;
+}
+.preflight-issues p {
+  margin: 5px 0;
+  font-size: 11px;
+}
+.preflight-issues small {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #879078;
+  display: block;
+}
+.issue-error,
+.issue-warning {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.issue-error {
+  color: #a34232;
+}
+.issue-warning {
+  color: #927547;
+}
+.export-card {
+  background: #eef2e7;
+  border-color: #c8d2bc;
+}
+.export-card .eyebrow {
+  margin-bottom: 13px;
+}
+.export-card h3 {
+  font-size: 28px;
+  margin-bottom: 14px;
+}
+.export-card > ul {
+  font-size: 12px;
+  padding-left: 17px;
+  line-height: 2.1;
+  color: #63765b;
+  margin: 20px 0 25px;
+}
+.export-card .primary {
+  display: block;
+  text-align: center;
+}
+.export-progress {
+  padding-top: 15px;
+}
+.export-progress p {
+  margin: 0 0 10px;
+}
+.export-progress button {
+  font-size: 11px;
+}
+.export-result {
+  margin-top: 22px;
+  background: #fffef8;
+  border: 1px solid #c6d2b5;
+  padding: 18px;
+  border-radius: 6px;
+}
+.export-result strong {
+  font-size: 12px;
+  color: var(--green);
+}
+.export-result p {
+  font-size: 11px;
+  margin: 10px 0 0;
+}
+.validation-note {
+  border-top: 1px solid #d1dbc5;
+  margin-top: 25px;
+  padding-top: 20px;
+}
+.validation-note > strong {
+  font-size: 11px;
+}
+.validation-note p {
+  font-size: 10px;
+  line-height: 1.8;
+}
+.validation-note a {
+  font-size: 10px;
+  color: var(--green);
+}
+.publish-notice {
+  padding: 13px 18px;
+  background: #e5eddb;
+  color: #42613a;
+  font-size: 12px;
+  border-radius: 5px;
+}
+.export-history details {
+  border-top: 1px solid var(--line);
+  padding: 15px 0;
+  font-size: 11px;
+}
+.export-history summary {
+  cursor: pointer;
+  line-height: 1.8;
+}
+.export-history summary small {
+  display: block;
+  margin-left: 15px;
+  font-size: 9px;
+}
+.history-stale {
+  color: #9b7a3a;
+}
+.history-current {
+  color: #4e7850;
+}
+.export-history dl {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.export-history dt {
+  color: var(--muted);
+}
+.export-history dd {
+  margin: 0;
+}
+.file-checksum {
+  overflow-wrap: anywhere;
+  font-family: monospace;
+}
+.aside-bottom .export-link {
+  background: var(--green);
+  color: #fff;
+  border: 0;
+  margin-bottom: 12px;
+}
+@media (max-width: 1050px) {
+  .publish-panel {
+    padding: 25px;
+  }
+  .publish-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .format-stamp {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .publish-panel {
+    padding: 22px 15px;
+  }
+  .publish-card {
+    padding: 22px;
+  }
+  .publish-intro h2 {
+    font-size: 29px;
+  }
+  .workspace-modes .workspace-save > span:first-child {
+    display: none;
+  }
+}
