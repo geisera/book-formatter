@@ -7,7 +7,7 @@ import {
   snapshotChecksum,
   type FontAssets,
 } from "../lib/epub";
-import { createBook } from "../lib/model";
+import { validateBook, createBook } from "../lib/model";
 import { getEbookEdition } from "../lib/edition";
 function fixture() {
   const book = createBook("A title & <escape>", "Author");
@@ -134,6 +134,23 @@ describe("local EPUB generation", () => {
     expect(generated).toContain('href="chapter-0003.xhtml"');
     expect(generated).not.toContain('href="chapter-0001.xhtml"');
     expect(strFromU8(files["EPUB/nav.xhtml"])).toContain('>Contents</a>');
+  });
+  it("packages a locally embedded PNG as a linked EPUB illustration", () => {
+    const b = fixture();
+    const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
+    b.chapters[0].content={type:"doc",content:[
+      {type:"image",attrs:{src,alt:"Blue rectangle illustration",width:50,align:"right"}},
+    ]};
+    expect(validateBook(b)).toBe(b);
+    const files=unzipSync(buildEpub(b,fonts,options).bytes);
+    const chapter=strFromU8(files["EPUB/chapter-0001.xhtml"]);
+    expect(chapter).toContain('src="images/image-0001.png"');
+    expect(chapter).toContain('alt="Blue rectangle illustration"');
+    expect(chapter).toContain('width:50%');
+    expect(files["EPUB/images/image-0001.png"].length).toBeGreaterThan(30);
+    expect(strFromU8(files["EPUB/package.opf"])).toContain('href="images/image-0001.png" media-type="image/png"');
+    const invalid={...b,chapters:b.chapters.map(c=>({...c,content:{type:"doc",content:[{type:"image",attrs:{src:"https://bad.example/test.png",alt:"Unsafe",width:50,align:"center"}}]}}))};
+    expect(()=>validateBook(invalid)).toThrow("Only embedded PNG");
   });
   it("supports system fonts without bundling unlicensed system binaries", () => {
     const b = fixture();
