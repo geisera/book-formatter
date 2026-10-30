@@ -100,7 +100,12 @@ describe("three versioned ebook presets", () => {
     book.editions!.ebook = presetFor("gothic");
     const restored = restoreBook(backupBook(book));
     expect(restored.editions!.ebook.template.id).toBe("gothic");
-    expect(JSON.stringify(restored.chapters)).toBe(before);
+    // Restored projects intentionally receive new chapter IDs.
+    // Verify manuscript titles/content rather than identity metadata.
+    expect(restored.chapters.map(({ title, content }) => ({ title, content })))
+      .toEqual(book.chapters.map(({ title, content }) => ({ title, content })));
+    expect(JSON.stringify(book.chapters)).toBe(before);
+    expect(restored.chapters[0].id).not.toBe(book.chapters[0].id);
   });
   it("rejects unknown template identifiers", () => {
     expect(() => validateEdition({
