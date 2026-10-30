@@ -108,7 +108,7 @@ export default function HelpPage() {
             <h2>Organize your book in Structure</h2>
             <p>Open a local book and select <strong>Structure</strong> to organize sections independently of their manuscript text. Existing chapters are treated as regular chapters unless you assign another type.</p>
             <ol>
-              <li><strong>Reorder:</strong> drag a section row onto another row, or use <strong>Up</strong> and <strong>Down</strong>. The saved section order determines EPUB navigation and the order of PDF pages.</li>
+              <li><strong>Reorder:</strong> drag a section row onto another row, or use <strong>Up</strong> and <strong>Down</strong>. Sections are numbered continuously: Front Matter begins at 1, Body Matter continues that sequence, then Back Matter. The saved section order determines EPUB navigation and the order of PDF pages.</li>
               <li><strong>Rename or classify:</strong> change the title and leave the field, or select a section type. Supported types include prologue, chapters, parts, front matter and back matter.</li>
               <li><strong>Add:</strong> choose a type, enter a title, then select <strong>Add section</strong>. Use <strong>+ After</strong> to insert after a specific section.</li>
               <li><strong>Split:</strong> choose a split position between existing paragraph or scene-break blocks. The new section is inserted after the original.</li>
