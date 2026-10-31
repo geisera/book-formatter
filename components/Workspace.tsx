@@ -89,6 +89,7 @@ export default function Workspace() {
   const [bookshelfQuery,setBookshelfQuery]=useState("");
   const [bookshelfSort,setBookshelfSort]=useState<"recent"|"title"|"author">("recent");
   const [bookshelfTipVisible,setBookshelfTipVisible]=useState(true);
+  useEffect(()=>{setBookshelfTipVisible(localStorage.getItem("book-formatter:bookshelf-guide-dismissed")!=="1");},[]);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
   const [mode, setMode] = useState<
     "manuscript" | "structure" | "design" | "details" | "publish" | "print"
@@ -638,7 +639,7 @@ export default function Workspace() {
           </p>
           {bookshelfTipVisible?<div className="bookshelf-guidance" role="note">
             <div><strong>Start with your manuscript</strong><p>Create a new project, import a DOCX or Markdown file, or explore a sample book. All manuscripts are stored locally; download backups to keep independent copies.</p></div>
-            <button type="button" onClick={()=>setBookshelfTipVisible(false)} aria-label="Dismiss bookshelf guidance">Dismiss</button>
+            <button type="button" onClick={()=>{localStorage.setItem("book-formatter:bookshelf-guide-dismissed","1");setBookshelfTipVisible(false);}} aria-label="Dismiss bookshelf guidance">Dismiss</button>
           </div>:null}
           <div className="dashboard-grid">
             <section className="card">
