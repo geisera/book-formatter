@@ -22,6 +22,7 @@ import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
+  const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
   const [findOpen,setFindOpen]=useState(false);
@@ -637,7 +638,7 @@ export default function Workspace() {
               <div className="workspace-utilities">
                 <button type="button" aria-pressed={mode==="structure"} onClick={()=>setMode("structure")}>Organize</button>
                 <button type="button" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Book details</button>
-                <button type="button" aria-pressed={mode==="print"} onClick={()=>setMode("print")}>PDF proof</button>
+                <button type="button" aria-pressed={mode==="print"||mode==="publish"&&publishFormat==="print"} onClick={()=>{setPublishFormat("print");setMode("publish");}}>PDF proof</button>
               </div>
               <div className="workspace-save">
                 <span>{getEbookEdition(book).template.id.replace(/^./, (c) => c.toUpperCase())} · ebook edition</span>
@@ -789,13 +790,19 @@ export default function Workspace() {
                 </section>
               </div>:null}
               {mode === "details" ? <BookDetailsPanel book={book} onSave={updateMetadata}/> : null}
-              {mode === "publish" ? (
-                <PublishPanel
-                  book={book}
-                  getSnapshot={exportSnapshot}
-                  onMetadata={updateMetadata}
-                />
-              ) : null}
+              {mode === "publish" ? <section className="unified-publish">
+                <div className="publish-format-switch" role="group" aria-label="Publication format">
+                  <div><strong>Publish your book</strong><p>Validate, preview, and export an edition.</p></div>
+                  <div className="design-studio-format">
+                    <button type="button" aria-pressed={publishFormat==="ebook"} onClick={()=>setPublishFormat("ebook")}>EPUB ebook</button>
+                    <button type="button" aria-pressed={publishFormat==="print"} onClick={()=>setPublishFormat("print")}>Paperback PDF</button>
+                  </div>
+                </div>
+                {publishFormat==="ebook"
+                  ? <PublishPanel book={book} getSnapshot={exportSnapshot} onMetadata={updateMetadata}/>
+                  : <PrintPanel book={book} getSnapshot={exportSnapshot} onPublish={()=>setPublishFormat("ebook")}
+                      onAlignmentChange={changePrintAlignment} onTrimChange={changePrintTrim}/>}
+              </section> : null}
               {mode === "print" ? (
                 <PrintPanel
                   book={book}
