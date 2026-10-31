@@ -2373,3 +2373,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .section-navigator .sidebar-section-row.is-dragging{opacity:.38;background:#dfe9e2;border:1px dashed #458067;border-radius:6px}
 .section-navigator .sidebar-drop-end{margin:7px 4px;padding:11px;border:2px dashed #287653;border-radius:6px;background:#e6f3e9;color:#1f5e42;font-size:12px;font-weight:700;text-align:center;min-height:42px}
 .sidebar-section-actions .add{display:flex;justify-content:center;align-items:center;white-space:nowrap;min-height:42px}
+
+/* P1-2: word count status */
+.editor-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.editor-word-count{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;color:#42564a;letter-spacing:0}
