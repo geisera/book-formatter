@@ -1900,3 +1900,26 @@ aside h2 {
  }
  .image-properties-popout .image-properties-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Keep the three image editor actions aligned on one row. */
+.image-properties-popout .image-properties-actions{
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ align-items:stretch;
+ gap:8px;
+}
+.image-properties-popout .image-properties-actions button{
+ width:100%;
+ min-width:0;
+ min-height:40px;
+ margin:0;
+ padding:8px 6px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ font-size:12px;
+ line-height:1.2;
+ white-space:normal;
+}
+.image-properties-popout .image-properties-actions .image-properties-remove{margin:0}
