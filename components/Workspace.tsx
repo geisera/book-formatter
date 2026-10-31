@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState, useDeferredValue } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
+import FindReplacePanel,{type SearchConfig} from "./FindReplacePanel";
+import {findInBook,replaceAcrossBook,type TextMatch} from "../lib/find-replace";
 import ImportPanel from "./ImportPanel";
 import DesignPanel from "./DesignPanel";
 import BookDetailsPanel from "./BookDetailsPanel";
@@ -17,6 +19,13 @@ import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
+  const [findOpen,setFindOpen]=useState(false);
+  const [findConfig,setFindConfig]=useState<SearchConfig>({query:"",replacement:"",scope:"chapter",caseSensitive:false,wholeWord:false});
+  const [findFocus,setFindFocus]=useState<{from:number;to:number;nonce:number}|undefined>();
+  const [editorVersion,setEditorVersion]=useState(0);
+  const [replacementHistory,setReplacementHistory]=useState<{before:Book;after:Book}|null>(null);
+  const [replacementUndone,setReplacementUndone]=useState(false);
+  const focusCounter=useRef(0);
   const [importing, setImporting] = useState(false);
   const [activeBookMenu, setActiveBookMenu] = useState<string | null>(null);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
@@ -102,10 +111,44 @@ export default function Workspace() {
       document.removeEventListener("keydown", dismissEscape);
     };
   }, [activeBookMenu]);
+  useEffect(()=>{
+    const key=(event:KeyboardEvent)=>{
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="f"&&current.current){
+        event.preventDefault();setMode("manuscript");setFindOpen(true);
+      }
+      if(event.key==="Escape")setFindOpen(false);
+    };
+    window.addEventListener("keydown",key);
+    return()=>window.removeEventListener("keydown",key);
+  },[]);
+  function navigateMatch(match:TextMatch){
+    setChapterId(match.chapterId);
+    setMode("manuscript");
+    setFindFocus({from:match.from,to:match.to,nonce:++focusCounter.current});
+  }
+  function applyReplacements(matches:TextMatch[],replacement:string){
+    const b=current.current;if(!b||!matches.length)return;
+    const next=replaceAcrossBook(b,matches,replacement);
+    setReplacementHistory({before:structuredClone(b),after:structuredClone(next)});
+    setReplacementUndone(false);
+    edit(next);
+    setEditorVersion(x=>x+1);
+    if(matches[0].chapterId!==chapterId)setChapterId(matches[0].chapterId);
+    setFindFocus(undefined);
+  }
+  function swapReplacement(undoReplace:boolean){
+    const change=replacementHistory,b=current.current;
+    if(!change||!b)return;
+    edit({...b,chapters:(undoReplace?change.before:change.after).chapters});
+    setEditorVersion(x=>x+1);
+    setReplacementUndone(undoReplace);
+    setFindFocus(undefined);
+  }
   function open(b: Book) {
     current.current = b;
     setBook(b);
     setMode("manuscript");
+    setFindOpen(false);setReplacementHistory(null);setFindFocus(undefined);
     setChapterId(b.chapters[0].id);
     setStatus("Saved locally");
     failed.current = false;
@@ -599,8 +642,13 @@ export default function Workspace() {
             </nav>
             <div className={`workspace-body mode-${mode}`}>
               <section className="editor-area" hidden={mode !== "manuscript"}>
+                {findOpen?<FindReplacePanel book={book} chapterId={chapterId} config={findConfig} onConfig={setFindConfig} onClose={()=>setFindOpen(false)} onNavigate={navigateMatch}
+                  onReplace={applyReplacements} onUndo={()=>swapReplacement(true)} onRedo={()=>swapReplacement(false)}
+                  canUndo={!!replacementHistory&&!replacementUndone} canRedo={!!replacementHistory&&replacementUndone}/>:null}
+
                 <div className="editor-meta">
                   <span>MANUSCRIPT / {chapter?.title}</span>
+                  <button type="button" onClick={()=>setFindOpen(v=>!v)} aria-label="Find and replace manuscript">Find & Replace</button>
                   <span>Chapter text</span>
                 </div>
                 {chapter ? (
@@ -624,7 +672,9 @@ export default function Workspace() {
                       }
                     />
                     <Editor
-                      key={`${book.id}-${chapter.id}`}
+                      key={`${book.id}-${chapter.id}-${editorVersion}`}
+                      search={findOpen?{query:findConfig.query,options:{caseSensitive:findConfig.caseSensitive,wholeWord:findConfig.wholeWord}}:undefined}
+                      focusMatch={findFocus}
                       content={chapter.content}
                       onChange={(content) => {
                         const b = current.current;
