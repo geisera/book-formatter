@@ -1,3 +1,4 @@
+import { classifyImportedSection } from "./import-classify";
 import { CLASSIC_PRINT } from "./print-profile";
 import { CLASSIC_EDITION } from "./edition";
 import {
@@ -55,7 +56,10 @@ export function splitChapters(draft: ImportDraft, mode: SplitMode): Chapter[] {
     content = [];
   }
   for (const block of draft.blocks) {
-    if (block.type === "heading" && `h${block.level}` === level) {
+    const candidate=block.type==="heading" ? classifyImportedSection(blockText(block),0,1) : null;
+    const recognized=mode==="auto" && block.type==="heading" && (block.level===1||block.level===2) &&
+      candidate?.confidence==="high" && candidate.type!=="chapter";
+    if (block.type === "heading" && (`h${block.level}` === level || recognized)) {
       flush();
       title = blockText(block).trim() || "Untitled section";
     } else {
@@ -69,7 +73,10 @@ export function splitChapters(draft: ImportDraft, mode: SplitMode): Chapter[] {
   flush();
   if (chapters.length === 1 && chapters[0].title === "Opening matter")
     chapters[0].title = "Manuscript";
-  return chapters;
+  return chapters.map((chapter,index)=>{
+    const guess=classifyImportedSection(chapter.title,index,chapters.length);
+    return guess.type==="chapter" ? chapter : {...chapter,sectionType:guess.type};
+  });
 }
 export function importedBook(
   draft: ImportDraft,
