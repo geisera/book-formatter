@@ -10,6 +10,26 @@ const labels: Record<SectionType, string> = {
   "about-author": "About the Author", "also-by": "Also By", notes: "Notes",
   acknowledgments: "Acknowledgments", custom: "Custom section",
 };
+/** Purpose and placement guidance for each available section type. */
+const sectionDescriptions: Record<SectionType, string> = {
+  chapter: "A numbered or titled installment of the main story. Chapter heading appearance is set in Design.",
+  prologue: "An opening scene or introduction that precedes the main chapters.",
+  epilogue: "A closing scene or reflection following the main story.",
+  interlude: "A brief passage between chapters, often from another viewpoint or time.",
+  part: "A major division grouping multiple chapters, with a prominent opening page.",
+  "half-title": "A simple preliminary page displaying only the book title.",
+  title: "A formal title page for the book title, subtitle, author, and publisher.",
+  copyright: "Publication rights and edition details, such as copyright notices and ISBN.",
+  dedication: "A short personal dedication, typically centered on its own page.",
+  epigraph: "A quotation or excerpt placed before the book or a major division.",
+  toc: "An automatically generated table of contents linking to book sections.",
+  preface: "An introductory note from the author about the work or its background.",
+  "about-author": "A short author biography, usually placed after the main text.",
+  "also-by": "A list of other works by the author.",
+  notes: "Explanatory, research, or reference notes for the reader.",
+  acknowledgments: "Thanks and recognition for people who contributed to the work.",
+  custom: "A section for material that does not fit a standard book section type.",
+};
 export default function StructurePanel({
   book, selectedId, onAction, onEdit, onPreviewPrint,
 }: {
@@ -45,9 +65,10 @@ export default function StructurePanel({
         setTitle("");
       }}>
         <label>New section type
-          <select value={type} onChange={e => setType(e.target.value as SectionType)}>
+          <select aria-label="New section type" aria-describedby="new-section-type-description" value={type} onChange={e => setType(e.target.value as SectionType)}>
             {SECTION_TYPES.map(t => <option key={t} value={t}>{labels[t]}</option>)}
           </select>
+          <span id="new-section-type-description" className="control-note" aria-live="polite">{sectionDescriptions[type]}</span>
         </label>
         <label>Section title
           <input value={title} maxLength={200} placeholder="e.g. Prologue" onChange={e => setTitle(e.target.value)} />
