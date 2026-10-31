@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useDeferredValue } from "react";
+import { useEffect, useRef, useState, useDeferredValue, type CSSProperties } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
 import {sectionIsEmpty,sectionTemplateContent} from "../lib/section-samples";
@@ -649,7 +649,7 @@ export default function Workspace() {
                 </span>
               </div>
             </nav>
-            <div className={`workspace-body mode-${mode}${mode==="manuscript"&&!previewVisible?" preview-hidden":""}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as React.CSSProperties:undefined}>
+            <div className={`workspace-body mode-${mode}${mode==="manuscript"&&!previewVisible?" preview-hidden":""}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
               <section className="editor-area" hidden={mode !== "manuscript"}>
                 {findOpen?<FindReplacePanel book={book} chapterId={chapterId} config={findConfig} onConfig={setFindConfig} onClose={()=>setFindOpen(false)} onNavigate={navigateMatch}
                   onReplace={applyReplacements} onUndo={()=>swapReplacement(true)} onRedo={()=>swapReplacement(false)}
