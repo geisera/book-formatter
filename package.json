@@ -10,7 +10,8 @@
     "test": "node scripts/build-import-worker.mjs && vitest run tests/*.test.ts",
     "test:e2e": "playwright test",
     "check:epub": "node scripts/check-epub.mjs",
-    "proof:pdf": "node scripts/build-print-fixtures.mjs"
+    "proof:pdf": "node scripts/build-print-fixtures.mjs",
+    "bench:print": "node scripts/benchmark-print.mjs"
   },
   "repository": {
     "type": "git",
