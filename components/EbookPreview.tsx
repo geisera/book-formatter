@@ -222,7 +222,9 @@ export default function EbookPreview({
               {chapterOrdinal(book.chapters,index)!==null && (edition.chapterNumberStyle??"none")!=="none"
                 ? <span className="ebook-chapter-number">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</span>
                 : null}
-              <h2>{chapter.title}</h2>
+              {(chapter.sectionType??"chapter")!=="chapter" || (edition.showChapterTitle??true)
+                ? <h2>{chapter.title}</h2>
+                : null}
             </> : null}
           </header>
           {chapter?.sectionType === "toc" ? (
