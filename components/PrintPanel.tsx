@@ -18,6 +18,7 @@ export default function PrintPanel({
   onPublish: () => void;
   onAlignmentChange: (alignment: "left" | "justify") => void;
 }) {
+  const [includeFrontCover, setIncludeFrontCover] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
@@ -156,6 +157,7 @@ export default function PrintPanel({
         fonts,
         id: newId(),
         createdAt: new Date().toISOString(),
+        includeFrontCover,
       });
     } catch (e) {
       fail(
@@ -213,6 +215,22 @@ export default function PrintPanel({
                 ? "Left-aligned chapter titles, fine scene rules, minimal running headers."
                 : "Dramatic centered chapter openings, diamond scene ornaments and chapter running headers."}
           </p>
+          <label className="print-justification-toggle">
+            <input
+              type="checkbox"
+              aria-label="Include front cover"
+              checked={includeFrontCover}
+              disabled={busy || !book.cover}
+              onChange={e=>{setIncludeFrontCover(e.target.checked);setResult(null);}}
+            />
+            <span>Include front cover</span>
+          </label>
+          <p>
+            {book.cover
+              ? "Off by default for paperback interiors. When enabled, the PDF starts with a full-page front cover and an unnumbered blank reverse, preserving interior page parity."
+              : "Upload cover artwork in Design to enable this option. Print-ready interiors normally exclude covers."}
+          </p>
+          <p><strong>Print submission:</strong> Retailers generally require a separate full-wrap cover PDF for paperbacks.</p>
           <label className="print-justification-toggle">
             <input
               type="checkbox"
@@ -321,9 +339,9 @@ export default function PrintPanel({
               ))}
             </ul>
             <p>
-              Page numbers follow physical PDF pages. Headers are suppressed on
+              Interior folios retain their original numbering when an unnumbered cover and reverse are included. Headers are suppressed on
               title leaves, chapter openings and intentional blanks. PDF/UA,
-              PDF/X, covers, complex scripts and retailer certification are not
+              PDF/X, full-wrap paperback covers, complex scripts and retailer certification are not
               included.
             </p>
           </details>
