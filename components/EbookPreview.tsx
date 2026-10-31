@@ -148,7 +148,7 @@ export default function EbookPreview({
           {updating ? "Updating…" : "● Live"}
         </span>
       </div>
-      <div className="reader-controls">
+      <div className="reader-controls preview-simulator-toolbar" aria-label="Preview simulator controls">
         <label>
           Reading width
           <select
@@ -192,7 +192,7 @@ export default function EbookPreview({
             ))}
           </select>
         </label>
-        <div className="reader-zoom">
+        <div className="reader-zoom" title="Preview only — text size does not change the exported edition">
           <button
             aria-label="Decrease preview text size"
             disabled={scale <= 0.8}
@@ -203,7 +203,7 @@ export default function EbookPreview({
             A−
           </button>
           <button
-            aria-label="Reset preview text size"
+            aria-label="Reset preview text size (preview only)"
             onClick={() => setScale(1)}
           >
             {Math.round(scale * 100)}%
