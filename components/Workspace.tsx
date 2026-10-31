@@ -12,10 +12,12 @@ import { changeStructure, type StructureAction } from "../lib/structure";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { getPrintEdition, printPreset } from "../lib/print-profile";
 import { blankChapter, createBook, type Book } from "../lib/model";
-import { db, saveBook, saveImportedBook } from "../lib/storage";
+import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [importing, setImporting] = useState(false);
+  const [activeBookMenu, setActiveBookMenu] = useState<string | null>(null);
+  const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
   const [mode, setMode] = useState<
     "manuscript" | "structure" | "design" | "publish" | "print"
   >("manuscript");
@@ -195,6 +197,40 @@ export default function Workspace() {
           ? e.message
           : "Backup failed. Try again before closing.",
       );
+    }
+  }
+  async function bookshelfBackup(item: Book) {
+    try {
+      setActiveBookMenu(null);
+      const source = await db.sources.get(item.id);
+      if (item.importInfo && !source)
+        throw Error("The original imported manuscript is missing. A complete project backup cannot be created.");
+      const bytes = backupBook(item, source);
+      download(bytes,
+        `${item.title.replace(/[^a-z0-9]/gi, "-") || "book"}.book.zip`,
+        "application/zip");
+      setStatus("Project backup downloaded");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not create project backup.");
+    }
+  }
+  async function bookshelfDelete(item: Book) {
+    setActiveBookMenu(null);
+    if (!window.confirm(
+      `Permanently delete "${item.title}"?\\n\\nThis removes the manuscript, original imported file, and saved EPUB/PDF export records from this browser. This cannot be undone. Download a backup first if you want to keep a copy.`
+    )) return;
+    setDeletingBookId(item.id);
+    try {
+      await queue.current;
+      if (failed.current || blocked.current)
+        throw Error("A save failed. Resolve the save error before deleting a book.");
+      await deleteBook(item.id);
+      setBooks(items => items.filter(b => b.id !== item.id));
+      setStatus("Manuscript permanently deleted");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not delete the manuscript.");
+    } finally {
+      setDeletingBookId(null);
     }
   }
   async function original() {
@@ -381,21 +417,41 @@ export default function Workspace() {
                 <p>Opening your bookshelf…</p>
               ) : books.length ? (
                 books.map((b) => (
-                  <button
-                    className="book-card"
-                    key={b.id}
-                    onClick={() => open(b)}
-                  >
-                    <span className="book-spine">{b.title.slice(0, 1)}</span>
-                    <span>
-                      <strong>{b.title}</strong>
-                      <small>
-                        {b.author || "Author not set"} · {b.chapters.length}{" "}
-                        chapter{b.chapters.length !== 1 ? "s" : ""}
-                      </small>
-                    </span>
-                    <span className="arrow">→</span>
-                  </button>
+                  <div className="bookshelf-item" key={b.id}>
+                    <button
+                      className="book-card"
+                      onClick={() => open(b)}
+                      disabled={deletingBookId === b.id}
+                    >
+                      <span className="book-spine">{b.title.slice(0, 1)}</span>
+                      <span>
+                        <strong>{b.title}</strong>
+                        <small>
+                          {b.author || "Author not set"} · {b.chapters.length}{" "}
+                          chapter{b.chapters.length !== 1 ? "s" : ""}
+                        </small>
+                      </span>
+                      <span className="arrow">→</span>
+                    </button>
+                    <div className="bookshelf-menu-wrap">
+                      <button
+                        className="bookshelf-menu-trigger"
+                        type="button"
+                        aria-label={`Actions for ${b.title}`}
+                        aria-expanded={activeBookMenu === b.id}
+                        aria-haspopup="menu"
+                        disabled={Boolean(deletingBookId)}
+                        onClick={() => setActiveBookMenu(activeBookMenu === b.id ? null : b.id)}
+                      >⋯</button>
+                      {activeBookMenu === b.id ? (
+                        <div className="bookshelf-menu" role="menu" aria-label={`Actions for ${b.title}`}>
+                          <button type="button" role="menuitem" onClick={() => {setActiveBookMenu(null);open(b);}}>Open manuscript</button>
+                          <button type="button" role="menuitem" onClick={() => void bookshelfBackup(b)}>Export backup</button>
+                          <button type="button" role="menuitem" className="bookshelf-delete" onClick={() => void bookshelfDelete(b)}>Delete manuscript</button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
                 ))
               ) : (
                 <div className="empty">
