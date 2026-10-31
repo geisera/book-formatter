@@ -93,12 +93,12 @@ export default function StructurePanel({
                 {section.sectionType === "toc" ? (
                   <p className="structure-generated-note">Generated contents: EPUB links and PDF page numbers are built automatically from the current section order. Text typed into this section is not used in the generated contents.</p>
                 ) : null}
-                <label className="structure-title-visibility">
+                {(section.sectionType??"chapter")!=="chapter" ? <label className="structure-title-visibility">
                   <input type="checkbox" aria-label={`Show title on page for ${section.title}`}
                     checked={showSectionTitle(section)}
                     onChange={e => dispatch({kind:"visibility",id:section.id,showTitle:e.target.checked})} />
                   Show section title on page
-                </label>
+                </label> : null}
                 <details className="structure-page-layout">
                   <summary>Page Layout</summary>
                   <p className="control-note">These controls do not change the manuscript editor. Build a new PDF in Print to see the effect. Page side refers to the physical sheet; headers and folios depend on section and page type. EPUB readers control pagination.</p>
