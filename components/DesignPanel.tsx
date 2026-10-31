@@ -86,6 +86,7 @@ export default function DesignPanel({
           <button type="button" onClick={()=>onSectionAction({kind:"reset-layout",id:section.id})}>Restore section defaults</button>
         </details>:null}
       </fieldset>
+      <details className="design-cover-section" open><summary>Cover artwork</summary><CoverEditor cover={cover} onChange={onCoverChange}/></details>
       <div className="template-options" role="group" aria-label="Book design template">
         {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
           <button type="button" key={id}
