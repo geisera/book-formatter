@@ -400,7 +400,7 @@ export default function Workspace() {
     const printAlignment = priorPrint.alignment ?? "left";
     edit({ ...b, editions: {
       ...b.editions, ebook: edition,
-      print: { ...printPreset(edition.template.id, printAlignment, priorPrint.trim), fontSize:priorPrint.fontSize,leading:priorPrint.leading,paragraphSpacing:priorPrint.paragraphSpacing,firstLineIndent:priorPrint.firstLineIndent,chapterOpeningSpace:priorPrint.chapterOpeningSpace,layoutPriority:priorPrint.layoutPriority,hyphenate:priorPrint.hyphenate,hyphenationLanguage:priorPrint.hyphenationLanguage,maxConsecutiveHyphens:priorPrint.maxConsecutiveHyphens,hyphenationExceptions:priorPrint.hyphenationExceptions },
+      print: { ...printPreset(edition.template.id, printAlignment, priorPrint.trim), fontSize:priorPrint.fontSize,leading:priorPrint.leading,paragraphSpacing:priorPrint.paragraphSpacing,firstLineIndent:priorPrint.firstLineIndent,chapterOpeningSpace:priorPrint.chapterOpeningSpace,chapterNumberStyle:priorPrint.chapterNumberStyle,frontMatterTitleScale:priorPrint.frontMatterTitleScale,layoutPriority:priorPrint.layoutPriority,hyphenate:priorPrint.hyphenate,hyphenationLanguage:priorPrint.hyphenationLanguage,maxConsecutiveHyphens:priorPrint.maxConsecutiveHyphens,hyphenationExceptions:priorPrint.hyphenationExceptions },
     } });
   }
   return (
