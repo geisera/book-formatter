@@ -82,24 +82,43 @@ remain important before publication.
 
 For automated checks run `npm run typecheck && npm test && npm run build`.
 
-## Design preview modes
+## Design studio
 
-The **Design** workspace now offers two clearly labeled preview modes:
+The Design workspace uses a responsive two-column layout: compact formatting
+controls on the left and a persistent book preview on the right. The preview
+header offers a simple **Ebook / Paperback** selector; it stays visible while
+changing settings. On narrow screens the panels stack.
 
-- **Ebook · Live:** Immediate reflowable preview for the selected section. The ebook typography controls affect this edition.
-- **Paperback · Proof:** Automatically regenerates a local PDF after a short pause and after the latest local saves commit, then displays the same PDF through PDF.js. It shows **Preparing**, **Updating**, **Up to date**, and actionable failure states; stale pages are hidden during rebuild. The preview is disposable and does not add entries to export history.
+- **Ebook:** Editable ebook typography, paragraph spacing, chapter styling
+  and scene ornaments. The existing reflowable preview responds immediately.
+- **Paperback:** Contextual trim size and paragraph-alignment controls with
+  an automatically refreshed PDF proof preview. The preview uses the same
+  print renderer as export, with preparing/updating/error status. Section-specific
+  start page, vertical placement, folios, headers and spacing remain in Structure.
+- **Templates:** Classic, Modern and Gothic apply to both editions. Cover
+  artwork is available in a collapsible section. The manuscript is not modified.
+- **Exports:** Publish handles EPUB, Print handles final PDF downloads. The Design
+  proof is temporary and does not create an export-history record.
 
-Both editions share template selection, but ebook-only typography controls do not change PDF body metrics. Print-specific page size and justification remain in the Print workspace; individual section starts, vertical placement, running headers, folios and spacing are configured in Structure. The final PDF is downloaded from Print. The proof mode uses the full book and may take time on larger manuscripts. There is no separate approximate print layout engine.
+The print preview is an accurate full-book proof, not a fast approximate
+draft; regenerating large books can take longer. Ebook-only settings are hidden
+in Paperback mode to avoid presenting controls that do not affect the PDF.
 
-### User testing: Design preview
+### User testing: Design studio
 
-1. Open a book → **Design**. Confirm **Ebook · Live** is selected and changes to ebook typography appear in its preview.
-2. Select **Paperback · Proof**. Confirm an updating status appears, followed by facing-page PDF proof (provided metadata and fonts are valid).
-3. Change the template or a section's page-layout settings; return to **Design → Paperback · Proof** and confirm it regenerates with the new layout.
-4. Edit a paragraph and revisit paperback proof mode. Confirm the old proof is not presented as current while rebuilding.
-5. Disconnect after the application shows **Offline app ready**; confirm the proof can be regenerated locally.
+1. Open a book → **Design**. Verify a compact settings panel stays beside the
+   preview without horizontal overflow at desktop width.
+2. Select **Ebook**, change body size and scene ornament, and verify the preview
+   responds without leaving Design.
+3. Select **Paperback**, change trim size and justification, and verify a local
+   updating state followed by the correctly sized PDF proof.
+4. Switch between modes repeatedly and confirm the manuscript and settings
+   persist. Check that ebook-only controls are not shown in Paperback mode.
+5. Try a narrow browser window: panels should stack while controls and preview
+   remain reachable. Repeat offline after the app is cached.
 
-For verification run `npm run typecheck && npm test && npm run build`. Deployed browser behavior and large-novel performance remain acceptance checks.
+Verification commands: `npm run typecheck && npm test && npm run build`.
+The deployed browser layout and performance must also be checked manually.
 
 ## Book structure management (STR-001–STR-004)
 
