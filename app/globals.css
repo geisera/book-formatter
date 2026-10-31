@@ -2166,3 +2166,28 @@ body{background:var(--app-bg);color:var(--text-primary)}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.ProseMirror:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
 @media(max-width:1250px){.workspace-body.mode-manuscript{grid-template-columns:minmax(0,1fr)}.workspace-live-preview{position:static;min-height:0;border-left:0;border-top:1px solid var(--hairline)}.workspace-modes .workspace-save{width:100%;padding-bottom:7px}}
 @media(max-width:800px){.workspace{grid-template-columns:minmax(0,1fr)}.workspace>aside{max-height:280px;overflow:auto;border-right:0;border-bottom:1px solid var(--hairline)}.section-navigator{max-height:160px}.workspace-modes{padding:0 12px}.workspace-utilities{flex-wrap:wrap}.workspace-modes button{padding:10px 8px}.topbar{padding:0 12px}}
+
+
+/* Authoring workspace refinements */
+.workspace-body.mode-manuscript{grid-template-columns:minmax(350px,1fr) minmax(310px,var(--preview-fraction,44%))}
+.workspace-body.mode-manuscript.preview-hidden{grid-template-columns:minmax(0,1fr)}
+.preview-pane-actions{display:flex;gap:8px;align-items:center}
+.preview-pane-actions label{display:flex;align-items:center;gap:7px;margin:0;font-size:11px;color:var(--text-secondary)}
+.preview-pane-actions input[type=range]{width:85px;accent-color:var(--brand-accent)}
+.preview-pane-actions button{padding:6px 9px;border:1px solid var(--hairline);background:#fff;border-radius:5px}
+.dashboard h1{font-size:42px;letter-spacing:-.04em;margin-bottom:14px}
+.dashboard{padding-top:34px;max-width:1140px}
+.dashboard .eyebrow{margin-bottom:12px}
+.dashboard .intro{max-width:680px;font-size:14px;line-height:1.6}
+.dashboard-grid{margin-top:25px;gap:30px;grid-template-columns:minmax(280px,360px) minmax(0,1fr)}
+.dashboard .card{padding:22px;box-shadow:none}
+.dashboard .book-card{box-shadow:none}
+.design-studio{border-color:var(--hairline);background:var(--subtle-bg)}
+.design-studio-controls,.design-studio-preview-head{background:var(--panel-bg)}
+.design-studio-controls .design-panel h2{font-family:Arial,sans-serif;font-size:19px;font-weight:650}
+.design-studio-controls .design-panel fieldset{background:#fff}
+.design-studio-controls .design-section-settings{background:#fff!important;border-color:var(--hairline)}
+.design-studio-preview-head strong{font-weight:650}
+.design-studio-preview-content{background:#f0f1ef}
+@media(max-width:1250px){.workspace-body.mode-manuscript{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.dashboard-grid{grid-template-columns:minmax(0,1fr)}.dashboard{padding:22px 15px}.preview-pane-actions label{display:none}.preview-pane-actions{flex-wrap:wrap}}
