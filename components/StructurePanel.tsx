@@ -11,21 +11,23 @@ const labels: Record<SectionType, string> = {
   acknowledgments: "Acknowledgments", custom: "Custom section",
 };
 export default function StructurePanel({
-  book, selectedId, onAction, onEdit,
+  book, selectedId, onAction, onEdit, onPreviewPrint,
 }: {
   book: Book;
   selectedId: string;
   onAction: (action: StructureAction) => void;
   onEdit: (id: string) => void;
+  onPreviewPrint: () => void;
 }) {
   const [type, setType] = useState<SectionType>("chapter");
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
+  const [layoutNotice, setLayoutNotice] = useState(false);
   const groups = sectionGroups(book);
   const ordered = orderedSections(book);
   const dispatch = (action: StructureAction) => {
-    try { onAction(action); setError(""); } catch (err) {
+    try { onAction(action); setError(""); if (action.kind === "layout" || action.kind === "reset-layout" || action.kind === "visibility") setLayoutNotice(true); } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to change structure.");
     }
   };
@@ -35,6 +37,7 @@ export default function StructurePanel({
       <h2>Arrange your book.</h2>
       <p>Move chapters, organize front and back matter, or split and merge sections. Changes save locally and determine the order of EPUB and PDF exports.</p>
       {error ? <p className="alert" role="alert">{error}</p> : null}
+      {layoutNotice ? <div className="publish-notice" role="status"><p>Section settings saved locally. They affect a newly generated paperback PDF, not this editing screen. Open Print and rebuild the PDF to see the result.</p><button type="button" onClick={onPreviewPrint}>Go to Print</button></div> : null}
       <form className="structure-add" onSubmit={e => {
         e.preventDefault();
         if (!title.trim()) { setError("Enter a title for the new section."); return; }
@@ -98,6 +101,7 @@ export default function StructurePanel({
                 </label>
                 <details className="structure-page-layout">
                   <summary>Page Layout</summary>
+                  <p className="control-note">These controls do not change the manuscript editor. Build a new PDF in Print to see the effect. Page side refers to the physical sheet; headers and folios depend on section and page type. EPUB readers control pagination.</p>
                   <div className="structure-layout-grid">
                     <label>Start page
                       <select aria-label={`Start page for ${section.title}`} value={layout.start}
