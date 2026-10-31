@@ -205,92 +205,75 @@ export default function PrintPanel({
           <div className="eyebrow">OFFLINE PAPERBACK PROOF</div>
           <h2 id="print-title">A book you can hold.</h2>
           <p>
-            {trimLabel}-inch interior using your selected print design. Build the PDF on this device, inspect
-            its actual pages, then download that same file.
+            Choose your paperback format, review the page layout, and export a print interior PDF.
           </p>
         </div>
         <span className="format-stamp">{trimLabel} · NO BLEED</span>
       </div>
-      <div className="print-profile">
-        <div>
-          <strong>{templateLabel} · print edition</strong>
-          <p>
-            Libre Baskerville {profile.fontSize} pt · {profile.leading} pt leading
-            <br />
-            Inside {(profile.inside/72).toFixed(3)}″ · outside {(profile.outside/72).toFixed(3)}″ · top/bottom {(profile.top/72).toFixed(3)}″
-            <br />
-            Mirrored margins · right-hand chapter openings · page numbers
-          </p>
+      <div className="print-settings">
+        <div className="print-settings-main">
+          <div className="print-section-head">
+            <div>
+              <span className="print-section-kicker">01 / FORMAT</span>
+              <h3>Page size</h3>
+              <p>Choose the physical dimensions of your paperback.</p>
+            </div>
+            <span className="print-design-pill">{templateLabel} design</span>
+          </div>
+          <fieldset className="print-trim-options" aria-label="Trim size">
+            <legend className="sr-only">Trim size</legend>
+            {(Object.keys(PRINT_TRIMS) as PrintTrim[]).map(trim=>{
+              const item=PRINT_TRIMS[trim];
+              return <label key={trim} className={profile.trim===trim?"print-trim-card selected":"print-trim-card"}>
+                <input type="radio" name="print-trim" value={trim} checked={profile.trim===trim} disabled={busy}
+                  onChange={()=>{onTrimChange(trim);setResult(null);}}/>
+                <span className="print-trim-card-content">
+                  <span className="print-trim-card-head"><strong>{item.label}<small> in</small></strong>{trim==="5.5x8.5"?<em>Recommended</em>:null}</span>
+                  <span className="print-trim-description">{trim==="5x8"?"Compact fiction · classic paperback":trim==="5.5x8.5"?"Balanced trade paperback": "Roomier layout · fewer pages"}</span>
+                </span>
+                <span aria-hidden="true" className="print-trim-shape" style={{width:trim==="5x8"?24:trim==="5.5x8.5"?27:30,height:trim==="5x8"?38:trim==="5.5x8.5"?41:44}}/>
+              </label>;
+            })}
+          </fieldset>
+          <p className="print-format-note">For most novels, <strong>5.5 × 8.5 inches</strong> offers a familiar, comfortable reading size. Smaller pages typically increase page count; larger pages generally reduce it. Your retailer must use the same trim size.</p>
+          <div className="print-settings-divider" />
+          <div className="print-section-head">
+            <div>
+              <span className="print-section-kicker">02 / OPTIONS</span>
+              <h3>Interior options</h3>
+              <p>Only affects the PDF. Your manuscript and ebook remain unchanged.</p>
+            </div>
+          </div>
+          <div className="print-option-list">
+            <label className="print-option-row">
+              <input type="checkbox" aria-label="Include front cover" checked={includeFrontCover}
+                disabled={busy||!book.cover} onChange={e=>{setIncludeFrontCover(e.target.checked);setResult(null);}}/>
+              <span><strong>Include front cover</strong>
+                <small>{book.cover?"Adds the cover and an unnumbered blank reverse page. Leave off for print-ready interiors.":"Add a cover in Design to enable this option."}</small></span>
+            </label>
+            <label className="print-option-row">
+              <input type="checkbox" aria-label="Justify body text"
+                checked={(book.editions?.print?.alignment??"left")==="justify"} disabled={busy}
+                onChange={e=>{onAlignmentChange(e.target.checked?"justify":"left");setResult(null);}}/>
+              <span><strong>Justify body text</strong>
+                <small>{(book.editions?.print?.alignment??"left")==="justify"?"Even left and right edges, with capped word spacing.":"Left-aligned text with a natural ragged right edge."}</small></span>
+            </label>
+          </div>
         </div>
-        <div>
-          <p className="print-inherited-design">
-            <strong>Print design: {templateLabel}</strong>
-            <span>Inherited from Design. Change your book template in the Design tab.</span>
-          </p>
-          <p>
-            {profile.template.id === "classic"
-              ? "Centered chapter titles, asterisks, traditional running headers."
-              : profile.template.id === "modern"
-                ? "Left-aligned chapter titles, fine scene rules, minimal running headers."
-                : "Dramatic centered chapter openings, diamond scene ornaments and chapter running headers."}
-          </p>
-          <label className="print-trim-selector">Trim size
-            <select aria-label="Trim size" value={profile.trim} disabled={busy}
-              onChange={e=>{onTrimChange(e.target.value as PrintTrim);setResult(null);}}>
-              {(Object.keys(PRINT_TRIMS) as PrintTrim[]).map(trim=>
-                <option key={trim} value={trim}>{PRINT_TRIMS[trim].label} inches — {PRINT_TRIMS[trim].description}</option>
-              )}
-            </select>
-          </label>
-          <p><strong>Which size should I choose?</strong> For most novels, start with <strong>5.5 × 8.5</strong>: a comfortable trade-paperback format. Choose <strong>5 × 8</strong> for a compact, traditional fiction paperback; it usually yields more pages. Choose <strong>6 × 9</strong> for a larger, roomier edition that generally uses fewer pages; it remains the default for existing books.</p>
-          <p>Page count and production cost depend on your manuscript and printer. Select the same trim size when configuring your print retailer. Rebuild the PDF after changing size.</p>
-          <label className="print-justification-toggle">
-            <input
-              type="checkbox"
-              aria-label="Include front cover"
-              checked={includeFrontCover}
-              disabled={busy || !book.cover}
-              onChange={e=>{setIncludeFrontCover(e.target.checked);setResult(null);}}
-            />
-            <span>Include front cover</span>
-          </label>
-          <p>
-            {book.cover
-              ? "Off by default for paperback interiors. When enabled, the PDF starts with a full-page front cover and an unnumbered blank reverse, preserving interior page parity."
-              : "Upload cover artwork in Design to enable this option. Print-ready interiors normally exclude covers."}
-          </p>
-          <p><strong>Print submission:</strong> Retailers generally require a separate full-wrap cover PDF for paperbacks.</p>
-          <label className="print-justification-toggle">
-            <input
-              type="checkbox"
-              checked={(book.editions?.print?.alignment ?? "left") === "justify"}
-              disabled={busy}
-              onChange={(e) => {
-                onAlignmentChange(e.target.checked ? "justify" : "left");
-                setResult(null);
-              }}
-            />
-            <span>Justify body text</span>
-          </label>
-          <p role="status">
-            {(book.editions?.print?.alignment ?? "left") === "justify"
-              ? "Justification on — controlled word spacing."
-              : "Justification off — left-aligned text with a ragged right edge."}
-          </p>
-          <p>
-            Justification caps stretched word spaces at 165% of their natural
-            width. Lines that would need larger gaps remain ragged-right.
-            Rebuild the PDF after changing this option.
-          </p>
-          <p>
-            Print typography is separate from your ebook design. This
-            proof uses a fixed layout for text-only, left-to-right interiors.
-          </p>
-          <p>
-            <b>Feasibility proof, not retailer approval.</b> Inspect the PDF and
-            a physical proof before publication.
-          </p>
-        </div>
+        <aside className="print-settings-aside" aria-label="Print edition summary">
+          <span className="print-section-kicker">YOUR EDITION</span>
+          <div className="print-mini-book" aria-hidden="true"><span>{trimLabel}</span></div>
+          <h3>{templateLabel} paperback</h3>
+          <p className="print-aside-subtitle">Libre Baskerville · {profile.fontSize} pt type · {profile.leading} pt leading</p>
+          <dl className="print-spec-list">
+            <div><dt>Trim</dt><dd>{trimLabel} inches</dd></div>
+            <div><dt>Inside margin</dt><dd>{(profile.inside/72).toFixed(3)}″</dd></div>
+            <div><dt>Outside margin</dt><dd>{(profile.outside/72).toFixed(3)}″</dd></div>
+            <div><dt>Top / bottom</dt><dd>{(profile.top/72).toFixed(3)}″</dd></div>
+            <div><dt>Chapter starts</dt><dd>Right-hand</dd></div>
+          </dl>
+          <p className="print-aside-footnote">Print style follows the <strong>Design</strong> tab. Retailers usually require a separate full-wrap paperback cover PDF.</p>
+        </aside>
       </div>
       {error ? (
         <p className="alert" role="alert">
