@@ -220,7 +220,9 @@ export default function EbookPreview({
             <div className="ebook-opening-rule" aria-hidden="true" />
             {chapter && showSectionTitle(chapter) ? <>
               {chapterOrdinal(book.chapters,index)!==null && (edition.chapterNumberStyle??"none")!=="none"
-                ? <span className="ebook-chapter-number">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</span>
+                ? ((edition.showChapterTitle??true)
+                    ? <span className="ebook-chapter-number">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</span>
+                    : <h2 className="ebook-chapter-number number-only">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</h2>)
                 : null}
               {(chapter.sectionType??"chapter")!=="chapter" || (edition.showChapterTitle??true)
                 ? <h2>{chapter.title}</h2>
