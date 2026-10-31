@@ -15,6 +15,15 @@ test("edits image properties and replaces image without losing its caption", asy
  const panel=page.getByRole("region",{name:"Image properties"});
  await expect(panel).toBeVisible();
  await expect(panel).toHaveCSS("position","fixed");
+ await panel.getByRole("button",{name:"Close"}).click();
+ await expect(panel).not.toBeVisible();
+ await page.locator(".ProseMirror figure.manuscript-image img").click();
+ await expect(panel).toBeVisible();
+ await expect(page.locator(".ProseMirror figure.manuscript-image")).toHaveClass(/ProseMirror-selectednode/);
+ const buttons=panel.locator(".image-properties-actions button");
+ await expect(buttons).toHaveCount(3);
+ const positions=await buttons.evaluateAll(elements=>elements.map(el=>Math.round(el.getBoundingClientRect().top)));
+ expect(new Set(positions).size).toBe(1);
  await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
  await expect(panel).toBeInViewport();
  await panel.getByLabel("Image width").selectOption("50");
