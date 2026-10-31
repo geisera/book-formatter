@@ -67,6 +67,7 @@ export default function Workspace() {
   const [backupPrompt,setBackupPrompt]=useState(false);
   const [sectionMenu,setSectionMenu]=useState<string|null>(null);
   const [draggingSection,setDraggingSection]=useState<string|null>(null);
+  const [dropTarget,setDropTarget]=useState<{group:"front"|"body"|"back";before?:string}|null>(null);
   const [dontAskBackup,setDontAskBackup]=useState(false);
   const [findOpen,setFindOpen]=useState(false);
   const [findConfig,setFindConfig]=useState<SearchConfig>({query:"",replacement:"",scope:"chapter",caseSensitive:false,wholeWord:false});
@@ -396,6 +397,7 @@ export default function Workspace() {
     const key=`book-formatter:backup-first-seen:${book.id}`;
     if(!localStorage.getItem(key)){localStorage.setItem(key,String(Date.now()));setBackupRefresh(v=>v+1);}
   },[book?.id]);
+  const clearDrag=()=>{setDraggingSection(null);setDropTarget(null);};
   const backupBaseline=book?backupMarker(book.id):null;
   const backupWordDelta=book?bookWords(book)-(backupBaseline?.words??0):0;
   const backupFirstSeen=book?(Number(globalThis.window?.localStorage.getItem(`book-formatter:backup-first-seen:${book.id}`)??Date.now())):Date.now();
@@ -671,7 +673,7 @@ export default function Workspace() {
             <div className="section-navigator" aria-label="Book sections">
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
-                <div className="chapter-list" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});setDraggingSection(null);}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className="sidebar-section-row" onDragEnd={()=>setDraggingSection(null)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});setDraggingSection(null);}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
+                <div className="chapter-list" onDragOver={e=>{e.preventDefault();if(draggingSection)setDropTarget({group});}} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});clearDrag();}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className={`sidebar-section-row${draggingSection===c.id?" is-dragging":""}${dropTarget?.group===group&&dropTarget.before===c.id?" drop-before":""}`} onDragEnd={clearDrag} onDragOver={e=>{e.preventDefault();e.stopPropagation();if(draggingSection)setDropTarget({group,before:c.id});}} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});clearDrag();}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
                   <small>{(c.sectionType??"chapter").replaceAll("-"," ")}
                     {readinessIssues.some(issue=>issue.severity==="error"&&issue.location.startsWith(`Section ${book.chapters.indexOf(c)+1}:`))?
                       <span className="section-issue-dot" title="Export validation issue" aria-label="Export validation issue">●</span>:null}
@@ -683,7 +685,7 @@ export default function Workspace() {
                   <button role="menuitem" disabled={book.chapters.indexOf(c)===book.chapters.length-1||sectionMatter(book.chapters[book.chapters.indexOf(c)+1].sectionType??"chapter")!==group} onClick={()=>{setSectionMenu(null);updateStructure({kind:"move",id:c.id,to:book.chapters.indexOf(c)+1});}}>Move down</button>
                   <button role="menuitem" onClick={()=>{setSectionMenu(null);updateStructure({kind:"duplicate",id:c.id});}}>Duplicate</button>
                   <button role="menuitem" disabled={book.chapters.length===1} onClick={()=>{setSectionMenu(null);if(window.confirm("Delete this section and its content?"))updateStructure({kind:"delete",id:c.id});}}>Delete</button>
-                </div>:null}</div>)}</div>
+                </div>:null}</div>)}{draggingSection&&dropTarget?.group===group&&!dropTarget.before?<div className="sidebar-drop-end" aria-label="Drop section at end of group">Drop here · end of {group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</div>:null}</div>
               </details>)}
             </div>
             <small className="backup-time sidebar-backup-time">{backupLabel(book.id)}</small>
