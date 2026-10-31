@@ -618,3 +618,20 @@ describe("designed PDF front matter",()=>{
   expect(result.record.pages.some(p=>p.kind==="title")).toBe(true);
  },30000);
 });
+
+describe("expanded conventional sections in paperback",()=>{
+ it("builds all new types without overflow or changing manuscripts",async()=>{
+   const b=createBook("Book","Author");
+   const types=["foreword","introduction","praise","afterword","bibliography","appendix","glossary","endnotes"] as const;
+   b.chapters=types.map((sectionType,index)=>({
+     ...blankChapter("Section "+sectionType),sectionType,
+     content:{type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Reference material for "+sectionType+"."}]}]},
+   }));
+   const original=structuredClone(b.chapters);
+   const pdf=await buildPrintPdf(b,fonts,options);
+   expect(pdf.bytes.length).toBeGreaterThan(1000);
+   expect(pdf.record.pages.filter(p=>p.kind==="chapter").length).toBe(types.length);
+   expect(pdf.record.checks.overflow).toBe(0);
+   expect(b.chapters).toEqual(original);
+ },30000);
+});
