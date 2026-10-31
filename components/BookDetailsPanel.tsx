@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import type {Book} from "../lib/model";
+import {validLanguage} from "../lib/epub";
 import {PUBLICATION_LIMITS, validIsbn13, validPublicationDate, validatePublicationMetadata, type PublicationMetadata} from "../lib/publication-metadata";
 type Details = {title:string;author:string;language:string;metadata:PublicationMetadata};
 export default function BookDetailsPanel({book,onSave}:{book:Book;onSave:(details:Details)=>Promise<void>}){
@@ -19,7 +20,7 @@ export default function BookDetailsPanel({book,onSave}:{book:Book;onSave:(detail
    const metadata=Object.fromEntries(Object.entries(form.metadata).map(([k,v])=>[k,v.trim()]).filter(([,v])=>v)) as PublicationMetadata;
    validatePublicationMetadata(metadata);
    if(!form.title.trim()||!form.author.trim())throw Error("Publication title and author are required.");
-   if(!form.language.trim())throw Error("Language is required.");
+   if(!validLanguage(form.language))throw Error("Enter a valid language tag, such as en-US or fr.");
    setBusy(true);
    await onSave({title:form.title.trim(),author:form.author.trim(),language:form.language.trim(),metadata});
    setNotice("Book details saved locally.");
