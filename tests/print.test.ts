@@ -572,3 +572,24 @@ describe("standalone paperback chapter number settings",()=>{
   }
  },60000);
 });
+
+describe("heading-only PDF sections",()=>{
+ it("allows a text-free chapter when its title or generated number is visible",async()=>{
+  const b=createBook("Murder is Mandatory","Author");
+  b.chapters[0].title="Murder is Mandatory";
+  b.chapters[0].showTitle=false; // obsolete Structure setting
+  const original=structuredClone(b.chapters);
+  for (const [chapterNumberStyle,showChapterTitle] of [["none",true],["roman",false],["arabic",false]] as const) {
+    b.editions!.print={...getPrintEdition(b),chapterNumberStyle,showChapterTitle};
+    const result=await buildPrintPdf(b,fonts,options);
+    expect(result.bytes.length).toBeGreaterThan(1000);
+    expect(result.record.pages.some(p=>p.kind==="chapter"&&p.chapterId===b.chapters[0].id)).toBe(true);
+    expect(b.chapters).toEqual(original);
+  }
+ },30000);
+ it("rejects a truly blank chapter when title and numbering are both hidden",async()=>{
+  const b=createBook("Book","Author");
+  b.editions!.print={...getPrintEdition(b),chapterNumberStyle:"none",showChapterTitle:false};
+  await expect(buildPrintPdf(b,fonts,options)).rejects.toThrow("preflight");
+ });
+});
