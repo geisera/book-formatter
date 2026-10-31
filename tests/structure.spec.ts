@@ -12,10 +12,16 @@ test("organizes and persists sections locally, including reordered export order"
   const description=page.locator("#new-section-type-description");
   await expect(description).toHaveCSS("grid-column-start","1");
   await expect(description).toHaveCSS("grid-column-end","-1");
-  const controls=page.locator(".structure-add > label");
+  // The form aligns the controls at their bottom edges, not the labels' top edges.
   await expect.poll(async()=> {
-    const boxes=await Promise.all([controls.nth(0).boundingBox(),controls.nth(1).boundingBox(),description.boundingBox()]);
-    return !!boxes[0] && !!boxes[1] && !!boxes[2] && Math.abs(boxes[0].y-boxes[1].y)<2 && boxes[2].y>=Math.max(boxes[0].y+boxes[0].height,boxes[1].y+boxes[1].height);
+    const [select,input,help]=await Promise.all([
+      page.locator('.structure-add select').boundingBox(),
+      page.locator('.structure-add input').boundingBox(),
+      description.boundingBox(),
+    ]);
+    return !!select && !!input && !!help &&
+      Math.abs((select.y+select.height)-(input.y+input.height))<4 &&
+      help.y>=Math.max(select.y+select.height,input.y+input.height);
   }).toBe(true);
   await expect(description).toContainText("main story");
   const useCase=description.locator(".structure-add-use-case");
