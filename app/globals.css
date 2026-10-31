@@ -1964,3 +1964,24 @@ aside h2 {
 .book-details-panel .primary{margin-top:18px}
 .book-details-fields [aria-invalid="true"]{border-color:#982e2e}
 @media(max-width:660px){.book-details-panel{padding:16px}.book-details-fields{grid-template-columns:1fr}}
+
+/* Manuscript find and replace. */
+.find-panel{margin:12px 0 22px;padding:16px;background:#f7f7f0;border:1px solid var(--line);border-radius:7px}
+.find-panel-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.find-panel-heading button{border:0;background:transparent;font-size:24px;cursor:pointer}
+.find-panel-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.find-panel-fields label{display:flex;flex-direction:column;gap:5px;font-size:13px}
+.find-panel-fields input,.find-panel-options select{width:100%;min-width:0;padding:8px;border:1px solid var(--line);border-radius:4px;background:white}
+.find-panel-options{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:12px 0;font-size:12px}
+.find-panel-options label{display:flex;align-items:center;gap:5px}
+.find-panel-options input{accent-color:#445d43}
+.find-panel-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.find-panel-actions button{padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:white;cursor:pointer}
+.find-panel-actions button:disabled{opacity:.45;cursor:not-allowed}
+.find-panel-actions [role=status]{margin-right:8px;font-size:12px}
+.find-results{max-height:120px;overflow-y:auto;margin:12px 0 0;padding-left:20px}
+.find-results button{border:0;background:transparent;text-align:left;cursor:pointer;text-decoration:underline}
+.ProseMirror .find-match{background:#fff0a1;border-radius:2px}
+.ProseMirror ::selection{background:#b5d3d2}
+.editor-meta>button{border:1px solid var(--line);padding:5px 8px;background:white;border-radius:4px;cursor:pointer}
+@media(max-width:660px){.find-panel-fields{grid-template-columns:1fr}}
