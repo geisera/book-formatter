@@ -718,7 +718,7 @@ export default function Workspace() {
                       key={`${book.id}-${chapter.id}-${editorVersion}`}
                       search={findOpen?{query:findConfig.query,options:{caseSensitive:findConfig.caseSensitive,wholeWord:findConfig.wholeWord}}:undefined}
                       focusMatch={findFocus}
-                      content={chapter.content}
+                      content={sectionIsEmpty(chapter)?sectionTemplateContent(chapter):chapter.content}
                       onChange={(content) => {
                         setReplacementHistory(null);setReplacementUndone(false);
                         const b = current.current;
@@ -766,7 +766,9 @@ export default function Workspace() {
                     onSectionAction={updateStructure}
                   onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}
                   />
-                  {chapter ? <div className="design-section-editor" style={{padding:"1rem",marginTop:"1rem",borderTop:"1px solid var(--border, #ddd)"}}>
+                </aside>
+                <section className="design-studio-preview" aria-label="Book design preview">
+                  {chapter ? <div className="design-section-editor" style={{padding:"1rem",marginBottom:"1rem",borderBottom:"1px solid var(--border, #ddd)"}}>
                     <h3>Edit section text</h3>
                     <label>Section title
                       <input className="chapter-title" aria-label="Design section title" value={chapter.title}
@@ -783,15 +785,14 @@ export default function Workspace() {
                         setEditorVersion(v=>v+1);
                       }}>Insert {chapter.sectionType??"chapter"} template</button>
                     {!sectionIsEmpty(chapter)?<p className="control-note">The template can only be inserted when the section is empty.</p>:null}
-                    <Editor key={`design-${book.id}-${chapter.id}-${editorVersion}`} content={chapter.content}
+                    <Editor key={`design-${book.id}-${chapter.id}-${editorVersion}`} content={sectionIsEmpty(chapter)?sectionTemplateContent(chapter):chapter.content}
                       onChange={content=>{
                         const b=current.current;
                         if(!b)return;
                         edit({...b,chapters:b.chapters.map(c=>c.id===chapter.id?{...c,content}:c)});
                       }}/>
                   </div>:null}
-                </aside>
-                <section className="design-studio-preview" aria-label="Book design preview">
+
                   <div className="design-studio-preview-head">
                     <div><strong>Preview</strong><span>{designPreview==="ebook"?"Ebook layout updates as you edit":"Paperback pages update after saving"}</span></div>
                     <div className="design-studio-format" role="group" aria-label="Preview format">
