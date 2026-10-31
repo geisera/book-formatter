@@ -529,3 +529,27 @@ describe("facing-page balancing",()=>{
   expect(results[1].profile.layoutPriority).toBe("balanced");
  },60000);
 });
+
+describe("paperback heading presentation",()=>{
+ it("renders optional chapter labels and scalable front headings without modifying source",async()=>{
+  const b=fixture();
+  b.chapters=[{...blankChapter("Foreword"),sectionType:"preface",content:{type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Before the journey."}]}]}},...b.chapters];
+  const source=structuredClone(b.chapters);
+  for(const chapterNumberStyle of ["arabic","roman","none"] as const){
+    b.editions!.print={...getPrintEdition(b),chapterNumberStyle,frontMatterTitleScale:1.2};
+    const built=await buildPrintPdf(b,fonts,options);
+    expect(built.record.profile).toMatchObject({chapterNumberStyle,frontMatterTitleScale:1.2});
+    expect(built.record.checks).toMatchObject({overflow:0,splitViolations:0});
+    expect(built.record.pages.filter(p=>p.kind==="chapter").every(p=>p.page%2===1)).toBe(true);
+    expect(b.chapters).toEqual(source);
+  }
+ },60000);
+ it("rejects unsupported heading presentation settings and preserves round-trip configuration",()=>{
+  const b=fixture();
+  b.editions!.print={...getPrintEdition(b),chapterNumberStyle:"roman",frontMatterTitleScale:1.3};
+  const restored=restoreBook(backupBook(b));
+  expect(getPrintEdition(restored)).toMatchObject({chapterNumberStyle:"roman",frontMatterTitleScale:1.3});
+  expect(()=>validatePrintEdition({...getPrintEdition(b),frontMatterTitleScale:3})).toThrow("front matter");
+  expect(()=>validatePrintEdition({...getPrintEdition(b),chapterNumberStyle:"words" as "roman"})).toThrow("chapter numbering");
+ });
+});
