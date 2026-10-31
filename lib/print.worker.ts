@@ -6,11 +6,12 @@ self.onmessage = async (
     fonts: PrintFonts;
     id: string;
     createdAt: string;
+    includeFrontCover?: boolean;
   }>,
 ) => {
   try {
-    const { book, fonts, id, createdAt } = event.data;
-    const result = await buildPrintPdf(book, fonts, { id, createdAt });
+    const { book, fonts, id, createdAt, includeFrontCover } = event.data;
+    const result = await buildPrintPdf(book, fonts, { id, createdAt, includeFrontCover });
     self.postMessage(
       { ok: true, ...result },
       { transfer: [result.bytes.buffer as ArrayBuffer] },
