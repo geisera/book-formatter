@@ -86,8 +86,9 @@ No feature above is labeled **publication-ready** solely because it generates a 
 ## Chapter numbering and front-matter typography
 
 Both **Design → Ebook** and **Design → Paperback** provide independent
-optional chapter labels (Arabic or Roman numerals above the existing
-chapter title) and front-matter heading scaling (0.75×–1.50×).
+optional chapter labels (Arabic or Roman numerals), independently controlled
+chapter-title visibility, and front-matter heading scaling (0.75×–1.50×).
+The chapter number can appear by itself, above the title, or not at all.
 Ebook controls update the live preview and exported EPUB XHTML/CSS;
 paperback controls update generated PDF proofs.
 Numbering counts chapter-type sections only, excluding prefaces, prologues,
