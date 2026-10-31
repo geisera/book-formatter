@@ -22,6 +22,8 @@ import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
+  const [previewWidth,setPreviewWidth]=useState(44);
+  const [previewVisible,setPreviewVisible]=useState(true);
   const [findOpen,setFindOpen]=useState(false);
   const [findConfig,setFindConfig]=useState<SearchConfig>({query:"",replacement:"",scope:"chapter",caseSensitive:false,wholeWord:false});
   const [findFocus,setFindFocus]=useState<{from:number;to:number;nonce:number}|undefined>();
@@ -647,7 +649,7 @@ export default function Workspace() {
                 </span>
               </div>
             </nav>
-            <div className={`workspace-body mode-${mode}`}>
+            <div className={`workspace-body mode-${mode}${mode==="manuscript"&&!previewVisible?" preview-hidden":""}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as React.CSSProperties:undefined}>
               <section className="editor-area" hidden={mode !== "manuscript"}>
                 {findOpen?<FindReplacePanel book={book} chapterId={chapterId} config={findConfig} onConfig={setFindConfig} onClose={()=>setFindOpen(false)} onNavigate={navigateMatch}
                   onReplace={applyReplacements} onUndo={()=>swapReplacement(true)} onRedo={()=>swapReplacement(false)}
@@ -656,7 +658,7 @@ export default function Workspace() {
                 <div className="editor-meta">
                   <span>MANUSCRIPT / {chapter?.title}</span>
                   <button type="button" onClick={()=>setFindOpen(v=>!v)} aria-label="Find and replace manuscript">Find & Replace</button>
-                  <span>Chapter text</span>
+                  <button type="button" onClick={()=>setPreviewVisible(v=>!v)}>{previewVisible?"Hide preview":"Show preview"}</button>
                 </div>
                 {chapter ? (
                   <article className="paper">
@@ -702,8 +704,10 @@ export default function Workspace() {
                   <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
                 </p>
               </section>
-              {mode === "manuscript" ? <aside className="workspace-live-preview" aria-label="Live book preview">
-                <div className="workspace-live-preview-head"><strong>Live preview</strong><button type="button" onClick={()=>setMode("design")}>Customize</button></div>
+              {mode === "manuscript" && previewVisible ? <aside className="workspace-live-preview" aria-label="Live book preview">
+                <div className="workspace-live-preview-head"><strong>Live preview</strong>
+                  <div className="preview-pane-actions"><label>Width <input aria-label="Preview pane width" type="range" min="30" max="65" value={previewWidth} onChange={e=>setPreviewWidth(Number(e.target.value))}/></label><button type="button" onClick={()=>setMode("design")}>Customize</button><button type="button" onClick={()=>setPreviewVisible(false)}>Hide</button></div>
+                </div>
                 <EbookPreview hidden={false} book={book} chapter={chapter} chapterId={chapterId}
                   edition={getEbookEdition(book)} onNavigate={setChapterId} updating={false}/>
               </aside> : null}
