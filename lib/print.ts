@@ -1,3 +1,4 @@
+import { chapterNumberLabel } from "./chapter-numbering";
 import { decodeImage, embeddedImages } from "./images";
 import {hyphenationPoints} from "./hyphenation";
 import {shouldBalanceParagraphTail} from "./facing-balance";
@@ -448,11 +449,6 @@ export async function buildPrintPdf(
   y -= 35;
   centered(author, 12, 19);
   let numberedChapters=0;
-  const roman=(n:number):string=>{
-    let out="";for(const [value,glyph] of [[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]] as const){
-      while(n>=value){out+=glyph;n-=value;}
-    }return out;
-  };
   for (const [chapterIndex,chapter] of book.chapters.entries()) {
     options.onProgress?.(Math.round(15+65*chapterIndex/book.chapters.length),`Laying out section ${chapterIndex+1} of ${book.chapters.length}`);
     if ((chapter.sectionType??"chapter")==="chapter") numberedChapters++;
@@ -494,7 +490,7 @@ export async function buildPrintPdf(
     y = topBaseline - activeLayout.spaceBefore - offset - (profile.chapterOpeningSpace ?? 0);
     if (showSectionTitle(chapter)) {
       if ((chapter.sectionType??"chapter")==="chapter" && profile.chapterNumberStyle && profile.chapterNumberStyle!=="none") {
-        const label=profile.chapterNumberStyle==="roman"?roman(numberedChapters):String(numberedChapters);
+        const label=chapterNumberLabel(profile.chapterNumberStyle,numberedChapters)!;
         centered(textLines(label,Math.max(10,headingSize*0.75),"bold"),Math.max(10,headingSize*0.75),24);
         y-=10;
       }
