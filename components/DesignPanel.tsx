@@ -1,6 +1,7 @@
 "use client";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
-import type {Book} from "../lib/model";
+import {getSectionLayout,showSectionTitle,sectionMatter,type Book,type SectionPageLayout} from "../lib/model";
+import type {StructureAction} from "../lib/structure";
 import {PRINT_TRIMS,PRINT_PRESETS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
 import CoverEditor from "./CoverEditor";
 export default function DesignPanel({
@@ -14,7 +15,15 @@ export default function DesignPanel({
   onPrintTrim,
   onPrintAlignment,
   onPrintTypography,
+  book,
+  selectedId,
+  onSelectSection,
+  onSectionAction,
 }: {
+  book: Book;
+  selectedId: string;
+  onSelectSection: (id:string)=>void;
+  onSectionAction: (action:StructureAction)=>void;
   edition: EbookEdition;
   cover: Book["cover"];
   onCoverChange: (cover:Book["cover"])=>void;
@@ -26,6 +35,9 @@ export default function DesignPanel({
   onPrintAlignment: (align:"left"|"justify")=>void;
   onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace">>)=>void;
 }) {
+  const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
+  const layout=section ? getSectionLayout(section) : null;
+  function sectionLayout(changes:Partial<SectionPageLayout>){if(section)onSectionAction({kind:"layout",id:section.id,changes});}
   function change<K extends keyof EbookEdition>(
     key: K,
     value: EbookEdition[K],
@@ -41,6 +53,39 @@ export default function DesignPanel({
       <div className="eyebrow">BOOK DESIGN</div>
       <h2>Appearance</h2>
       <p className="design-intro">Choose a style and refine the {format==="ebook"?"ebook":"paperback"} edition. Your manuscript stays unchanged.</p>
+      <fieldset className="design-section-settings"><legend>Selected section</legend>
+        <label>Section
+          <select aria-label="Design section" value={section?.id??""} onChange={e=>onSelectSection(e.target.value)}>
+            {book.chapters.map(c=><option key={c.id} value={c.id}>{c.title} · {sectionMatter(c.sectionType??"chapter")}</option>)}
+          </select>
+        </label>
+        {section&&layout?<details open className="design-section-detail">
+          <summary>Section appearance</summary>
+          <label className="design-toggle"><input type="checkbox" checked={showSectionTitle(section)}
+            onChange={e=>onSectionAction({kind:"visibility",id:section.id,showTitle:e.target.checked})}/>Show section title</label>
+          {format==="print"?<>
+            <label>Start page<select aria-label="Design section start" value={layout.start} onChange={e=>sectionLayout({start:e.target.value as SectionPageLayout["start"]})}>
+              <option value="next">Next page</option><option value="recto">Right-hand</option><option value="verso">Left-hand</option>
+            </select></label>
+            <label>Vertical position<select aria-label="Design section vertical" value={layout.vertical} onChange={e=>sectionLayout({vertical:e.target.value as SectionPageLayout["vertical"]})}>
+              <option value="top">Top</option><option value="center">Center</option><option value="bottom">Bottom</option>
+            </select></label>
+            <label>Running header<select aria-label="Design section header" value={layout.header} onChange={e=>sectionLayout({header:e.target.value as SectionPageLayout["header"]})}>
+              <option value="auto">Automatic</option><option value="show">Show</option><option value="hide">Hide</option>
+            </select></label>
+            <label>Page number<select aria-label="Design section page number" value={layout.pageNumber} onChange={e=>sectionLayout({pageNumber:e.target.value as SectionPageLayout["pageNumber"]})}>
+              <option value="auto">Automatic</option><option value="show">Show</option><option value="hide">Hide</option>
+            </select></label>
+            <label>Spacing before ({layout.spaceBefore} pt)
+              <input aria-label="Design section spacing before" type="range" min="0" max="120" step="5" value={layout.spaceBefore} onChange={e=>sectionLayout({spaceBefore:Number(e.target.value)})}/>
+            </label>
+            <label>Spacing after ({layout.spaceAfter} pt)
+              <input aria-label="Design section spacing after" type="range" min="0" max="120" step="5" value={layout.spaceAfter} onChange={e=>sectionLayout({spaceAfter:Number(e.target.value)})}/>
+            </label>
+          </>:<p className="control-note">Ebook readers control physical pages. Use Paperback for page starts, headers, and page numbers.</p>}
+          <button type="button" onClick={()=>onSectionAction({kind:"reset-layout",id:section.id})}>Restore section defaults</button>
+        </details>:null}
+      </fieldset>
       <div className="template-options" role="group" aria-label="Book design template">
         {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
           <button type="button" key={id}
