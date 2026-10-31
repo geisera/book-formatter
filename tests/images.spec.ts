@@ -14,6 +14,9 @@ test("edits image properties and replaces image without losing its caption", asy
  });
  const panel=page.getByRole("region",{name:"Image properties"});
  await expect(panel).toBeVisible();
+ await expect(panel).toHaveCSS("position","fixed");
+ await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+ await expect(panel).toBeInViewport();
  await panel.getByLabel("Image width").selectOption("50");
  await panel.getByLabel("Image alignment").selectOption("right");
  await panel.getByLabel("Image alternative text").fill("A map of the city");
