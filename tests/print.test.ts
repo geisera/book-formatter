@@ -91,6 +91,20 @@ describe("offline print proof", () => {
     expect(b).toEqual(before);
     await expect(buildPrintPdf({...b,cover:undefined},fonts,{...options,includeFrontCover:true})).rejects.toThrow("Upload cover artwork");
   },20000);
+  it("includes optional publishing metadata in PDF properties without rewriting printed title pages", async()=>{
+    const book=fixture();
+    book.metadata={subtitle:"The Long Road",publisher:"North Press",description:"A story about the road.",isbn:"978-0-306-40615-7",seriesName:"The Journey",seriesNumber:"3",publicationDate:"2026-10-31"};
+    const original=structuredClone(book.chapters);
+    const built=await buildPrintPdf(book,fonts,options);
+    const pdf=await PDFDocument.load(built.bytes);
+    expect(pdf.getTitle()).toBe("A print proof: The Long Road");
+    expect(pdf.getSubject()).toBe("A story about the road.");
+    expect(pdf.getKeywords()).toContain("isbn:9780306406157");
+    expect(pdf.getKeywords()).toContain("publisher:North Press");
+    expect(pdf.getKeywords()).toContain("series:The Journey #3");
+    expect(pdf.getKeywords()).toContain("publication-date:2026-10-31");
+    expect(book.chapters).toEqual(original);
+  },20000);
   it("preserves a separate print profile through project backups and supplies defaults for old books", () => {
     const b = fixture();
     expect(getPrintEdition(restoreBook(backupBook(b)))).toEqual(CLASSIC_PRINT);
