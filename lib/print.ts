@@ -3,10 +3,10 @@ import { normalizedIsbn } from "./publication-metadata";
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage, type PDFImage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter, type SectionPageLayout, type TextAlignment, type Book } from "./model";
-import { getPrintEdition, type PrintEdition } from "./print-profile";
+import { getPrintEdition, PRINT_TRIMS, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-export const PRINT_RENDERER = "print-proof-1.4.0";
+export const PRINT_RENDERER = "print-proof-1.5.0";
 export type PrintFonts = {
   regular: Uint8Array;
   italic: Uint8Array;
@@ -90,8 +90,8 @@ export async function buildPrintPdf(
     const source = decodeImage(image.src);
     embedded.set(image.src, source.mediaType === "image/png" ? await pdf.embedPng(source.bytes) : await pdf.embedJpg(source.bytes));
   }
-  const WIDTH = 432,
-    HEIGHT = 648,
+  const WIDTH = PRINT_TRIMS[profile.trim].width,
+    HEIGHT = PRINT_TRIMS[profile.trim].height,
     contentWidth = WIDTH - profile.inside - profile.outside,
     leading = profile.leading,
     size = profile.fontSize,
@@ -678,7 +678,7 @@ export async function buildPrintPdf(
   pdf.setModificationDate(created);
   pdf.setLanguage(book.language ?? "en");
   pdf.setKeywords([
-    `${profile.template.id} 6x9 no bleed`,
+    `${profile.template.id} ${profile.trim} no bleed`,
     `revision:${book.revision}`,
     `snapshot:${inputChecksum}`,
     ...(book.metadata?.isbn ? [`isbn:${normalizedIsbn(book.metadata.isbn)}`] : []),
@@ -687,7 +687,7 @@ export async function buildPrintPdf(
     ...(book.metadata?.publicationDate ? [`publication-date:${book.metadata.publicationDate}`] : []),
   ]);
   const bytes = await pdf.save({ useObjectStreams: false });
-  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}${profile.template.id === "classic" ? "" : `-${profile.template.id}`}${options.includeFrontCover ? "-with-cover" : ""}-6x9-proof.pdf`;
+  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}${profile.template.id === "classic" ? "" : `-${profile.template.id}`}${options.includeFrontCover ? "-with-cover" : ""}-${profile.trim}-proof.pdf`;
   return {
     bytes,
     record: {
