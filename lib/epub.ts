@@ -1,11 +1,12 @@
 import { decodeImage, embeddedImages } from "./images";
+import { normalizedIsbn } from "./publication-metadata";
 import { zipSync, strToU8, unzipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
 import { schema, validateBook, showSectionTitle, getSectionLayout, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
-export const EPUB_RENDERER = "epub-1.2.0";
+export const EPUB_RENDERER = "epub-1.3.0";
 export type ExportIssue = {
   severity: "error" | "warning";
   location: string;
@@ -328,9 +329,20 @@ export function buildEpub(
     files["EPUB/fonts/bold.woff"] = fonts.bold;
     files["EPUB/fonts/OFL.txt"] = fonts.license;
   }
+  const metadata = book.metadata;
+  const additionalMetadata = [
+    metadata?.subtitle
+      ? `<dc:title id="publication-subtitle">${xml(metadata.subtitle)}</dc:title><meta refines="#publication-subtitle" property="title-type">subtitle</meta>` : "",
+    metadata?.publisher ? `<dc:publisher>${xml(metadata.publisher)}</dc:publisher>` : "",
+    metadata?.description ? `<dc:description>${xml(metadata.description)}</dc:description>` : "",
+    metadata?.publicationDate ? `<dc:date>${xml(metadata.publicationDate)}</dc:date>` : "",
+    metadata?.isbn ? `<dc:identifier id="isbn-id">urn:isbn:${xml(normalizedIsbn(metadata.isbn))}</dc:identifier><meta refines="#isbn-id" property="identifier-type" scheme="onix:codelist5">15</meta>` : "",
+    metadata?.seriesName
+      ? `<meta id="series-name" property="belongs-to-collection">${xml(metadata.seriesName)}</meta><meta refines="#series-name" property="collection-type">series</meta>${metadata.seriesNumber ? `<meta refines="#series-name" property="group-position">${xml(metadata.seriesNumber)}</meta>` : ""}` : "",
+  ].join("");
   add(
     "EPUB/package.opf",
-    `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang="${xml(language)}"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pub-id">urn:book-formatter:${xml(encodeURIComponent(book.id))}</dc:identifier><dc:title>${xml(book.title)}</dc:title><dc:creator>${xml(book.author)}</dc:creator><dc:language>${xml(language)}</dc:language><meta property="dcterms:modified">${modified}</meta><meta name="generator" content="Book Formatter ${EPUB_RENDERER}"/></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/><item id="style" href="style.css" media-type="text/css"/>${paths.map((p, i) => `<item id="chapter-${i + 1}" href="${p}" media-type="application/xhtml+xml"/>`).join("")}${fontManifest}${imageManifest.join("")}${coverManifest}</manifest><spine>${coverSpine}<itemref idref="title"/><itemref idref="nav"/>${paths.map((_, i) => `<itemref idref="chapter-${i + 1}"/>`).join("")}</spine></package>`,
+    `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang="${xml(language)}"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pub-id">urn:book-formatter:${xml(encodeURIComponent(book.id))}</dc:identifier><dc:title>${xml(book.title)}</dc:title><dc:creator>${xml(book.author)}</dc:creator><dc:language>${xml(language)}</dc:language><meta property="dcterms:modified">${modified}</meta><meta name="generator" content="Book Formatter ${EPUB_RENDERER}"/>${additionalMetadata}</metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/><item id="style" href="style.css" media-type="text/css"/>${paths.map((p, i) => `<item id="chapter-${i + 1}" href="${p}" media-type="application/xhtml+xml"/>`).join("")}${fontManifest}${imageManifest.join("")}${coverManifest}</manifest><spine>${coverSpine}<itemref idref="title"/><itemref idref="nav"/>${paths.map((_, i) => `<itemref idref="chapter-${i + 1}"/>`).join("")}</spine></package>`,
   );
   add(
     "META-INF/book-formatter-build.json",
