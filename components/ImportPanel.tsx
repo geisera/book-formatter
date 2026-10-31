@@ -201,6 +201,13 @@ export default function ImportPanel({
       setError("");
     } catch(e) { setError(e instanceof Error?e.message:"Unable to merge sections."); }
   }
+  function sourceExcerpt(section:Chapter):string {
+    if(!draft)return "";
+    const heading=section.title.trim().toLowerCase();
+    const sourceIndex=draft.blocks.findIndex(block=>blockText(block).trim().toLowerCase()===heading);
+    if(sourceIndex<0)return "No exact source heading match. The section may have been renamed, split, or merged. Refer to the original manuscript retained with your project.";
+    return draft.blocks.slice(sourceIndex,sourceIndex+12).map(blockText).join("\n").slice(0,3000);
+  }
   const typeLabel=(type:SectionType):string=>{
     const special:Partial<Record<SectionType,string>>={toc:"Table of contents","half-title":"Half title",title:"Title page","about-author":"About the Author","also-by":"Also By",praise:"Praise / Blurbs"};
     return special[type]??type.split("-").map(word=>word[0].toUpperCase()+word.slice(1)).join(" ");
@@ -379,7 +386,7 @@ export default function ImportPanel({
                   <small>{blocks.map(n=>n.content?.map(x=>x.text??"").join("")??"").join(" ").slice(0,140)||"Heading-only section or no body text"}</small>
                   <button type="button" className="import-preview-toggle" aria-expanded={previewId===c.id} onClick={()=>setPreviewId(previewId===c.id?null:c.id)}>{previewId===c.id?"Hide comparison":"Compare source and imported text"}</button>
                   {previewId===c.id?<div className="import-side-by-side" aria-label={`Section ${index+1} before and after preview`}>
-                    <div><strong>Source document · original extracted text</strong><pre>{draft.blocks.map(blockText).join("\n").slice(0,3000)}</pre></div>
+                    <div><strong>Source document · matching heading and nearby blocks</strong><pre>{sourceExcerpt(c)}</pre></div>
                     <div><strong>Imported section · resulting text</strong><pre>{schema.nodeFromJSON(c.content).textContent.slice(0,3000)}</pre></div>
                   </div>:null}
                   <div className="import-review-actions">
