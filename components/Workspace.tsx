@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useDeferredValue } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
+import { sectionIsEmpty, sampleForSection } from "../lib/section-samples";
 import FindReplacePanel,{type SearchConfig} from "./FindReplacePanel";
 import {findInBook,replaceAcrossBook,type TextMatch} from "../lib/find-replace";
 import ImportPanel from "./ImportPanel";
@@ -701,6 +702,17 @@ export default function Workspace() {
                         })
                       }
                     />
+                    {sectionIsEmpty(chapter)?<aside aria-label="Non-publishing section example" style={{border:"1px dashed #aaa",padding:"1rem",margin:"1rem 0",opacity:.8}}>
+                      <p style={{fontSize:".8rem",fontWeight:600}}>EXAMPLE FORMAT · NOT SAVED OR PUBLISHED</p>
+                      {sampleForSection(chapter).map((block,i)=><p key={i} style={{
+                        fontStyle:block.kind==="quotation"?"italic":undefined,
+                        fontSize:block.kind==="small"?".85em":undefined,
+                        textAlign:block.kind==="attribution"?"right":block.kind==="quotation"||block.kind==="heading"?"center":undefined,
+                        fontWeight:block.kind==="heading"?700:undefined,
+                        marginBlock:".65em"
+                      }}>{block.text}</p>)}
+                      <p style={{fontSize:".8rem"}}>Start typing below to replace this example in the preview.</p>
+                    </aside>:null}
                     <Editor
                       key={`${book.id}-${chapter.id}-${editorVersion}`}
                       search={findOpen?{query:findConfig.query,options:{caseSensitive:findConfig.caseSensitive,wholeWord:findConfig.wholeWord}}:undefined}
