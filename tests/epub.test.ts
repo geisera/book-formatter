@@ -288,3 +288,30 @@ describe("chapter number without visible chapter title",()=>{
   expect(without).toContain('aria-label="Chapter One"');
  });
 });
+
+describe("heading-only sections", () => {
+  it("exports empty-body chapters with a visible title or chapter numeral, but rejects fully invisible chapters",()=>{
+    const b=createBook("Murder is Mandatory","Author");
+    b.chapters[0].title="Murder is Mandatory";
+    b.chapters[0].showTitle=false; // legacy chapter flag must not suppress edition headings
+    const source=structuredClone(b.chapters);
+    for (const [chapterNumberStyle,showChapterTitle] of [["none",true],["roman",false],["arabic",false]] as const) {
+      b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle,showChapterTitle};
+      expect(preflight(b,"ebook").filter(x=>x.severity==="error")).toEqual([]);
+      const exported=buildEpub(b,fonts,options);
+      const heading=strFromU8(unzipSync(exported.bytes)["EPUB/chapter-0001.xhtml"]);
+      expect(heading).toContain('id="chapter-title"');
+      expect(b.chapters).toEqual(source);
+    }
+    b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"none",showChapterTitle:false};
+    expect(preflight(b,"ebook").some(x=>x.message.includes("no visible text"))).toBe(true);
+    expect(()=>buildEpub(b,fonts,options)).toThrow("preflight");
+  });
+  it("accepts visible empty-body front and back matter, but rejects hidden empty sections",()=>{
+    const b=createBook("Book","Author");
+    b.chapters[0].sectionType="preface";
+    expect(preflight(b,"ebook").some(x=>x.severity==="error")).toBe(false);
+    b.chapters[0].showTitle=false;
+    expect(preflight(b,"ebook").some(x=>x.message.includes("no visible text"))).toBe(true);
+  });
+});
