@@ -101,3 +101,32 @@ describe("worker retries and recovery",()=>{
   expect(sent.workers).toHaveLength(5);
  });
 });
+
+describe("worker terminal failure and isolation",()=>{
+ it("surfaces a clear error when both worker attempts crash",async()=>{
+  const task=startPdfBuild({book});
+  const first=await untilWorker();
+  first.onerror?.();
+  for(let i=0;i<40&&sent.workers.length<2;i++)await new Promise(r=>setTimeout(r,0));
+  expect(sent.workers).toHaveLength(2);
+  const second=sent.workers[1];
+  for(let i=0;i<40&&!second.onerror;i++)await new Promise(r=>setTimeout(r,0));
+  second.onerror?.();
+  await expect(task.promise).rejects.toThrow("failed twice");
+  expect(first.terminated).toBe(true);
+  expect(second.terminated).toBe(true);
+ });
+ it("allows manual retry as a new job after a validation error",async()=>{
+  const failed=startPdfBuild({book});
+  const first=await untilWorker();
+  first.emit({ok:false,error:"Invalid chapter data"});
+  await expect(failed.promise).rejects.toThrow("Invalid chapter data");
+  expect(first.terminated).toBe(true);
+  sent.worker=null;
+  const retry=startPdfBuild({book});
+  const second=await untilWorker();
+  second.emit({ok:true,bytes:new Uint8Array([37]),record:{inputChecksum:"ok"}});
+  expect((await retry.promise).bytes[0]).toBe(37);
+  expect(second.terminated).toBe(true);
+ });
+});
