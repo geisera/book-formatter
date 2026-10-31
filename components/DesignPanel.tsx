@@ -41,7 +41,7 @@ export default function DesignPanel({
   onPrintAlignment: (align:"left"|"justify")=>void;
   onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"chapterNumberStyle"|"showChapterTitle"|"frontMatterTitleScale"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
 }) {
-  const [settingsTab,setSettingsTab]=useState<"templates"|"sections"|"typography">("templates");
+  const [settingsTab,setSettingsTab]=useState<"sections"|"typography">("typography");
   const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
   const layout=section ? getSectionLayout(section,book) : null;
   const sectionType=section?.sectionType??"chapter";
@@ -86,9 +86,9 @@ export default function DesignPanel({
         </tbody></table>
       </div>
       <div className="design-settings-tabs" role="tablist" aria-label="Design settings">
-        {(["templates","sections","typography"] as const).map(tab=><button key={tab} type="button" role="tab"
+        {(["typography","sections"] as const).map(tab=><button key={tab} type="button" role="tab"
           aria-selected={settingsTab===tab} onClick={()=>setSettingsTab(tab)}>
-          {tab==="templates"?"Templates":tab==="sections"?"Section":"Typography"}
+          {tab==="sections"?"Section":"Typography"}
         </button>)}
       </div>
       <div className="design-tab-content" hidden={settingsTab!=="sections"}>
@@ -157,9 +157,6 @@ export default function DesignPanel({
           <button type="button" onClick={()=>onSectionAction({kind:"reset-style",id:section.id})}>Reset selected section overrides</button>
         </details>:null}
       </fieldset>
-      </div>
-      <div className="design-tab-content" hidden={settingsTab!=="templates"}>
-
       </div>
       <div className="design-tab-content" hidden={settingsTab!=="typography"}>
       {format==="print"?<div className="design-print-settings">
@@ -413,7 +410,7 @@ export default function DesignPanel({
       >
         {format === "print" ? "Reset paperback typography" : "Reset ebook typography"}
       </button>
-      <p className="control-note">Settings save locally. Preview updates automatically; exports are available under Publish.</p>
+      <p className="control-note">Settings save locally. Preview updates automatically; exports are available under Export.</p>
       </div>
     </section>
   );
