@@ -143,7 +143,7 @@ describe("offline print proof", () => {
     expect(secondPages[0].page % 2).toBe(1);
     expect(secondPages[0].header).toBeDefined();
     // Main-matter folios restart at 1 and exclude the front matter and blanks.
-    const firstMainPage=result.record.pages.find(p=>p.chapterId===second.id || p.chapterId===b.chapters[2].id)!;
+    const firstMainPage=result.record.pages.find(p=>p.chapterId===first.id)!;
     expect(secondPages[0].footer).toBe(String(secondPages[0].page-firstMainPage.page+1));
     expect(result.record.checks.overflow).toBe(0);
   },20000);
