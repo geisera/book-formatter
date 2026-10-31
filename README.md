@@ -193,6 +193,40 @@ a scene break near a page boundary, and a subheading. Compare pagination and
 ornament placement with the final downloaded PDF. Review the actual print proof;
 hyphenation and full optical balancing are not yet implemented.
 
+### Offline paperback hyphenation and justification
+
+**Design → Paperback → Hyphenation and justification** enables TeX/Liang
+language-pattern hyphenation in the local PDF worker. American and British
+English patterns are bundled in `lib/hyphen-patterns.ts` with upstream
+copyright/license notices. No network calls are needed. The author can turn
+hyphenation off, select US or UK patterns, limit consecutive hyphenated lines
+(0–5), and enter comma-separated names/words that must never be hyphenated.
+
+When a word does not fit at the end of a line, the layout engine first tries
+pattern-approved break points and adds a visible hyphen to the **PDF only**.
+It never inserts a hyphen in manuscript JSON or EPUB. The existing PDF
+justification algorithm allows bounded spacing expansion (up to 95% of a
+normal space) and leaves lines ragged-right when stretching would be excessive.
+Exception words are protected case-insensitively. Unsupported oversized words
+or spans result in an actionable proof error rather than arbitrary letter
+splitting. The manuscript language must be English for the selected pattern set
+to apply correctly. Other languages and advanced word-shaping are not yet
+supported.
+
+**User testing:** Open Design → Paperback and enable hyphenation; select
+English (US), set justified alignment, and use a 5 × 8 trim. Inspect narrow
+lines for legitimate word breaks and regular spacing. Turn hyphenation off,
+switch to English (UK), and add a character name to the protected-word list.
+Confirm the preview repaginates, no source text changes, and downloaded Print
+PDF matches preview page breaks. Save/restore a project backup and repeat
+offline. Automated regressions live in `tests/hyphenation.test.ts` and
+`tests/print.test.ts`.
+
+**Following priorities:** Final print-proof quality (optical facing-spread
+balance, hyphenation exceptions, typography review) and long-manuscript
+performance measurement on 100k+ word projects. These are next-phase items,
+not claimed complete by this feature.
+
 ## Book structure management (STR-001–STR-004)
 
 Open a book → **Structure** to manage front matter, body matter, and back matter.
