@@ -98,6 +98,7 @@ export default function EbookPreview({
   updating: boolean;
   hidden?: boolean;
 }) {
+  const [showCover,setShowCover] = useState(false);
   const [width, setWidth] = useState("420"),
     [theme, setTheme] = useState("light"),
     [scale, setScale] = useState(1);
@@ -105,7 +106,7 @@ export default function EbookPreview({
   const index = book.chapters.findIndex((c) => c.id === chapterId);
   useEffect(() => {
     if (viewport.current) viewport.current.scrollTop = 0;
-  }, [chapterId]);
+  }, [chapterId,showCover]);
   const style = {
     fontFamily: BODY_FONTS[edition.bodyFont],
     fontSize: `${edition.fontSize * scale}px`,
@@ -155,13 +156,17 @@ export default function EbookPreview({
           </select>
         </label>
       </div>
+      {book.cover ? <div className="cover-preview-toggle" role="group" aria-label="Preview page">
+        <button type="button" aria-pressed={showCover} onClick={()=>setShowCover(true)}>Cover</button>
+        <button type="button" aria-pressed={!showCover} onClick={()=>setShowCover(false)}>Chapter</button>
+      </div> : null}
       <div className="reader-navigation">
         <label className="preview-chapter-label">
           <span className="sr-only">Preview chapter</span>
           <select
             aria-label="Preview chapter"
             value={chapterId}
-            onChange={(e) => onNavigate(e.target.value)}
+            onChange={(e) => {setShowCover(false);onNavigate(e.target.value);}}
           >
             {book.chapters.map((c, i) => (
               <option key={c.id} value={c.id}>
@@ -204,7 +209,10 @@ export default function EbookPreview({
           aria-label="Formatted chapter"
           aria-busy={updating}
         >
-          <header className="ebook-chapter-header">
+          {showCover && book.cover ? <div className="ebook-cover-preview">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={book.cover.src} alt={book.cover.alt}/>
+          </div> : <><header className="ebook-chapter-header">
             <p className="ebook-book-title">{book.title}</p>
             <div className="ebook-opening-rule" aria-hidden="true" />
             {chapter && showSectionTitle(chapter) ? <h2>{chapter.title}</h2> : null}
@@ -219,7 +227,7 @@ export default function EbookPreview({
             </nav>
           ) : chapter ? (
             <ChapterContent chapter={chapter} ornament={edition.sceneOrnament} />
-          ) : null}
+          ) : null}</>}
         </article>
       </div>
       <div className="preview-footer">
