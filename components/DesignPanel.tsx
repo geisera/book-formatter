@@ -4,7 +4,7 @@ import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/editi
 import {getSectionLayout,sectionHeadingScale,defaultSectionLayout,getSectionTypographyOverrides,showSectionTitle,sectionMatter,type Book,type SectionPageLayout,type SectionType,type SectionStyle} from "../lib/model";
 import type {StructureAction} from "../lib/structure";
 import {PRINT_TRIMS,PRINT_PRESETS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
-import CoverEditor from "./CoverEditor";
+
 import { sectionTypography } from "../lib/front-matter";
 export default function DesignPanel({
   edition,
@@ -22,8 +22,10 @@ export default function DesignPanel({
   onSelectSection,
   onSectionAction,
   onTypeStyle,
+  onOpenPaperback,
 }: {
   book: Book;
+  onOpenPaperback?:()=>void;
   selectedId: string;
   onSelectSection: (id:string)=>void;
   onSectionAction: (action:StructureAction)=>void;
@@ -66,6 +68,23 @@ export default function DesignPanel({
       <div className="eyebrow">BOOK DESIGN</div>
       <h2>Appearance</h2>
       <p className="design-intro">Choose a style and refine the {format==="ebook"?"ebook":"paperback"} edition. Your manuscript stays unchanged.</p>
+      <div className="template-options design-template-first" role="group" aria-label="Book design template">
+        {(["classic","modern","gothic"] as EditionTemplate[]).map(id=><button type="button" key={id}
+          className={edition.template.id===id?"template-card active":"template-card"}
+          aria-pressed={edition.template.id===id} onClick={()=>onChange(presetFor(id))}>
+          <span className={`template-chapter-thumbnail template-${id}`} aria-hidden="true">
+            <span>CHAPTER ONE</span><strong>The Beginning</strong><i>It began on a quiet morning, when the world still held its secrets.</i>
+          </span>
+          <span><strong>{id[0].toUpperCase()+id.slice(1)}</strong><small>{edition.template.id===id?"Selected":id==="classic"?"Traditional literary serif":id==="modern"?"Contemporary and restrained":"Ornamental fantasy and horror"}</small></span>
+        </button>)}
+      </div>
+      <div className="design-affects"><strong>What this affects</strong>
+        <table><tbody>
+          <tr><th>Template</th><td>EPUB + PDF</td></tr>
+          <tr><th>Body size / spacing / indent</th><td>EPUB</td></tr>
+          <tr><th>Justification / trim size</th><td>PDF · <button type="button" onClick={()=>onOpenPaperback?.()}>Export → Paperback</button></td></tr>
+        </tbody></table>
+      </div>
       <div className="design-settings-tabs" role="tablist" aria-label="Design settings">
         {(["templates","sections","typography"] as const).map(tab=><button key={tab} type="button" role="tab"
           aria-selected={settingsTab===tab} onClick={()=>setSettingsTab(tab)}>
@@ -140,21 +159,7 @@ export default function DesignPanel({
       </fieldset>
       </div>
       <div className="design-tab-content" hidden={settingsTab!=="templates"}>
-      <details className="design-cover-section" open><summary>Cover artwork</summary><CoverEditor cover={cover} onChange={onCoverChange}/></details>
-      <div className="template-options" role="group" aria-label="Book design template">
-        {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
-          <button type="button" key={id}
-            className={edition.template.id === id ? "template-card active" : "template-card"}
-            aria-pressed={edition.template.id === id}
-            onClick={() => onChange(presetFor(id))}>
-            <span className="template-letter">Aa</span>
-            <span><strong>{id[0].toUpperCase() + id.slice(1)}</strong>
-              <small>{id === "classic" ? "Traditional literary serif" : id === "modern" ? "Contemporary and restrained" : "Ornamental fantasy and horror"} · Version 1</small>
-            </span>
-            {edition.template.id === id ? <span className="template-check" aria-label="Selected">✓</span> : null}
-          </button>
-        ))}
-      </div>
+
       </div>
       <div className="design-tab-content" hidden={settingsTab!=="typography"}>
       {format==="print"?<div className="design-print-settings">
