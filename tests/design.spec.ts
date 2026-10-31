@@ -58,6 +58,12 @@ test("formats an imported manuscript offline and restores text plus design in a 
   await page
     .getByLabel("Chapter heading", { exact: true })
     .selectOption("left");
+  await page.getByLabel("Ebook chapter numbering").selectOption("roman");
+  await expect(preview.locator(".ebook-chapter-number")).toHaveText("I");
+  await page.getByLabel("Ebook chapter numbering").selectOption("arabic");
+  await expect(preview.locator(".ebook-chapter-number")).toHaveText("1");
+  await page.getByLabel("Ebook chapter numbering").selectOption("none");
+  await expect(preview.locator(".ebook-chapter-number")).toHaveCount(0);
   await page
     .getByLabel("Scene ornament", { exact: true })
     .selectOption("diamonds");
