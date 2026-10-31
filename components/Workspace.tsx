@@ -389,10 +389,16 @@ export default function Workspace() {
   }
   const chapter = book?.chapters.find((c) => c.id === chapterId);
   const previewChapter = useDeferredValue(chapter);
+  useEffect(()=>{
+    if(!book)return;
+    const key=`book-formatter:backup-first-seen:${book.id}`;
+    if(!localStorage.getItem(key)){localStorage.setItem(key,String(Date.now()));setBackupRefresh(v=>v+1);}
+  },[book?.id]);
   const backupBaseline=book?backupMarker(book.id):null;
   const backupWordDelta=book?bookWords(book)-(backupBaseline?.words??0):0;
-  const backupAgeDays=backupBaseline?(Date.now()-backupBaseline.at)/86400000:0;
-  const backupDue=!!book&&((backupBaseline&&backupAgeDays>=7)||backupWordDelta>=500);
+  const backupFirstSeen=book?(Number(globalThis.window?.localStorage.getItem(`book-formatter:backup-first-seen:${book.id}`)??Date.now())):Date.now();
+  const backupAgeDays=(Date.now()-(backupBaseline?.at??backupFirstSeen))/86400000;
+  const backupDue=!!book&&(backupAgeDays>=7||backupWordDelta>=500);
   const backupSnoozed=!!book&&backupSnooze===book.id;
   const readinessIssues=book?preflight(book,publishFormat):[];
   const blockingIssues=readinessIssues.filter(issue=>issue.severity==="error");
