@@ -78,3 +78,21 @@ test("Details language dropdown preserves custom BCP-47 tags",async({page})=>{
   await expect(page.getByLabel("Book language")).toHaveValue("custom");
   await expect(page.getByLabel("Custom language tag")).toHaveValue("en-CA");
 });
+
+test("mobile workspace exposes sections drawer and bottom navigation",async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto("/");
+  await page.getByLabel("Book title",{exact:true}).fill("Responsive test");
+  await page.getByLabel("Author name",{exact:true}).fill("Author");
+  await page.getByRole("button",{name:"Create local book"}).click();
+  await expect(page.getByRole("navigation",{name:"Mobile workspace navigation"})).toBeVisible();
+  const toggle=page.getByRole("button",{name:"Sections",exact:false}).first();
+  await expect(toggle).toHaveAttribute("aria-expanded","false");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded","true");
+  await expect(page.getByRole("complementary",{name:"Manuscript sections"})).toBeVisible();
+  await page.getByRole("button",{name:"Close manuscript drawer"}).click();
+  await expect(toggle).toHaveAttribute("aria-expanded","false");
+  await page.getByRole("navigation",{name:"Mobile workspace navigation"}).getByRole("button",{name:"Structure"}).click();
+  await expect(page.getByRole("region",{name:"Book structure editor"})).toBeVisible();
+});
