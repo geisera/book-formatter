@@ -86,6 +86,9 @@ export default function Workspace() {
   const focusCounter=useRef(0);
   const [importing, setImporting] = useState(false);
   const [activeBookMenu, setActiveBookMenu] = useState<string | null>(null);
+  const [bookshelfQuery,setBookshelfQuery]=useState("");
+  const [bookshelfSort,setBookshelfSort]=useState<"recent"|"title"|"author">("recent");
+  const [bookshelfTipVisible,setBookshelfTipVisible]=useState(true);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
   const [mode, setMode] = useState<
     "manuscript" | "structure" | "design" | "details" | "publish" | "print"
@@ -275,6 +278,16 @@ export default function Workspace() {
     const revision = reserved.current.get(next.id) ?? next.revision;
     reserved.current.set(next.id, revision + 1);
     update({ ...next, revision });
+  }
+  async function createSample(){
+    try{
+      const sample=createBook("Sample Manuscript","Book Formatter");
+      const passage={type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"This is a sample manuscript. Edit this paragraph, then explore Structure, Design, Details, and Export. Your changes stay in this browser until you export or back up the project."}]}]};
+      const draft={...sample,chapters:sample.chapters.map((c,i)=>i===0?{...c,title:"Chapter One: Getting Started",content:passage}:c)};
+      const saved=await saveBook(draft,0);
+      setBooks(items=>[saved,...items]);
+      open(saved);
+    }catch(e){setError(e instanceof Error?e.message:"Could not create sample manuscript.");}
   }
   async function create(form: FormData) {
     try {
@@ -623,6 +636,10 @@ export default function Workspace() {
             <br />
             Private by default. Yours to keep.
           </p>
+          {bookshelfTipVisible?<div className="bookshelf-guidance" role="note">
+            <div><strong>Start with your manuscript</strong><p>Create a new project, import a DOCX or Markdown file, or explore a sample book. All manuscripts are stored locally; download backups to keep independent copies.</p></div>
+            <button type="button" onClick={()=>setBookshelfTipVisible(false)} aria-label="Dismiss bookshelf guidance">Dismiss</button>
+          </div>:null}
           <div className="dashboard-grid">
             <section className="card">
               <h2>Start a new book</h2>
@@ -655,6 +672,7 @@ export default function Workspace() {
               >
                 ↑ Import a manuscript
               </button>
+              <button type="button" className="secondary" onClick={()=>void createSample()} disabled={!ready}>Explore a sample book</button>
               <button
                 className="text-button"
                 onClick={() => file.current?.click()}
@@ -666,10 +684,16 @@ export default function Workspace() {
               <h2>
                 Your bookshelf <span>{books.length}</span>
               </h2>
+              {books.length?<div className="bookshelf-filterbar">
+                <label>Search books<input aria-label="Search books" type="search" value={bookshelfQuery} onChange={e=>setBookshelfQuery(e.target.value)} placeholder="Search by title or author"/></label>
+                <label>Sort by<select aria-label="Sort books" value={bookshelfSort} onChange={e=>setBookshelfSort(e.target.value as "recent"|"title"|"author")}>
+                  <option value="recent">Recently edited</option><option value="title">Title A–Z</option><option value="author">Author A–Z</option>
+                </select></label>
+              </div>:null}
               {!ready ? (
                 <p>Opening your bookshelf…</p>
               ) : books.length ? (
-                books.map((b) => (
+                books.filter(b=>`${b.title} ${b.author}`.toLocaleLowerCase().includes(bookshelfQuery.trim().toLocaleLowerCase())).sort((a,b)=>bookshelfSort==="title"?a.title.localeCompare(b.title):bookshelfSort==="author"?(a.author||"").localeCompare(b.author||""):b.updatedAt.localeCompare(a.updatedAt)).map((b) => (
                   <div className="bookshelf-item" key={b.id}>
                     <button
                       className="book-card"
@@ -681,7 +705,9 @@ export default function Workspace() {
                         <strong>{b.title}</strong>
                         <small>
                           {b.author || "Author not set"} · {b.chapters.length}{" "}
-                          chapter{b.chapters.length !== 1 ? "s" : ""}
+                          section{b.chapters.length !== 1 ? "s" : ""} · {bookWords(b).toLocaleString()} words
+                        </small>
+                        <small>Edited {new Date(b.updatedAt).toLocaleDateString()}
                         </small>
                         <small className="backup-time">{backupLabel(b.id)}</small>
                       </span>
