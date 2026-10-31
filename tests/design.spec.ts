@@ -172,3 +172,20 @@ test("live preview follows edits and changing modes preserves undo history", asy
     (await editor.textContent()) ?? "",
   );
 });
+
+
+test("Design Paperback renders the same local PDF proof with offline assets",async({page,context})=>{
+ test.setTimeout(60000);
+ await page.goto("/");
+ await expect(page.getByText("Offline app ready")).toBeVisible();
+ await page.getByLabel("Book title",{exact:true}).fill("Design PDF proof");
+ await page.getByRole("button",{name:"Create local book"}).click();
+ await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("An offline chapter begins. ".repeat(150));
+ await expect(page.getByText("Saved locally",{exact:true})).toBeVisible();
+ await context.setOffline(true);
+ await page.getByRole("button",{name:"Design",exact:true}).click();
+ await page.getByRole("button",{name:"Paperback",exact:true}).click();
+ const preview=page.getByRole("region",{name:"Paperback design preview"});
+ await expect(preview.getByText("Proof is up to date")).toBeVisible({timeout:45000});
+ await expect(preview.locator('canvas[data-rendered="true"]')).toHaveCount(1,{timeout:30000});
+});
