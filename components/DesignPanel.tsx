@@ -33,7 +33,7 @@ export default function DesignPanel({
   printProfile: PrintEdition;
   onPrintTrim: (trim:PrintTrim)=>void;
   onPrintAlignment: (align:"left"|"justify")=>void;
-  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"chapterNumberStyle"|"frontMatterTitleScale"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
+  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"chapterNumberStyle"|"showChapterTitle"|"frontMatterTitleScale"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
 }) {
   const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
   const layout=section ? getSectionLayout(section) : null;
@@ -150,6 +150,8 @@ export default function DesignPanel({
                <option value="roman">Roman number above title (I, II, III)</option>
              </select>
            </label>
+           <label className="design-toggle"><input type="checkbox" checked={printProfile.showChapterTitle??true}
+             onChange={e=>onPrintTypography({showChapterTitle:e.target.checked})}/>Show chapter title in paperback</label>
            <label>Front-matter heading scale <span className="control-value">{(printProfile.frontMatterTitleScale??1).toFixed(2)}×</span>
              <input aria-label="Paperback front-matter heading scale" type="range" min="0.75" max="1.5" step="0.05"
                value={printProfile.frontMatterTitleScale??1} onChange={e=>onPrintTypography({frontMatterTitleScale:Number(e.target.value)})}/>
@@ -316,6 +318,8 @@ export default function DesignPanel({
             <option value="roman">Roman number above title (I, II, III)</option>
           </select>
         </label>
+        <label className="design-toggle"><input type="checkbox" checked={edition.showChapterTitle??true}
+          onChange={e=>change("showChapterTitle",e.target.checked)}/>Show chapter title in ebook</label>
         <label>Front-matter heading scale <span className="control-value">{(edition.frontMatterTitleScale??1).toFixed(2)}×</span>
           <input aria-label="Ebook front-matter heading scale" type="range" min="0.75" max="1.5" step="0.05"
             value={edition.frontMatterTitleScale??1} onChange={e=>change("frontMatterTitleScale",Number(e.target.value))}/>
