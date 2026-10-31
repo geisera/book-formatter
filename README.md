@@ -83,6 +83,20 @@ This is a feature-level implementation inventory, not a certification that all P
 
 No feature above is labeled **publication-ready** solely because it generates a file. Physical print proofs, standards checks on the exact artifact, and retailer acceptance are separate gates.
 
+## Chapter numbering and front-matter typography
+
+In **Design → Paperback**, the **Chapter and front-matter headings** controls
+provide optional chapter labels (Arabic or Roman numerals above the existing
+chapter title) and front-matter heading scaling (0.75×–1.50×).
+Numbering counts chapter-type sections only, excluding prefaces, prologues,
+parts and back matter. The default is **Title only**, retaining prior output
+for existing manuscripts. Front-matter section placement, folio, and header
+controls remain independent in the section layout editor. These settings
+persist in local project backups and affect PDF proofs, not manuscript text or
+ebook rendering. Chapter titles entered by the author are never rewritten;
+authors should review potential redundancy when a title already spells out a
+chapter number.
+
 ## Quantitative pagination quality report
 
 CI now builds the same representative manuscript in **Automatic**, **Balanced** and
