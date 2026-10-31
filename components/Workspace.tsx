@@ -624,12 +624,6 @@ export default function Workspace() {
                   Editor
                 </button>
                 <button
-                  aria-pressed={mode === "design"}
-                  onClick={() => setMode("design")}
-                >
-                  Design
-                </button>
-                <button
                   aria-pressed={mode === "publish"}
                   onClick={() => setMode("publish")}
                 >
