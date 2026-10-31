@@ -1,3 +1,4 @@
+import {chapterNumberLabel,chapterOrdinal,romanNumeral} from "../lib/chapter-numbering";
 import { describe, it, expect } from "vitest";
 import { createBook, validateBook } from "../lib/model";
 import {
@@ -113,4 +114,24 @@ describe("three versioned ebook presets", () => {
       template: { id: "unknown", version: 1 },
     })).toThrow();
   });
+});
+
+describe("shared chapter numbering and ebook configuration",()=>{
+ it("formats ordinal labels without counting front and back matter",()=>{
+  const sections=[{sectionType:"preface"},{sectionType:"chapter"},{sectionType:"interlude"},{sectionType:"chapter"},{sectionType:"about-author"}];
+  expect(sections.map((_,i)=>chapterOrdinal(sections,i))).toEqual([null,1,null,2,null]);
+  expect(chapterNumberLabel("roman",2)).toBe("II");
+  expect(chapterNumberLabel("arabic",2)).toBe("2");
+  expect(chapterNumberLabel("none",2)).toBeNull();
+  expect(romanNumeral(49)).toBe("XLIX");
+ });
+ it("validates ebook settings and preserves independent print settings in backup",()=>{
+  const b=createBook("Independent","Author");
+  b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"roman",frontMatterTitleScale:1.25};
+  b.editions!.print={...b.editions!.print!,chapterNumberStyle:"arabic",frontMatterTitleScale:0.9};
+  const restored=restoreBook(backupBook(b));
+  expect(restored.editions).toEqual(b.editions);
+  expect(()=>validateEdition({...getEbookEdition(b),chapterNumberStyle:"greek"})).toThrow();
+  expect(()=>validateEdition({...getEbookEdition(b),frontMatterTitleScale:2})).toThrow();
+ });
 });
