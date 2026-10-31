@@ -2,9 +2,10 @@
 import {useEffect,useState} from "react";
 import type {Book} from "../lib/model";
 import {validLanguage} from "../lib/epub";
+import CoverEditor from "./CoverEditor";
 import {PUBLICATION_LIMITS, validIsbn13, validPublicationDate, validatePublicationMetadata, type PublicationMetadata} from "../lib/publication-metadata";
 type Details = {title:string;author:string;language:string;metadata:PublicationMetadata};
-export default function BookDetailsPanel({book,onSave}:{book:Book;onSave:(details:Details)=>Promise<void>}){
+export default function BookDetailsPanel({book,onSave,onCoverChange}:{book:Book;onSave:(details:Details)=>Promise<void>;onCoverChange:(cover:Book["cover"])=>void}){
  const [form,setForm]=useState<Details>({title:book.title,author:book.author,language:book.language??"en",metadata:book.metadata??{}});
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
@@ -31,6 +32,7 @@ export default function BookDetailsPanel({book,onSave}:{book:Book;onSave:(detail
   <div className="eyebrow">PUBLISHING METADATA</div>
   <h2>Book details</h2>
   <p className="control-note">These details are saved with your project and exported as publication metadata. They do not rewrite your title page or manuscript chapters.</p>
+  <details className="design-cover-section" open><summary>Cover artwork</summary><CoverEditor cover={book.cover} onChange={onCoverChange}/></details>
   <form onSubmit={e=>void save(e)}>
    <div className="book-details-fields">
     <label>Publication title<input aria-label="Publication title" aria-invalid={!form.title.trim()} required maxLength={200} value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/>{!form.title.trim()?<small className="field-error">A publication title is required.</small>:null}</label>
