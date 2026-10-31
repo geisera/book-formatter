@@ -410,3 +410,37 @@ describe("professional PDF pagination",()=>{
    expect(a.record.pages).toEqual(c.record.pages);
  },30000);
 });
+
+describe("page layout priorities",()=>{
+ it("persists three layout priorities independently of ebook settings",()=>{
+   for(const priority of ["automatic","balanced","flow"] as const){
+     const b=fixture();const original=structuredClone(b.editions!.ebook);
+     b.editions!.print={...getPrintEdition(b),layoutPriority:priority};
+     expect(validatePrintEdition(b.editions!.print).layoutPriority).toBe(priority);
+     expect(getPrintEdition(restoreBook(backupBook(b))).layoutPriority).toBe(priority);
+     expect(b.editions!.ebook).toEqual(original);
+   }
+   expect(()=>validatePrintEdition({...CLASSIC_PRINT,layoutPriority:"bad" as "automatic"})).toThrow("layout priority");
+ });
+ it("renders all priorities with no lost pages or split violations",async()=>{
+   for(const priority of ["automatic","balanced","flow"] as const){
+     const b=fixture();
+     b.editions!.print={...getPrintEdition(b),layoutPriority:priority};
+     const pdf=await buildPrintPdf(b,fonts,options);
+     expect(pdf.record.profile.layoutPriority).toBe(priority);
+     expect(pdf.record.checks).toMatchObject({overflow:0,splitViolations:0});
+     expect((await PDFDocument.load(pdf.bytes)).getPageCount()).toBe(pdf.record.pageCount);
+   }
+ },60000);
+ it("keeps scene ornaments safely inside the page content area",async()=>{
+   const b=fixture();
+   b.chapters[0].content={type:"doc",content:[
+     ...Array.from({length:6},()=>({type:"paragraph",content:[{type:"text",text:"A vivid scene occupies the printed page. ".repeat(20)}]})),
+     {type:"scene_break"},
+     {type:"paragraph",content:[{type:"text",text:"The next scene begins with an important discovery. ".repeat(8)}]}
+   ]};
+   const pdf=await buildPrintPdf(b,fonts,options);
+   expect(pdf.record.checks.splitViolations).toBe(0);
+   expect(pdf.record.checks.overflow).toBe(0);
+ },30000);
+});
