@@ -33,10 +33,10 @@ export default function BookDetailsPanel({book,onSave}:{book:Book;onSave:(detail
   <p className="control-note">These details are saved with your project and exported as publication metadata. They do not rewrite your title page or manuscript chapters.</p>
   <form onSubmit={e=>void save(e)}>
    <div className="book-details-fields">
-    <label>Publication title<input required maxLength={200} value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label>
-    <label>Author<input required maxLength={200} value={form.author} onChange={e=>setForm({...form,author:e.target.value})}/></label>
+    <label>Publication title<input aria-label="Publication title" aria-invalid={!form.title.trim()} required maxLength={200} value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/>{!form.title.trim()?<small className="field-error">A publication title is required.</small>:null}</label>
+    <label>Author<input aria-label="Author" aria-invalid={!form.author.trim()} required maxLength={200} value={form.author} onChange={e=>setForm({...form,author:e.target.value})}/>{!form.author.trim()?<small className="field-error">An author name is required.</small>:null}</label>
     <label>Subtitle<input maxLength={PUBLICATION_LIMITS.subtitle} value={form.metadata.subtitle??""} onChange={e=>field("subtitle",e.target.value)}/></label>
-    <label>Language tag<input required maxLength={35} value={form.language} placeholder="en-US" onChange={e=>setForm({...form,language:e.target.value})}/></label>
+    <label>Language tag<input aria-label="Language tag" aria-invalid={!validLanguage(form.language)} required maxLength={35} value={form.language} placeholder="en-US" onChange={e=>setForm({...form,language:e.target.value})}/>{!validLanguage(form.language)?<small className="field-error">Enter a valid BCP-47 language tag, such as en or en-US.</small>:null}</label>
     <label>Series name<input maxLength={PUBLICATION_LIMITS.seriesName} value={form.metadata.seriesName??""} onChange={e=>field("seriesName",e.target.value)}/></label>
     <label>Series number<input maxLength={PUBLICATION_LIMITS.seriesNumber} inputMode="decimal" placeholder="1 or 1.5" value={form.metadata.seriesNumber??""} onChange={e=>field("seriesNumber",e.target.value)}/></label>
     <label>Publisher / imprint<input maxLength={PUBLICATION_LIMITS.publisher} value={form.metadata.publisher??""} onChange={e=>field("publisher",e.target.value)}/></label>
