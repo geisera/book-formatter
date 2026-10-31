@@ -58,3 +58,23 @@ test("word-count status is visible in the Manuscript editor", async ({page}) => 
   await expect(page.locator(".editor-word-count")).toContainText("Book: 0 words");
   await expect(page.locator(".editor-word-count")).toContainText("~0 h 0 min read");
 });
+
+test("Details language dropdown preserves custom BCP-47 tags",async({page})=>{
+  await page.goto("/");
+  await page.getByLabel("Book title",{exact:true}).fill("Languages test");
+  await page.getByLabel("Author name",{exact:true}).fill("Author");
+  await page.getByRole("button",{name:"Create local book"}).click();
+  await page.getByRole("button",{name:"Details",exact:true}).click();
+  await expect(page.getByLabel("Book language")).toHaveValue("en");
+  await page.getByLabel("Book language").selectOption("fr");
+  await page.getByRole("button",{name:"Save book details"}).click();
+  await expect(page.getByText("Book details saved locally.")).toBeVisible();
+  await page.getByLabel("Book language").selectOption("custom");
+  await page.getByLabel("Custom language tag").fill("en-CA");
+  await page.getByRole("button",{name:"Save book details"}).click();
+  await page.reload();
+  await page.locator(".book-card").filter({hasText:"Languages test"}).click();
+  await page.getByRole("button",{name:"Details",exact:true}).click();
+  await expect(page.getByLabel("Book language")).toHaveValue("custom");
+  await expect(page.getByLabel("Custom language tag")).toHaveValue("en-CA");
+});
