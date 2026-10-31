@@ -581,10 +581,10 @@ export default function Workspace() {
             </div>
             <button className="add" onClick={()=>setMode("structure")}>+ Add or organize sections</button>
             <div className="aside-bottom">
-              <button onClick={() => setMode("print")}>Print PDF proof</button>
+              <button onClick={() => {setPublishFormat("print");setMode("publish");}}>Print PDF proof</button>
               <button
                 className="export-link"
-                onClick={() => setMode("publish")}
+                onClick={() => {setPublishFormat("ebook");setMode("publish");}}
               >
                 Export EPUB
               </button>
@@ -616,24 +616,17 @@ export default function Workspace() {
           </aside>
           <div className="workspace-content">
             <nav className="workspace-modes" aria-label="Workspace mode">
-              <div>
-                <button
-                  aria-pressed={mode === "manuscript"}
-                  onClick={() => setMode("manuscript")}
-                >
-                  Editor
-                </button>
-                <button
-                  aria-pressed={mode === "publish"}
-                  onClick={() => setMode("publish")}
-                >
-                  Publish
-                </button>
-              </div>
-              <div className="workspace-utilities">
-                <button type="button" aria-pressed={mode==="structure"} onClick={()=>setMode("structure")}>Organize</button>
-                <button type="button" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Book details</button>
-                <button type="button" aria-pressed={mode==="print"||mode==="publish"&&publishFormat==="print"} onClick={()=>{setPublishFormat("print");setMode("publish");}}>PDF proof</button>
+              <div className="workspace-primary-modes">
+                <button type="button" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"}
+                  onClick={()=>{setMode("manuscript");setInspectorTab("preview");setPreviewVisible(true);}}>Manuscript</button>
+                <button type="button" aria-pressed={mode==="structure"}
+                  onClick={()=>setMode("structure")}>Structure</button>
+                <button type="button" aria-pressed={mode==="manuscript"&&inspectorTab==="formatting"}
+                  onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Design</button>
+                <button type="button" aria-pressed={mode==="details"}
+                  onClick={()=>setMode("details")}>Details</button>
+                <button type="button" aria-pressed={mode==="publish"||mode==="print"}
+                  onClick={()=>setMode("publish")}>Export</button>
               </div>
               <div className="workspace-save">
                 <span>{getEbookEdition(book).template.id.replace(/^./, (c) => c.toUpperCase())} · ebook edition</span>
@@ -733,7 +726,7 @@ export default function Workspace() {
                   selectedId={chapterId}
                   onAction={updateStructure}
                   onEdit={(id) => { setChapterId(id); setMode("manuscript"); }}
-                  onPreviewPrint={() => setMode("print")}
+                  onPreviewPrint={() => {setPublishFormat("print");setMode("publish");}}
                 />
               ) : null}
               {mode === "details" ? <BookDetailsPanel book={book} onSave={updateMetadata}/> : null}
