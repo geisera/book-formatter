@@ -362,7 +362,7 @@ export function buildEpub(
   };
   const openingExtras=(c:typeof book.chapters[number]):string=>{
     const style=openingDesign(c.sectionType??"chapter",edition.template.id).style;
-    if(style==="title")return `<h1 id="chapter-title">${xml(book.title)}</h1>${book.metadata?.subtitle ? `<p class="title-subtitle">${xml(book.metadata.subtitle)}</p>` : ""}<p class="title-author">${xml(book.author)}</p>${book.metadata?.publisher ? `<p class="title-publisher">${xml(book.metadata.publisher)}</p>` : ""}`;
+    if(style==="title")return `<h1 id="chapter-title">${xml(c.title)}</h1>${book.metadata?.subtitle ? `<p class="title-subtitle">${xml(book.metadata.subtitle)}</p>` : ""}<p class="title-author">${xml(book.author)}</p>${book.metadata?.publisher ? `<p class="title-publisher">${xml(book.metadata.publisher)}</p>` : ""}`;
     if(style==="copyright"){
       const lines=[book.metadata?.publisher ? `Publisher: ${book.metadata.publisher}`:null,book.metadata?.publicationDate ? `Publication date: ${book.metadata.publicationDate}`:null,book.metadata?.isbn ? `ISBN: ${book.metadata.isbn}`:null].filter((v):v is string=>!!v);
       return lines.map(line=>`<p class="publication-data">${xml(line)}</p>`).join("");
