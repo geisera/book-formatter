@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useMemo,useRef,useState} from "react";
 import type {Book} from "../lib/model";
 import {newId} from "../lib/model";
 import {snapshotChecksum} from "../lib/epub";
@@ -10,6 +10,8 @@ import PdfProofViewer from "./PdfProofViewer";
 
 /** A disposable PDF proof; never persists a build or mutates the manuscript. */
 export default function DesignPrintPreview({book,getSnapshot}:{book:Book;getSnapshot:()=>Promise<Book>}) {
+  const snapshotRef=useRef(getSnapshot);
+  snapshotRef.current=getSnapshot;
   const fingerprint=useMemo(()=>snapshotChecksum(book),[book]);
   const [result,setResult]=useState<PrintResult|null>(null);
   const [state,setState]=useState<"waiting"|"building"|"ready"|"error">("waiting");
@@ -23,7 +25,7 @@ export default function DesignPrintPreview({book,getSnapshot}:{book:Book;getSnap
       if(cancelled)return;
       setState("building");setError("");
       try {
-        const snapshot=await getSnapshot();
+        const snapshot=await snapshotRef.current();
         if(cancelled)return;
         // Never label an outdated asynchronous build current.
         if(snapshotChecksum(snapshot)!==fingerprint) {setState("waiting");return;}
@@ -56,7 +58,7 @@ export default function DesignPrintPreview({book,getSnapshot}:{book:Book;getSnap
       }
     },900);
     return ()=>{cancelled=true;clearTimeout(timeout);controller.abort();worker?.terminate();release?.();};
-  },[fingerprint,getSnapshot]);
+  },[fingerprint]);
   const current=result?.record.inputChecksum===fingerprint&&state==="ready";
   const trim=getPrintEdition(book).trim;
   return <section className="design-print-preview" aria-label="Paperback design preview" style={{minWidth:0,flex:"1 1 500px"}}>
