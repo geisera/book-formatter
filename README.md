@@ -508,3 +508,9 @@ Both **Design → Paperback** and **Print → Build PDF proof** accept progress 
 ### Shared local PDF worker controller
 
 Both **Design → Paperback** and **Print → Build PDF proof** use `lib/pdf-worker-controller.ts` for font asset loading, worker creation (including offline cache fallback), progress messages, successful PDF results, explicit errors, timeouts and cancellation. The controller owns cleanup and ignores results after cancellation. The Print workspace continues to store only its local export history; the Design preview remains disposable. Neither workflow uses GitHub Actions, server generation or cloud storage. Run `npm test` for the simulated worker-protocol regression suite, including progress/success, cancellation, explicit failure and stale snapshot handling; run `npm run test:e2e` for browser integration.
+
+### PDF worker failure recovery and acceptance coverage
+
+The shared `lib/pdf-worker-controller.ts` retries **one time** only after recoverable worker startup/crash failures; explicit manuscript and layout validation errors are returned immediately and are not retried. A single build uses a 120-second overall timeout (unless configured otherwise). Both Print and Design use this controller; cancellation terminates active workers, and late responses from superseded workers are ignored. Progress percentages are monotonic. Font assets are shared among builds, not uploaded to a server.
+
+Regression coverage includes `tests/pdf-worker-controller.test.ts` for crash retry, no validation retry, cancellation/new-build isolation, and repeated cleanup. Browser scenarios in `tests/print.spec.ts` and `tests/design.spec.ts` exercise offline Print and Design builds; Print also verifies cancellation followed by multiple builds. These tests do not measure production browser heap stability or prove coverage on every browser. Authentication remains a future release requirement rather than a prerequisite of the current local prototype.
