@@ -6,6 +6,7 @@ export type StructureAction =
   | { kind: "type"; id: string; sectionType: SectionType }
   | { kind: "visibility"; id: string; showTitle: boolean }
   | { kind: "layout"; id: string; changes: Partial<SectionPageLayout> }
+  | { kind: "reset-layout"; id: string }
   | { kind: "add"; title: string; sectionType: SectionType; after?: string }
   | { kind: "delete"; id: string }
   | { kind: "split"; id: string; blockIndex: number; title: string }
@@ -53,10 +54,18 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
       chapters[index] = { ...chapters[index], pageLayout: { ...chapters[index].pageLayout, ...action.changes } };
       selectedId = action.id;
       break;
+    case "reset-layout":
+      chapters[index] = { ...chapters[index], pageLayout: undefined };
+      selectedId = action.id;
+      break;
     case "add": {
       const chapter = { ...blankChapter(action.title || "New section"), sectionType: action.sectionType };
-      const position = action.after ? chapters.findIndex(c => c.id === action.after) + 1 : chapters.length;
-      if (action.after && position === 0) throw Error("Insertion point was not found.");
+      const desiredMatter = sectionMatter(action.sectionType);
+      const afterIndex = action.after ? chapters.findIndex(c => c.id === action.after) : -1;
+      const sameGroup = afterIndex >= 0 && sectionMatter(chapters[afterIndex].sectionType ?? "chapter") === desiredMatter;
+      const lastInGroup = chapters.reduce((last, c, i) => sectionMatter(c.sectionType ?? "chapter") === desiredMatter ? i : last, -1);
+      const position = sameGroup ? afterIndex + 1 : lastInGroup + 1;
+      if (action.after && afterIndex === -1) throw Error("Insertion point was not found.");
       chapters.splice(position, 0, chapter);
       selectedId = chapter.id;
       break;
@@ -84,6 +93,8 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
     case "merge": {
       if (index >= chapters.length - 1) throw Error("There is no next section to merge.");
       const first = chapters[index], next = chapters[index + 1];
+      if (sectionMatter(first.sectionType ?? "chapter") !== sectionMatter(next.sectionType ?? "chapter"))
+        throw Error("Cannot merge sections across front, body and back matter. Change the section type first.");
       const a = (first.content.content as Record<string, unknown>[] | undefined) ?? [];
       const b = (next.content.content as Record<string, unknown>[] | undefined) ?? [];
       const content = { type: "doc", content: [...a, ...b] };
