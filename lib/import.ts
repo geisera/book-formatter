@@ -292,6 +292,17 @@ function fromAst(
     for (const child of node.children ?? []) visit(child, depth + 1);
   }
   visit(root);
+  // Some DOCX HTML wrappers leave the caption as the next block even when
+  // the image was extracted from an otherwise empty paragraph.
+  if (html) for (let i = 0; i < blocks.length - 1; i++) {
+    const image = blocks[i], next = blocks[i + 1];
+    if (image.type !== "image" || next.type !== "paragraph") continue;
+    const caption = blockText(next).trim();
+    if (/^(?:Figure|Fig\\.|Illustration|Plate)\\s+[0-9IVXLCDM]+\\s*[:.\\-–—]\\s*\\S/i.test(caption) && caption.length <= 1000) {
+      image.attrs!.caption = caption;
+      blocks.splice(i + 1, 1);
+    }
+  }
   return blocks;
 }
 
