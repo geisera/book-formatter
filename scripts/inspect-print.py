@@ -78,7 +78,7 @@ for path in sorted(root.glob('*.pdf')):
             for node in chapter['content'].get('content',[]):
                 if node['type']=='scene_break': expected.append('* * *')
                 else: expected.extend(x.get('text','') for x in node.get('content',[]))
-        normal=lambda s: re.sub(r'\s+','',unicodedata.normalize('NFKC',s))
+        normal=lambda s: re.sub(r'\s+','',re.sub(r'(?<=[A-Za-z])-\s*\n\s*(?=[A-Za-z])','',unicodedata.normalize('NFKC',s)))
         assert normal(''.join(body))==normal(''.join(expected)), f'{path}: body text changed or missing'
     proofs.append({'file':path.name,'pages':len(reader.pages),'size':[width,height],'embeddedFonts':len(embedded),'geometry':'passed','clipping':'passed','textRetention':'passed' if source_path.exists() else 'not-compared'})
     print(json.dumps(proofs[-1]),flush=True)
