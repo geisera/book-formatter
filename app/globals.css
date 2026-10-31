@@ -2339,3 +2339,17 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .backup-nudge label{display:flex;align-items:center;gap:5px;font-size:12px}
 .backup-time{display:block;color:#686e67;font-size:11px;margin-top:5px}
 .sidebar-backup-time{padding:7px 14px}
+
+
+/* P1-1: section navigator actions and drag targets */
+.sidebar-section-actions{display:grid;grid-template-columns:1fr auto;gap:7px;padding:9px 10px}
+.sidebar-section-actions button{min-height:40px;border:1px solid var(--hairline);border-radius:6px;padding:7px 9px}
+.sidebar-section-row{position:relative;display:flex;align-items:stretch;min-height:42px;cursor:grab}
+.sidebar-section-row:active{cursor:grabbing}
+.sidebar-section-row>button:first-child{flex:1;min-width:0;text-align:left}
+.sidebar-section-menu-trigger{flex:0 0 30px;border:0;background:transparent;min-height:42px}
+.sidebar-section-menu{position:absolute;z-index:20;right:0;top:100%;min-width:150px;background:white;border:1px solid var(--hairline);box-shadow:0 8px 24px #0002;border-radius:7px;display:flex;flex-direction:column}
+.sidebar-section-menu button{width:100%;min-height:40px;padding:8px 12px;text-align:left;border:0;background:transparent}
+.sidebar-section-menu button:hover:not(:disabled){background:#eef3ef}
+.sidebar-section-menu button:disabled{opacity:.4}
+.sidebar-section-menu-trigger:focus-visible,.sidebar-section-menu button:focus-visible{outline:2px solid #285a4b;outline-offset:2px}
