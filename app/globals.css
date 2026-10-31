@@ -2029,3 +2029,40 @@ aside h2 {
 .print-aside-footnote{font:11px/1.7 system-ui,sans-serif;color:#718072;margin:22px 0 0}
 @media(max-width:900px){.print-settings{grid-template-columns:1fr}.print-settings-aside{border-left:0;border-top:1px solid #dce4d7}.print-mini-book{display:none}.print-settings-aside h3,.print-aside-subtitle{text-align:left}}
 @media(max-width:560px){.print-panel{padding:20px 12px}.print-settings-main{padding:20px 16px}.print-trim-options{grid-template-columns:1fr}.print-trim-card{min-height:70px}.print-trim-card-head{flex-direction:row;align-items:center}.print-section-head{flex-wrap:wrap}}
+
+/* Design studio: compact settings beside a persistent reading/print proof. */
+.mode-design{display:block!important;min-width:0}
+.design-studio{display:grid;grid-template-columns:minmax(270px,340px) minmax(0,1fr);gap:0;min-height:620px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f4f3ef}
+.design-studio-controls{min-width:0;max-height:calc(100dvh - 160px);overflow:auto;overscroll-behavior:contain;background:#fffefb;border-right:1px solid var(--line)}
+.design-studio-controls .design-panel{display:block!important;width:auto!important;max-width:none!important;padding:20px 18px!important;margin:0!important;border:0!important;background:transparent!important}
+.design-studio-controls .design-panel h2{font:normal 27px/1.1 Georgia,serif;margin:4px 0 8px}
+.design-studio-controls .design-intro{font-size:12px;line-height:1.5;margin:0 0 14px;color:var(--muted)}
+.design-studio-controls .template-options{display:grid;grid-template-columns:1fr;gap:6px;margin:12px 0}
+.design-studio-controls .template-card{min-height:52px;padding:9px 11px}
+.design-studio-controls .template-letter{font-size:24px}
+.design-studio-controls .design-panel fieldset{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:7px}
+.design-studio-controls .design-panel legend{font-size:13px;font-weight:700;padding:0 5px}
+.design-studio-controls .design-panel label{font-size:12px}
+.design-studio-controls .design-panel input[type=range],.design-studio-controls .design-panel select{max-width:100%}
+.design-cover-section{border-top:1px solid var(--line);padding:10px 0;margin-top:12px}
+.design-cover-section summary{cursor:pointer;font-size:13px;font-weight:700}
+.design-cover-section .cover-editor{padding:10px;margin:10px 0}
+.design-cover-section .cover-editor-preview{flex-direction:column;align-items:flex-start}
+.design-cover-section .cover-editor-preview img{max-height:150px}
+.design-ebook-controls-inactive{display:none}
+.design-studio-preview{min-width:0;display:flex;flex-direction:column;background:#eceee9}
+.design-studio-preview-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 19px;background:#fffefb;border-bottom:1px solid var(--line)}
+.design-studio-preview-head>div:first-child{display:flex;flex-direction:column;gap:3px}
+.design-studio-preview-head strong{font-size:14px}
+.design-studio-preview-head span{font-size:11px;color:var(--muted)}
+.design-studio-format{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:7px;background:#f1f3ed}
+.design-studio-format button{border:0;background:transparent;border-radius:5px;padding:8px 13px;font-size:12px;font-weight:650;cursor:pointer}
+.design-studio-format button[aria-pressed=true]{background:#31523c;color:#fff}
+.design-studio-format button:focus-visible{outline:2px solid #31523c;outline-offset:2px}
+.design-studio-preview-content{min-width:0;flex:1;padding:16px;overflow:auto}
+.design-studio-preview-content .design-print-preview{width:100%;min-width:0}
+.design-studio-preview-content .design-print-preview .publish-intro{margin:0 0 12px}
+.design-studio-preview-content .design-print-preview .publish-intro h2{font-size:19px}
+.design-studio-preview-content .pdf-proof-viewer{max-width:100%}
+@media(max-width:1050px){.design-studio{grid-template-columns:minmax(240px,300px) minmax(0,1fr)}}
+@media(max-width:760px){.design-studio{display:flex;flex-direction:column}.design-studio-controls{max-height:none;border-right:0;border-bottom:1px solid var(--line)}.design-studio-preview-content{min-height:450px}.design-studio-preview-head{flex-wrap:wrap}}
