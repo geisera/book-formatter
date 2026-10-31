@@ -2,17 +2,22 @@
 import { decodeImage, MAX_IMAGE_BYTES } from "../lib/images";
 import {useEffect,useRef,useState} from "react";
 import {EditorState,NodeSelection,TextSelection} from "prosemirror-state";
-import {EditorView} from "prosemirror-view";
+import {EditorView,Decoration,DecorationSet} from "prosemirror-view";
+import {Plugin} from "prosemirror-state";
+import {findInDocument,type FindOptions} from "../lib/find-replace";
 import {baseKeymap,toggleMark,setBlockType} from "prosemirror-commands";
 import {history,undo,redo} from "prosemirror-history";
 import {keymap} from "prosemirror-keymap";
 import {schema,type TextAlignment} from "../lib/model";
 import {ImagePropertiesPanel,type ImageProperties} from "./ImagePropertiesPanel";
-export default function Editor({content,onChange}:{content:Record<string,unknown>;onChange:(content:Record<string,unknown>)=>void}){
+export default function Editor({content,onChange,search,focusMatch}:{content:Record<string,unknown>;onChange:(content:Record<string,unknown>)=>void;search?:{query:string;options:FindOptions};focusMatch?:{from:number;to:number;nonce:number}}){
  const host=useRef<HTMLDivElement>(null),view=useRef<EditorView|null>(null),file=useRef<HTMLInputElement>(null),callback=useRef(onChange);callback.current=onChange;
+ const searchRef=useRef(search);searchRef.current=search;
  const [imageError,setImageError]=useState("");
  const [selectedImage,setSelectedImage]=useState<ImageProperties|null>(null);
- useEffect(()=>{if(!host.current)return;const editor=new EditorView(host.current,{state:EditorState.create({doc:schema.nodeFromJSON(content),plugins:[history(),keymap({"Mod-z":undo,"Mod-Shift-z":redo,"Mod-y":redo,"Mod-b":toggleMark(schema.marks.strong),"Mod-i":toggleMark(schema.marks.em)}),keymap(baseKeymap)]}),attributes:{role:"textbox","aria-label":"Chapter manuscript","aria-multiline":"true"},handleClickOn(editor,pos,node,nodePos){if(node.type!==schema.nodes.image)return false;editor.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc,nodePos)));return true;},dispatchTransaction(tr){editor.updateState(editor.state.apply(tr));setSelectedImage(editor.state.selection instanceof NodeSelection && editor.state.selection.node.type===schema.nodes.image ? {src:editor.state.selection.node.attrs.src,alt:editor.state.selection.node.attrs.alt,width:editor.state.selection.node.attrs.width,align:editor.state.selection.node.attrs.align,caption:editor.state.selection.node.attrs.caption ?? ""}:null);if(tr.docChanged)callback.current(editor.state.doc.toJSON())}});view.current=editor;return()=>{editor.destroy();view.current=null}},[]); // Parent keys the editor by chapter ID.
+ useEffect(()=>{if(!host.current)return;const editor=new EditorView(host.current,{state:EditorState.create({doc:schema.nodeFromJSON(content),plugins:[history(),new Plugin({props:{decorations(state){const cfg=searchRef.current;if(!cfg?.query)return null;const matches=findInDocument(state.doc,"chapter",cfg.query,cfg.options);return DecorationSet.create(state.doc,matches.map(m=>Decoration.inline(m.from,m.to,{class:"find-match"})));}}}),keymap({"Mod-z":undo,"Mod-Shift-z":redo,"Mod-y":redo,"Mod-b":toggleMark(schema.marks.strong),"Mod-i":toggleMark(schema.marks.em)}),keymap(baseKeymap)]}),attributes:{role:"textbox","aria-label":"Chapter manuscript","aria-multiline":"true"},handleClickOn(editor,pos,node,nodePos){if(node.type!==schema.nodes.image)return false;editor.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc,nodePos)));return true;},dispatchTransaction(tr){editor.updateState(editor.state.apply(tr));setSelectedImage(editor.state.selection instanceof NodeSelection && editor.state.selection.node.type===schema.nodes.image ? {src:editor.state.selection.node.attrs.src,alt:editor.state.selection.node.attrs.alt,width:editor.state.selection.node.attrs.width,align:editor.state.selection.node.attrs.align,caption:editor.state.selection.node.attrs.caption ?? ""}:null);if(tr.docChanged)callback.current(editor.state.doc.toJSON())}});view.current=editor;return()=>{editor.destroy();view.current=null}},[]); // Parent keys the editor by chapter ID.
+ useEffect(()=>{const v=view.current;if(v)v.updateState(v.state);},[search?.query,search?.options.caseSensitive,search?.options.wholeWord]);
+ useEffect(()=>{const v=view.current;if(!v||!focusMatch)return;const {from,to}=focusMatch;if(to<=v.state.doc.content.size){v.dispatch(v.state.tr.setSelection(TextSelection.create(v.state.doc,from,to)));v.dom.querySelector(".find-match")?.scrollIntoView({block:"center",behavior:"smooth"});}},[focusMatch?.nonce]);
  function align(value:TextAlignment) {
   const v=view.current;if(!v)return;
   const {$from,$to}=v.state.selection;
