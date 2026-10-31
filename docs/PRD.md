@@ -1,8 +1,8 @@
 # BOOK FORMATTER — Product Requirements Document
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Date:** October 30, 2026  
-**Status:** Proposed baseline  
+**Status:** Revised product requirements baseline — authentication decision (October 31, 2026)  
 **Product:** Commercial local-first web-based book formatter  
 **Primary audience:** Independent fiction authors and small publishers  
 **Initial outputs:** EPUB 3.3 and print-ready paperback PDF
@@ -14,13 +14,14 @@ Book Formatter allows authors to import manuscripts, organize book structure, ch
 Non-negotiable principles:
 
 1. **Local-first from initial development.** The browser's local project is the authoritative working copy; cloud synchronization is strictly optional.
-2. **Offline-capable.** After first online installation, core project management, editing, formatting, and supported production functions work without connectivity.
+2. **Offline-capable after prior authentication.** After an online sign-in and installation, a previously authorized session may continue core local workflows offline under a bounded, defined offline-access policy. New sign-ins, account recovery and remote authorization require connectivity.
 3. **Direct ProseMirror.** Use ProseMirror packages directly; do not introduce Tiptap as the primary editor abstraction.
 4. **Open-source preference.** Prefer well-maintained MIT/BSD/Apache/ISC licensed dependencies where appropriate; review all copyleft and font obligations before commercial deployment.
-5. **Portable author-owned data.** Provide complete local project backup and restore; no mandatory cloud account.
+5. **Portable author-owned data.** Provide complete local project backup and restore; application sign-in is mandatory, but manuscript cloud storage and synchronization are not.
 6. **Separate content from presentation.** Manuscript schema, design templates, EPUB renderer, print renderer, and account services are independent modules.
 7. **Production quality first.** Standards checks and visual print proofing determine export readiness.
-8. **Privacy by design.** Never transmit local manuscripts without transparent user authorization.
+8. **Privacy by design.** Authentication exchanges identity/session data with the identity provider; manuscript content is not transmitted unless the user explicitly enables an authorized cloud feature.
+9. **Authentication gate.** A valid authenticated session is required to enter and use the author workspace; anonymous/guest authoring is not a supported product mode.
 
 ## 2. Users and scope
 
@@ -29,7 +30,7 @@ Primary user: independent fiction author with a 30,000–150,000 word DOCX or Ma
 ### MVP includes
 
 - Installable PWA and offline startup.
-- Guest/local-only projects, IndexedDB local persistence, durable save indicators, and portable backups.
+- Authenticated author access with projects stored in IndexedDB by default, durable save indicators, and portable backups. Authentication does not require cloud manuscript storage.
 - Local DOCX, Markdown, and plain-text import; structure detection and diagnostics.
 - Chapter-based ProseMirror editing with paragraph, bold, italic, heading, scene break, undo/redo, and basic find/replace.
 - Front matter, body matter, and back matter; chapter rearrangement and TOC.
@@ -46,7 +47,7 @@ Full drafting suite; real-time collaboration; native mobile apps; direct retaile
 
 ## 3. Standard author workflow
 
-1. Open app as guest or optionally authenticate.
+1. Open the web app and sign in (or register and verify an account) before accessing the author workspace. A previously authenticated session may continue approved local workflows offline within the offline-access policy.
 2. Create local project with title and author; optionally enter subtitle, series, imprint, language, description, ISBN, and edition metadata.
 3. Import local DOCX/Markdown/text, parse and inspect chapter boundaries, emphasis, scene breaks, and assets.
 4. Review structure; correct chapters, front/back matter, and title handling.
@@ -56,7 +57,7 @@ Full drafting suite; real-time collaboration; native mobile apps; direct retaile
 8. Run quality assurance; generate, validate, and download EPUB/PDF.
 9. Export complete portable project backup; optionally enable cloud synchronization.
 
-**WF-001:** Opening or editing a local project does not require authentication.  
+**WF-001:** The author workspace and project operations require authentication. Online sign-in establishes the session; an existing locally verifiable session may support offline access within its defined lifetime. Fresh offline sign-in is not required or promised.  
 **WF-002:** Switching templates never mutates the manuscript.  
 **WF-003:** Edition configuration is independent of manuscript content.  
 **WF-004:** A failed import/export/sync must not corrupt a project.  
@@ -76,12 +77,23 @@ Preferred stack: IndexedDB accessed through Dexie; OPFS for large binaries when 
 **LOCAL-007:** Export an open documented ZIP project package containing manifest, manuscript JSON, chapter content, metadata, media, and edition settings.  
 **LOCAL-008:** Restore a backup into a clean browser profile.  
 **LOCAL-009:** Support schema migrations and project integrity checks.  
-**LOCAL-010:** Deletion requires confirmation; account or subscription status cannot block access to local project data.  
+**LOCAL-010:** Deletion requires confirmation. Workspace access requires authentication, but product design must retain portable local backup/export and a documented data-recovery path for account loss, expiration or closure. Local manuscript data is not silently deleted on sign-out.  
 **LOCAL-011:** The UI identifies Saved locally, Save failed, Offline, Sync pending, Synchronized, and Conflict.
 
-Offline operation must be exercised as an automated end-to-end acceptance test, not deferred to a later milestone.
+Offline operation must be exercised as an automated end-to-end acceptance test, not deferred to a later milestone. Offline tests begin with a previously authenticated and cached session; an unverified guest or expired/offline session must not bypass the access gate.
 
-## 5. Optional cloud synchronization
+## 5. Required authentication and optional cloud synchronization
+
+**AUTH-001:** Require authentication for all author workspace routes, editing, project management, preview, and export interfaces. Public landing, account creation, sign-in, and recovery routes may remain unauthenticated. Enforce server-side route/API authorization where applicable; client-only route hiding is not an authorization boundary.  
+**AUTH-002:** Support secure registration, sign-in, sign-out, session expiry, verification and account recovery through a supported identity provider; never store raw passwords in local storage.  
+**AUTH-003:** Associate browser-local project metadata with the authenticated user identity to prevent accidental cross-account project display on a shared browser. Do not assume IndexedDB offers cryptographic isolation; document shared-device risks and provide account-switch safeguards.  
+**AUTH-004:** Maintain a clearly defined offline session policy. Previously authenticated users may use cached local editing and PDF/EPUB export while their offline authorization remains valid; fresh login, verification, recovery, cloud sync and server entitlement refresh require a connection. Expiry or revocation detection while offline must be disclosed as a limitation; define maximum offline authorization lifetime before launch.  
+**AUTH-005:** Authentication must not automatically upload manuscripts, images, generated files, or backups. Local storage remains the default; cloud sync and cloud backup require separate explicit opt-in.  
+**AUTH-006:** Authorize server operations by identity and role, apply least privilege, protect tokens and session cookies, and defend against unauthorized cross-account access.  
+**AUTH-007:** Sign-out invalidates the usable session and hides the author workspace. Locally stored manuscript data stays in place unless the user explicitly deletes it; provide a safe account-switch experience.  
+**AUTH-008:** Test unauthenticated route denial, expired and revoked sessions, cross-account isolation, sign-out, recovery, offline continuation and reauthentication.  
+
+
 
 Cloud infrastructure, when enabled, uses authenticated PostgreSQL/Supabase plus private asset storage. Sync is opt-in per project and preserves local edit authority. MVP may ship without cross-device sync, but the architecture must support it from day one.
 
@@ -171,13 +183,13 @@ MVP: conventional black-and-white fiction interiors aligned with Amazon KDP pape
 
 ## 12. UI/UX
 
-Primary areas: landing page, local dashboard, book workspace, export interface, optional account/sync/billing, and admin interface. Workspace: left book structure, center ProseMirror editor, right output preview. Modes: Manuscript, Structure, Design, Publish.
+Primary areas: public landing, required account registration/sign-in/recovery, authenticated local dashboard, book workspace, export interface, optional sync/billing, and admin interface. Workspace: left book structure, center ProseMirror editor, right output preview. Modes: Manuscript, Structure, Design, Publish.
 
 **UX-001:** Desktop-first support for current Chrome, Firefox, Edge, Safari.  
 **UX-002:** Keyboard-accessible core workflows, WCAG 2.2 AA target.  
 **UX-003:** Clear local-save, offline, syncing, conflict, job progress, and error states.  
 **UX-004:** Confirm destructive operations.  
-**UX-005:** Never require online account creation to edit a local manuscript.  
+**UX-005:** Require sign-in to access the author workspace; explain the separate local-storage and optional-sync choices. A valid previously established offline session may continue local work under AUTH-004.  
 **UX-006:** Responsive smaller-screen behavior, with desktop as initial production target.
 
 ## 13. Recommended technology and module boundaries
@@ -196,7 +208,8 @@ Primary areas: landing page, local dashboard, book workspace, export interface, 
 | EPUB | Browser-compatible open-source packaging library |
 | Print | Paged.js or proven license-compatible alternative |
 | EPUB validation | EPUBCheck in supported execution environment |
-| Optional cloud | PostgreSQL / Supabase Auth / private storage |
+| Required identity | Supabase Auth or equivalent verified provider; authenticated route/API authorization |
+| Optional manuscript cloud | PostgreSQL / private storage, opt-in project synchronization |
 | Hosting | Vercel (replaceable delivery layer) |
 | Payments | Stripe, for commercial cloud features |
 | Source and CI | GitHub / GitHub Actions |
@@ -209,7 +222,7 @@ Separate packages/services: local author app, semantic publishing core, EPUB ren
 **SEC-001:** Manuscripts remain author-owned; local-only manuscripts never transmit implicitly.  
 **SEC-002:** Sanitize DOCX/HTML content and protect against malicious archive/resource attacks.  
 **SEC-003:** Browser local storage is not encrypted automatically; never imply encryption at rest without implementing it.  
-**SEC-004:** Optional cloud sync requires authentication, server-side authorization, RLS/tenant separation, private object access, least privilege, and auditable privileged operations.  
+**SEC-004:** Authentication is required for application use. Optional cloud sync additionally requires server-side authorization, RLS/tenant separation, private object access, least privilege, and auditable privileged operations.  
 **SEC-005:** User can delete local and cloud copies independently, export content, and close accounts.  
 **SEC-006:** AI processing is optional and requires informed authorization before third-party transmission.  
 **SEC-007:** Product analytics must never include manuscript prose or chapter content.
@@ -219,7 +232,7 @@ Separate packages/services: local author app, semantic publishing core, EPUB ren
 Freemium/hybrid model under evaluation: free local authoring/previews, paid advanced export capabilities/templates and/or cloud sync/backups; one-book and annual professional plans; publisher tier later. Because client-side licensing is not tamperproof, do not assume a purely local paywall provides strong enforcement.
 
 **BILL-001:** Verified Stripe checkout, webhooks, subscriptions/one-time purchases, server-side cloud-service entitlements, billing portal, cancellation.  
-**BILL-002:** Offline editing and access to locally owned project data must never depend on a live billing request.  
+**BILL-002:** Previously authenticated offline editing must not require a live billing request while the offline authorization remains valid. Account authentication is mandatory; a documented portable-data recovery path remains required.  
 **BILL-003:** Resolve offline-license and paid-export policies before commercial launch.  
 **ADMIN-001:** Monitor accounts, subscription status, export failures, rendering statistics, system health, and feature flags without routine access to manuscript contents.
 
@@ -247,7 +260,12 @@ These are engineering targets, not universal guarantees. Test interrupted saves,
 
 Use unit, integration, end-to-end, schema, import round-trip, renderer golden-file, visual-regression, EPUB validation, PDF inspection, and real retailer/proof tests. Maintain simple, complex, illustrated, long (150,000+ words), and malformed test manuscripts.
 
-Mandatory local-first test scenarios:
+Mandatory authentication and local-first test scenarios:
+
+- Reject unauthenticated access to author routes and project APIs; verify registration, sign-in, sign-out and account recovery.
+- Sign in online, cache the app, disconnect and exercise local editing and export within the approved offline-session window; test expired authorization denial and reconnection.
+- Switch between two authenticated accounts in the same browser; ensure local projects are not displayed under the wrong identity.
+- Confirm signing in does not upload manuscript bytes and signing out does not delete manuscript bytes.
 
 - Install app online; import, edit, close, reopen, and export EPUB completely offline.
 - Interrupt a local save; recover without silently losing committed work.
@@ -263,7 +281,7 @@ Mandatory local-first test scenarios:
 
 **M2 — Complete author workspace:** Dashboard, chapter management, three templates, typography settings, ebook/print previews, local history, recovery tools. **Exit:** Nontechnical author can format and export a novel without developer assistance.
 
-**M3 — Optional cloud:** Auth, private storage, opt-in revision sync, conflicts, backup, tenant security. **Exit:** Safe sync without sacrificing local authority.
+**M3 — Optional cloud:** Private storage, opt-in revision sync, conflicts, backup, tenant security. **Exit:** Safe sync without sacrificing local authority. Mandatory authentication is a separate release prerequisite, not conditional on shipping sync.
 
 **M4 — Private beta:** External author tests, retailer validation, physical print proofs, performance, browser and security reviews. **Exit:** Production quality and reliability accepted by beta testers.
 
@@ -283,12 +301,13 @@ Mandatory local-first test scenarios:
 | Copyleft or font obligations | Legal and license review before shipping |
 | Browser-only license bypass | Commercial model assumes client tampering is possible |
 | Paid conversion | Beta market and pricing research |
+| Required identity with offline editing | Specify bounded offline session validation, expiry/revocation limitations, device isolation and recovery before launch |
 | Scope creep | Milestone gates and explicit deferrals |
 
-Open decisions: commercial name; print rendering engine; fully local PDF capability; revision sync implementation; storage sizing; offline licensing strategy; font library; exact portable backup schema; pricing.
+Open decisions: identity provider, session lifetime and offline authorization policy; commercial name; print rendering engine; fully local PDF capability; revision sync implementation; storage sizing; offline licensing strategy; font library; exact portable backup schema; pricing.
 
 ## 21. Definition of done
 
 A feature is complete only when functional, offline/persistence behavior (where applicable), authorization/security, tests, error handling, accessibility, and documentation pass in a representative deployed environment. Publication features additionally require real standards validation and visual proofs.
 
-**Final product principle:** Authors can import, edit, format, and preserve their books independently of cloud infrastructure. Professional publication output, author ownership, portability, local-first reliability, and open-source sustainability take priority over feature count.
+**Final product principle:** Authenticated authors can import, edit, format, and preserve their books using local browser resources without mandatory cloud manuscript storage or cloud rendering. Professional publication output, author ownership, portability, local-first reliability, and open-source sustainability take priority over feature count.
