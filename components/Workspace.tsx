@@ -15,7 +15,7 @@ import PublishPanel from "./PublishPanel";
 import PrintPanel from "./PrintPanel";
 import StructurePanel from "./StructurePanel";
 import { changeStructure, type StructureAction } from "../lib/structure";
-import { getEbookEdition, type EbookEdition } from "../lib/edition";
+import { getEbookEdition, presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
 import { getPrintEdition, printPreset, type PrintTrim } from "../lib/print-profile";
 import { blankChapter, createBook, sectionMatter, type Book } from "../lib/model";
 import { romanNumeral } from "../lib/chapter-numbering";
@@ -58,6 +58,7 @@ function backupLabel(id:string):string{
 export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
   const [inspectorTab,setInspectorTab]=useState<"preview"|"formatting">("preview");
+  const [templateMenuOpen,setTemplateMenuOpen]=useState(false);
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
@@ -750,6 +751,12 @@ export default function Workspace() {
                 onClick={()=>setReadinessOpen(v=>!v)}>
                 {blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}
               </button>
+              <div className="workspace-template-quick">
+                <button type="button" aria-expanded={templateMenuOpen} aria-label="Switch book template" onClick={()=>setTemplateMenuOpen(v=>!v)}>{getEbookEdition(book).template.id.replace(/^./,c=>c.toUpperCase())} ▾</button>
+                {templateMenuOpen?<div className="workspace-template-menu" role="group" aria-label="Choose template">
+                  {(["classic","modern","gothic"] as EditionTemplate[]).map(id=><button type="button" key={id} aria-pressed={getEbookEdition(book).template.id===id} onClick={()=>{changeEdition(presetFor(id));setTemplateMenuOpen(false);}}>{id[0].toUpperCase()+id.slice(1)}</button>)}
+                </div>:null}
+              </div>
               <div className="workspace-save">
                 <span>{getEbookEdition(book).template.id.replace(/^./, (c) => c.toUpperCase())} · ebook edition</span>
                 <span
@@ -849,6 +856,7 @@ export default function Workspace() {
                     edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
                     printProfile={getPrintEdition(book)} onPrintTrim={changePrintTrim}
                     onPrintAlignment={changePrintAlignment} onPrintTypography={changePrintTypography}
+                    onOpenPaperback={()=>{setPublishFormat("print");setMode("publish");}}
                     book={book} selectedId={chapterId} onSelectSection={setChapterId} onSectionAction={updateStructure}
                     onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}/>
                 </section>:null}
@@ -874,7 +882,7 @@ export default function Workspace() {
                   onPreviewPrint={() => {setPublishFormat("print");setMode("publish");}}
                 />
               ) : null}
-              {mode === "details" ? <BookDetailsPanel book={book} onSave={updateMetadata}/> : null}
+              {mode === "details" ? <BookDetailsPanel book={book} onSave={updateMetadata} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}/> : null}
               {mode === "publish" ? <section className="unified-publish">
                 <div className="publish-format-switch" role="group" aria-label="Publication format">
                   <div><strong>Export your book</strong><p>Validate, preview, and export an edition.</p></div>
