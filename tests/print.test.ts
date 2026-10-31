@@ -502,3 +502,30 @@ describe("chapter-ending pagination regression",()=>{
   expect(original).toHaveLength(3);
  },60000);
 });
+
+describe("facing-page balancing",()=>{
+ it("keeps verso/recto geometry, chapter openings, and local manuscript intact",async()=>{
+  const b=fixture();
+  b.chapters=[{...b.chapters[0],content:{type:"doc",content:[
+    ...Array.from({length:8},()=>({type:"paragraph",content:[{type:"text",text:"A distant landmark emerged beyond the river. ".repeat(33)}]})),
+    {type:"paragraph",content:[{type:"text",text:"The last conversation continued long into the night. ".repeat(130)}]}
+  ]}}];
+  const before=structuredClone(b.chapters);
+  const results=[];
+  for(const layoutPriority of ["automatic","balanced"] as const){
+    b.editions!.print={...getPrintEdition(b),layoutPriority};
+    const proof=await buildPrintPdf(b,fonts,options);
+    expect(proof.record.checks).toMatchObject({splitViolations:0,overflow:0});
+    expect(proof.record.pages.filter(p=>p.kind==="chapter").every(p=>p.page%2===1)).toBe(true);
+    for(const page of proof.record.pages){
+      if(page.kind==="blank")continue;
+      expect(page.left).toBeGreaterThan(0);
+      expect(page.right).toBeLessThan(PRINT_TRIMS["6x9"].width);
+    }
+    expect((await PDFDocument.load(proof.bytes)).getPageCount()).toBe(proof.record.pageCount);
+    expect(b.chapters).toEqual(before);
+    results.push(proof.record);
+  }
+  expect(results[1].profile.layoutPriority).toBe("balanced");
+ },60000);
+});
