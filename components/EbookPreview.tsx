@@ -2,6 +2,7 @@
 import { chapterNumberLabel, chapterOrdinal } from "../lib/chapter-numbering";
 import { sectionMatter } from "../lib/model";
 import { openingDesign } from "../lib/front-matter";
+import {sectionIsEmpty,sampleForSection} from "../lib/section-samples";
 import {
   memo,
   useEffect,
@@ -38,6 +39,16 @@ const ChapterContent = memo(function ChapterContent({
     () => schema.nodeFromJSON(chapter.content),
     [chapter.content],
   );
+  if(sectionIsEmpty(chapter)) return <div className="ebook-prose" aria-label="Example text, not part of manuscript" style={{opacity:.63}}>
+    {sampleForSection(chapter).map((block,index)=>block.kind==="heading"
+      ? <h3 key={index} style={{textAlign:"center"}}>{block.text}</h3>
+      : <p key={index} className={index===0?"opening-paragraph":undefined} style={{
+        fontStyle:block.kind==="quotation"?"italic":undefined,
+        fontSize:block.kind==="small"?"0.85em":undefined,
+        textAlign:block.kind==="attribution"?"right":block.kind==="quotation"?"center":undefined
+      }}>{block.text}</p>)}
+    <p style={{fontSize:".75em",fontStyle:"italic",textAlign:"center",marginTop:"1.5em"}}>Sample only — not included in exported books</p>
+  </div>;
   const blocks: ReactNode[] = [];
   let opening = true;
   doc.forEach((node, _, index) => {
