@@ -82,6 +82,25 @@ remain important before publication.
 
 For automated checks run `npm run typecheck && npm test && npm run build`.
 
+## Design preview modes
+
+The **Design** workspace now offers two clearly labeled preview modes:
+
+- **Ebook · Live:** Immediate reflowable preview for the selected section. The ebook typography controls affect this edition.
+- **Paperback · Proof:** Automatically regenerates a local PDF after a short pause and after the latest local saves commit, then displays the same PDF through PDF.js. It shows **Preparing**, **Updating**, **Up to date**, and actionable failure states; stale pages are hidden during rebuild. The preview is disposable and does not add entries to export history.
+
+Both editions share template selection, but ebook-only typography controls do not change PDF body metrics. Print-specific page size and justification remain in the Print workspace; individual section starts, vertical placement, running headers, folios and spacing are configured in Structure. The final PDF is downloaded from Print. The proof mode uses the full book and may take time on larger manuscripts. There is no separate approximate print layout engine.
+
+### User testing: Design preview
+
+1. Open a book → **Design**. Confirm **Ebook · Live** is selected and changes to ebook typography appear in its preview.
+2. Select **Paperback · Proof**. Confirm an updating status appears, followed by facing-page PDF proof (provided metadata and fonts are valid).
+3. Change the template or a section's page-layout settings; return to **Design → Paperback · Proof** and confirm it regenerates with the new layout.
+4. Edit a paragraph and revisit paperback proof mode. Confirm the old proof is not presented as current while rebuilding.
+5. Disconnect after the application shows **Offline app ready**; confirm the proof can be regenerated locally.
+
+For verification run `npm run typecheck && npm test && npm run build`. Deployed browser behavior and large-novel performance remain acceptance checks.
+
 ## Book structure management (STR-001–STR-004)
 
 Open a book → **Structure** to manage front matter, body matter, and back matter.
