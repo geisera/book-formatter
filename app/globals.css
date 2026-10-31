@@ -2478,3 +2478,25 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
  .import-dialog .section-row{grid-template-columns:25px 20px minmax(0,1fr);gap:0 6px;padding:12px 8px}
  .import-dialog .section-row .import-review-fields{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* P2-3 responsive single-column authoring workspace */
+.mobile-workspace-header,.mobile-bottom-navigation,.mobile-drawer-scrim{display:none}
+@media(max-width:900px){
+ .workspace{display:block!important;grid-template-columns:minmax(0,1fr)!important;min-width:0}
+ .workspace-content{min-width:0;width:100%}
+ .mobile-workspace-header{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f5f6f0;border-bottom:1px solid #c9d4ca;min-height:54px}
+ .mobile-workspace-header>button{min-height:42px;border:1px solid #b9c9bd;background:#fff;border-radius:6px;padding:8px 12px;white-space:nowrap}
+ .mobile-workspace-header>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+ .workspace>aside{display:none!important}
+ .workspace.mobile-drawer-open>aside{display:block!important;position:fixed;top:0;bottom:0;left:0;width:min(350px,88vw);max-height:none!important;z-index:102;overflow-y:auto;background:#fcfbf6;box-shadow:8px 0 28px #0003;padding-bottom:50px}
+ .workspace.mobile-drawer-open>.mobile-drawer-scrim{display:block;position:fixed;inset:0;background:#16241c91;z-index:101;border:0;border-radius:0;width:100%;height:100%}
+ .workspace-body,.workspace-body.mode-manuscript,.workspace-body.mode-print,.workspace-body.mode-publish{display:block!important;grid-template-columns:minmax(0,1fr)!important;min-width:0}
+ .workspace-body>.editor-area,.workspace-body .editor-area,.workspace-body .editor-work-panels{min-width:0;width:100%;max-width:100%}
+ .workspace-body .editor-live-proof{position:static!important;min-width:0;border-left:0;border-top:1px solid #d6dfd7}
+ .workspace-modes .workspace-primary-modes{display:none!important}
+ .workspace-modes{padding:6px 12px;gap:10px}
+ .mobile-bottom-navigation{display:grid;position:sticky;bottom:0;z-index:50;grid-template-columns:repeat(5,minmax(0,1fr));padding:4px 5px calc(4px + env(safe-area-inset-bottom));background:#f5f6f0;border-top:1px solid #b9cabe;box-shadow:0 -4px 10px #00000010}
+ .mobile-bottom-navigation button{min-width:0;min-height:48px;border:0;border-radius:5px;font-size:clamp(10px,2vw,13px);padding:5px 1px;overflow:hidden;text-overflow:ellipsis}
+ .mobile-bottom-navigation button[aria-current=page]{background:#dbe9dd;color:#204e36;font-weight:750}
+}
