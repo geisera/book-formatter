@@ -38,7 +38,7 @@ export function replaceInDocument(content:Chapter["content"],matches:TextMatch[]
  const state=EditorState.create({doc:schema.nodeFromJSON(content)});
  const tr=state.tr;
  for(const match of [...matches].sort((a,b)=>b.from-a.from)){
-  const marks=tr.doc.resolve(match.from).marks();
+  const marks=tr.doc.nodeAt(match.from)?.marks ?? tr.doc.resolve(match.from).marks();
   tr.replaceWith(match.from,match.to,replacement?schema.text(replacement,marks):[]);
  }
  return tr.doc.toJSON();
