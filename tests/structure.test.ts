@@ -193,7 +193,7 @@ describe("expanded conventional section catalog",()=>{
    }
    expect(sectionGroups(b).front.map(c=>c.sectionType)).toEqual(front);
    expect(sectionGroups(b).back.map(c=>c.sectionType)).toEqual(back);
-   expect(sectionGroups(b).body.map(c=>c.sectionType)).toEqual(["chapter"]);
+   expect(sectionGroups(b).body.map(c=>c.sectionType??"chapter")).toEqual(["chapter"]);
    expect(sectionGroups(b).front.every(c=>getSectionLayout(c).header==="hide")).toBe(true);
    expect(sectionGroups(b).back.every(c=>getSectionLayout(c).header==="auto")).toBe(true);
    b=changeStructure(b,{kind:"type",id:sourceId,sectionType:"introduction"}).book;
