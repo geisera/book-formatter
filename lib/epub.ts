@@ -7,7 +7,7 @@ import { zipSync, strToU8, unzipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-import { schema, validateBook, showSectionTitle, getSectionLayout, sectionHeadingScale, sectionMatter, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, getSectionLayout, sectionHeadingScale, getSectionTypographyOverrides, sectionMatter, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
 export const EPUB_RENDERER = "epub-1.3.0";
 export type ExportIssue = {
@@ -353,11 +353,12 @@ export function buildEpub(
     const ordinal=chapterOrdinal(book.chapters,i);
     const label=ordinal===null?null:chapterNumberLabel(edition.chapterNumberStyle??"none",ordinal);
     const design=openingDesign(c.sectionType??"chapter",edition.template.id);
-    const headingStyle=` style="font-size:${sectionHeadingScale(c,book)}em"`;
+    const overrides=getSectionTypographyOverrides(c,book);
+    const headingStyle=` style="font-size:${sectionHeadingScale(c,book)}em${overrides.headingAlign?`;text-align:${overrides.headingAlign}`:""}"`;
     if (design.suppressHeading) return "";
     const showTitle=ordinal===null || (edition.showChapterTitle??true);
     if(!showTitle) return label ? `<h1 id="chapter-title" class="chapter-number number-only" aria-label="Chapter ${xml(label)}">${xml(label)}</h1>` : "";
-    return `${label ? `<span class="chapter-number" aria-label="Chapter ${xml(label)}">${xml(label)}</span>` : ""}<h1 id="chapter-title">${xml(c.sectionType==="half-title"?book.title:c.title)}</h1>`;
+    return `${label ? `<span class="chapter-number" aria-label="Chapter ${xml(label)}">${xml(label)}</span>` : ""}<h1 id="chapter-title"${headingStyle}>${xml(c.sectionType==="half-title"?book.title:c.title)}</h1>`;
   };
   const openingExtras=(c:typeof book.chapters[number]):string=>{
     const style=openingDesign(c.sectionType??"chapter",edition.template.id).style;
