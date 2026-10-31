@@ -126,6 +126,27 @@ preserves custom paperback typography rather than overwriting it.
 Verification commands: `npm run typecheck && npm test && npm run build`.
 The deployed browser layout and performance must also be checked manually.
 
+### Section formatting within Design
+
+Select any front, body, or back matter section from the **Selected section** dropdown
+in the Design controls. The ebook preview switches to that section immediately;
+the paperback PDF proof jumps to its opening page once pagination is ready.
+Section title visibility is available in either mode. In **Paperback**, set
+start side (next/right/left), vertical placement, headers, page numbers, and
+spacing before/after without leaving Design. **Restore section defaults**
+clears section page-layout overrides; all changes use the same saved model as
+Structure, so backups and exports retain them.
+
+Section organization (add, split, merge, delete, reorder) remains in Structure.
+Physical page settings are not represented as ebook pagination.
+
+**User testing:** In Design, select a chapter and verify the ebook preview
+navigates to it. Switch to Paperback, choose a different section, and verify the
+PDF page navigator jumps to its opening page. Set Start page to Left-hand and
+Running header to Hide; confirm the PDF regenerates with those changes. Reset
+section defaults, switch tabs and restore a backup to verify saved settings.
+Run `npm run typecheck && npm test && npm run build` and browser tests.
+
 ## Book structure management (STR-001–STR-004)
 
 Open a book → **Structure** to manage front matter, body matter, and back matter.
