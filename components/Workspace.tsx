@@ -751,6 +751,7 @@ export default function Workspace() {
                     selectedId={chapterId}
                     onSelectSection={setChapterId}
                     onSectionAction={updateStructure}
+                  onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}
                   />
                 </aside>
                 <section className="design-studio-preview" aria-label="Book design preview">
