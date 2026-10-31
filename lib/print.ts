@@ -641,7 +641,12 @@ export async function buildPrintPdf(
       const blockAlignment = (node.attrs.align as TextAlignment | null) ?? (design.bodyAlign === "center" ? "center" : null);
       const indent = blockAlignment || design.unindentedBody ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
       const mainUnits=design.italicBody ? units(node).map(w=>({...w,runs:w.runs.map(r=>({...r,face:r.face==="regular"?"italic" as const:r.face}))})) : units(node);
-      const lines = wrap(mainUnits, indent);
+      const isBibliography = chapter.sectionType === "bibliography" && !node.attrs.align;
+      // Bibliography entries use hanging indents: first line flush left, following lines indented.
+      const hanging = isBibliography ? 14 : 0;
+      const lines = isBibliography
+        ? wrap(mainUnits, 0, size, contentWidth - hanging).map((entry, i) => ({...entry, indent: i === 0 ? 0 : hanging}))
+        : wrap(mainUnits, indent);
       // In Balanced mode, consider the last few *whole paragraphs* as a
       // group. Move them onto the following recto only when that page was
       // already necessary, the tail fits on it, and the estimated facing
