@@ -64,6 +64,8 @@ describe("worker retries and recovery",()=>{
   for(let i=0;i<40&&sent.workers.length<2;i++)await new Promise(r=>setTimeout(r,0));
   expect(sent.workers).toHaveLength(2);
   expect(first.terminated).toBe(true);
+  for(let i=0;i<40&&!sent.workers[1].onmessage;i++)await new Promise(r=>setTimeout(r,0));
+  expect(sent.workers[1].onmessage).not.toBeNull();
   sent.workers[1].emit({ok:true,bytes:new Uint8Array([37]),record:{inputChecksum:"x"}});
   await expect(task.promise).resolves.toHaveProperty("bytes");
   expect(values.every((value,i)=>i===0||value>=values[i-1])).toBe(true);
