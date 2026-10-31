@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { schema } from "../lib/model";
 import { SECTION_TYPES, sectionMatter, showSectionTitle, getSectionLayout, type Book, type SectionType } from "../lib/model";
 import { orderedSections, sectionGroups, type StructureAction } from "../lib/structure";
 
@@ -81,6 +82,9 @@ export default function StructurePanel({
   const [error, setError] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
   const [layoutNotice, setLayoutNotice] = useState(false);
+  const [expandedId,setExpandedId]=useState<string|null>(selectedId);
+  const [insertion,setInsertion]=useState<{matter:"front"|"body"|"back";after?:string}|null>(null);
+  const [rowMenu,setRowMenu]=useState<string|null>(null);
   const groups = sectionGroups(book);
   const ordered = orderedSections(book);
   const dispatch = (action: StructureAction) => {
@@ -95,30 +99,16 @@ export default function StructurePanel({
       <p>Move chapters, organize front and back matter, or split and merge sections. Changes save locally and determine the order of EPUB and PDF exports.</p>
       {error ? <p className="alert" role="alert">{error}</p> : null}
       {layoutNotice ? <div className="publish-notice" role="status"><p>Section settings saved locally. They affect a newly generated paperback PDF, not this editing screen. Open Export → Paperback PDF and rebuild the proof to see the result.</p><button type="button" onClick={onPreviewPrint}>Go to Export</button></div> : null}
-      <form className="structure-add" onSubmit={e => {
-        e.preventDefault();
-        if (!title.trim()) { setError("Enter a title for the new section."); return; }
-        dispatch({ kind: "add", title: title.trim(), sectionType: type });
-        setTitle("");
-      }}>
-        <label>New section type
-          <select aria-label="New section type" aria-describedby="new-section-type-description" value={type} onChange={e => setType(e.target.value as SectionType)}>
-            {SECTION_TYPES.map(t => <option key={t} value={t}>{labels[t]}</option>)}
-          </select>
-        </label>
-        <label>Section title
-          <input value={title} maxLength={200} placeholder="e.g. Prologue" onChange={e => setTitle(e.target.value)} />
-        </label>
-        <button className="primary" type="submit">+ Add section</button>
-        <div id="new-section-type-description" className="structure-add-description" aria-live="polite">
-          <p>{sectionDescriptions[type]}</p>
-          <p className="structure-add-use-case">{sectionUseCases[type]}</p>
-        </div>
-      </form>
       {(["front", "body", "back"] as const).map(matter => (
         <div className="structure-group" key={matter}>
           <h3>{matter === "front" ? "Front matter" : matter === "body" ? "Body matter" : "Back matter"} <small>{groups[matter].length}</small></h3>
           {groups[matter].length === 0 ? <p className="muted">No sections yet.</p> : null}
+          <button type="button" className="structure-add-here" onClick={()=>{setInsertion({matter});setType(matter==="front"?"preface":matter==="body"?"chapter":"appendix");}}>+ Add here</button>
+          {insertion?.matter===matter&&!insertion.after?<form className="structure-inline-add" onSubmit={e=>{e.preventDefault();if(!title.trim()){setError("Enter a title for the new section.");return;}dispatch({kind:"add",sectionType:type,title:title.trim()});setTitle("");setInsertion(null);}}>
+            <label>Type<select aria-label="New section type" value={type} onChange={e=>setType(e.target.value as SectionType)}>{SECTION_TYPES.filter(t=>sectionMatter(t)===matter).map(t=><option key={t} value={t}>{labels[t]}</option>)}</select></label>
+            <label>Title<input aria-label="New section title" value={title} onChange={e=>setTitle(e.target.value)} maxLength={200}/></label>
+            <button type="submit">Add section</button><button type="button" onClick={()=>setInsertion(null)}>Cancel</button>
+          </form>:null}
           <ol>
             {groups[matter].map(section => {
               const index = ordered.findIndex(c => c.id === section.id);
@@ -132,11 +122,23 @@ export default function StructurePanel({
                   if (dragId && dragId !== section.id) dispatch({ kind: "move", id: dragId, to: index });
                   setDragId(null);
                 }} onDragEnd={() => setDragId(null)}>
-                <div className="structure-item-heading">
-                  <span aria-hidden="true" title="Drag to reorder">⠿</span>
-                  <strong>{index + 1}. {section.title}</strong>
-                  <button onClick={() => onEdit(section.id)} type="button">Edit text</button>
+                <div className="structure-compact-row">
+                  <span className="structure-drag-handle" title="Drag to reorder" aria-hidden="true">⠿</span>
+                  <span className="structure-number">{index+1}.</span>
+                  <button type="button" className="structure-row-title" aria-expanded={expandedId===section.id} onClick={()=>setExpandedId(expandedId===section.id?null:section.id)}>{section.title}</button>
+                  <span className="structure-type-badge">{labels[section.sectionType??"chapter"]}</span>
+                  <span className="structure-row-words">{schema.nodeFromJSON(section.content).textContent.trim().match(/\S+/g)?.length??0} words</span>
+                  <button type="button" aria-label={`Actions for ${section.title}`} aria-expanded={rowMenu===section.id} onClick={()=>setRowMenu(rowMenu===section.id?null:section.id)}>⋯</button>
                 </div>
+                {rowMenu===section.id?<div className="structure-row-menu">
+                  <button type="button" onClick={()=>{setExpandedId(section.id);setRowMenu(null);}}>Edit settings</button>
+                  <button type="button" onClick={()=>{onEdit(section.id);setRowMenu(null);}}>Edit text</button>
+                  <button type="button" disabled={positionInGroup===0} onClick={()=>{dispatch({kind:"move",id:section.id,to:index-1});setRowMenu(null);}}>Move up</button>
+                  <button type="button" disabled={positionInGroup===groups[matter].length-1} onClick={()=>{dispatch({kind:"move",id:section.id,to:index+1});setRowMenu(null);}}>Move down</button>
+                  <button type="button" onClick={()=>{dispatch({kind:"duplicate",id:section.id});setRowMenu(null);}}>Duplicate</button>
+                  <button type="button" disabled={book.chapters.length===1} onClick={()=>{if(window.confirm("Delete this section and its content?"))dispatch({kind:"delete",id:section.id});setRowMenu(null);}}>Delete</button>
+                </div>:null}
+                {expandedId===section.id?<div className="structure-expanded-editor">
                 <div className="structure-item-fields">
                   <label>Title
                     <input aria-label={`Title of ${section.title}`} key={section.id + section.title}
@@ -161,7 +163,7 @@ export default function StructurePanel({
                   Show section title on page
                 </label> : null}
                 <details className="structure-page-layout">
-                  <summary>Page Layout</summary>
+                  <summary>Page Layout <span className="print-only-badge">Print only</span></summary>
                   <p className="control-note">These controls do not change the manuscript editor. Build a new PDF in Export → Paperback PDF to see the effect. Page side refers to the physical sheet; headers and folios depend on section and page type. EPUB readers control pagination.</p>
                   <div className="structure-layout-grid">
                     <label>Start page
@@ -219,7 +221,13 @@ export default function StructurePanel({
                     if (window.confirm(`Delete "${section.title}" and all its text? This cannot be undone.`)) dispatch({kind:"delete",id:section.id});
                   }}>Delete</button>
                 </div>
-                <small>{labels[section.sectionType ?? "chapter"]} · {sectionMatter(section.sectionType ?? "chapter")} · {blocks.length} blocks</small>
+                </div>
+                <button type="button" className="structure-add-here between" onClick={()=>{setInsertion({matter,after:section.id});setType(section.sectionType??"chapter");}}>+ Add here</button>
+                {insertion?.matter===matter&&insertion.after===section.id?<form className="structure-inline-add" onSubmit={e=>{e.preventDefault();if(!title.trim()){setError("Enter a title for the new section.");return;}dispatch({kind:"add",sectionType:type,title:title.trim(),after:section.id});setTitle("");setInsertion(null);}}>
+                  <label>Type<select aria-label="New section type" value={type} onChange={e=>setType(e.target.value as SectionType)}>{SECTION_TYPES.filter(t=>sectionMatter(t)===matter).map(t=><option key={t} value={t}>{labels[t]}</option>)}</select></label>
+                  <label>Title<input aria-label="New section title" value={title} onChange={e=>setTitle(e.target.value)} maxLength={200}/></label>
+                  <button type="submit">Add section</button><button type="button" onClick={()=>setInsertion(null)}>Cancel</button>
+                </form>:null}
               </li>;
             })}
           </ol>
