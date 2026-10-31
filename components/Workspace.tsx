@@ -22,6 +22,7 @@ import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
+  const [inspectorTab,setInspectorTab]=useState<"preview"|"formatting">("preview");
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
@@ -620,7 +621,7 @@ export default function Workspace() {
                   aria-pressed={mode === "manuscript"}
                   onClick={() => setMode("manuscript")}
                 >
-                  Manuscript
+                  Editor
                 </button>
                 <button
                   aria-pressed={mode === "design"}
