@@ -654,7 +654,7 @@ export default function Workspace() {
                 <div className="editor-meta">
                   <span>MANUSCRIPT / {chapter?.title}</span>
                   <button type="button" onClick={()=>setFindOpen(v=>!v)} aria-label="Find and replace manuscript">Find & Replace</button>
-                  <button type="button" onClick={()=>setPreviewVisible(v=>!v)}>{previewVisible?"Hide preview":"Show preview"}</button>
+                  <button type="button" onClick={()=>setPreviewVisible(v=>!v)}>{previewVisible?"Hide inspector":"Show inspector"}</button>
                 </div>
                 {chapter ? (
                   <article className="paper">
@@ -700,13 +700,32 @@ export default function Workspace() {
                   <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
                 </p>
               </section>
-              {mode === "manuscript" && previewVisible ? <aside className="workspace-live-preview" aria-label="Live book preview">
-                <div className="workspace-live-preview-head"><strong>Live preview</strong>
-                  <div className="preview-pane-actions"><label>Width <input aria-label="Preview pane width" type="range" min="30" max="65" value={previewWidth} onChange={e=>setPreviewWidth(Number(e.target.value))}/></label><button type="button" onClick={()=>setMode("design")}>Customize</button><button type="button" onClick={()=>setPreviewVisible(false)}>Hide</button></div>
+              {mode==="manuscript"&&previewVisible ? <aside className="workspace-live-preview workspace-inspector" aria-label="Editor inspector">
+                <div className="inspector-tabs" role="tablist" aria-label="Editor inspector">
+                  <button type="button" role="tab" aria-selected={inspectorTab==="preview"} onClick={()=>setInspectorTab("preview")}>Preview</button>
+                  <button type="button" role="tab" aria-selected={inspectorTab==="formatting"} onClick={()=>setInspectorTab("formatting")}>Formatting</button>
+                  <button type="button" onClick={()=>setPreviewVisible(false)}>Hide</button>
                 </div>
-                <EbookPreview hidden={false} book={book} chapter={chapter} chapterId={chapterId}
-                  edition={getEbookEdition(book)} onNavigate={setChapterId} updating={false}/>
-              </aside> : null}
+                <div className="inspector-preview" hidden={inspectorTab!=="preview"}>
+                  <div className="workspace-live-preview-head">
+                    <div className="design-studio-format" role="group" aria-label="Preview format">
+                      <button type="button" aria-pressed={designPreview==="ebook"} onClick={()=>setDesignPreview("ebook")}>Ebook</button>
+                      <button type="button" aria-pressed={designPreview==="print"} onClick={()=>setDesignPreview("print")}>Paperback</button>
+                    </div>
+                    <label>Width <input type="range" aria-label="Preview width" min="30" max="65" value={previewWidth} onChange={e=>setPreviewWidth(Number(e.target.value))}/></label>
+                  </div>
+                  {designPreview==="ebook" ? <EbookPreview hidden={false} book={book} chapter={previewChapter} chapterId={chapterId} edition={getEbookEdition(book)} onNavigate={setChapterId} updating={previewChapter!==chapter}/> :
+                    <DesignPrintPreview book={book} getSnapshot={exportSnapshot} selectedSectionId={chapterId}/>}
+                </div>
+                <div className="inspector-formatting" hidden={inspectorTab!=="formatting"}>
+                  <DesignPanel hidden={false} cover={book.cover} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
+                    edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
+                    printProfile={getPrintEdition(book)} onPrintTrim={changePrintTrim}
+                    onPrintAlignment={changePrintAlignment} onPrintTypography={changePrintTypography}
+                    book={book} selectedId={chapterId} onSelectSection={setChapterId} onSectionAction={updateStructure}
+                    onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}/>
+                </div>
+              </aside>:null}
               {mode === "structure" ? (
                 <StructurePanel
                   book={book}
