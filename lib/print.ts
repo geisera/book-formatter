@@ -635,6 +635,23 @@ export async function buildPrintPdf(
         const minFragment = profile.layoutPriority === "balanced" && remaining >= 6 ? 3 : 2;
         if (remaining > count && remaining - count < minFragment)
           count = remaining - minFragment;
+        // At the final paragraph of a section, a left (verso) body page and
+        // the following right (recto) page form a physical spread. Prefer
+        // a modestly earlier break only when it reduces their line-count
+        // disparity. Keep at least three lines on either side and never
+        // rebalance chapter openings or force additional pages.
+        if (profile.layoutPriority === "balanced" && index === doc.childCount - 1 &&
+            proof.kind === "body" && proof.page % 2 === 0 &&
+            remaining > count && count >= 3) {
+          const disparity = (leftCount:number) =>
+            Math.abs((proof.lineCount + leftCount) - (remaining - leftCount));
+          let best = count;
+          for (let candidate = count - 1; candidate >= Math.max(3,count - 4); candidate--) {
+            if (remaining - candidate < 3) continue;
+            if (disparity(candidate) < disparity(best)) best = candidate;
+          }
+          count = best;
+        }
         if (count < 1 || (remaining > count && count < minFragment)) {
           bodyPage();
           continue;
