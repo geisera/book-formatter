@@ -208,7 +208,7 @@ function fromAst(
       const content = nodes.flatMap((c) => inline(c, [], depth + 1));
       const text = content.map(c => c.text).join("").trim();
       if (html && !heading && blocks.at(-1)?.type === "image" &&
-          /^(?:Figure|Fig\\.|Illustration|Plate)\\s+[0-9IVXLCDM]+\\s*[:.\\-–—]\\s*\\S/i.test(text) &&
+          /^(?:Figure|Fig\.|Illustration|Plate)\s+[0-9IVXLCDM]+\s*[:.\-–—]\s*\S/i.test(text) &&
           text.length <= 1000) {
         blocks[blocks.length - 1].attrs!.caption = text;
         return;
@@ -298,7 +298,7 @@ function fromAst(
     const image = blocks[i], next = blocks[i + 1];
     if (image.type !== "image" || next.type !== "paragraph") continue;
     const caption = blockText(next).trim();
-    if (/^(?:Figure|Fig\\.|Illustration|Plate)\\s+[0-9IVXLCDM]+\\s*[:.\\-–—]\\s*\\S/i.test(caption) && caption.length <= 1000) {
+    if (/^(?:Figure|Fig\.|Illustration|Plate)\s+[0-9IVXLCDM]+\s*[:.\-–—]\s*\S/i.test(caption) && caption.length <= 1000) {
       image.attrs!.caption = caption;
       blocks.splice(i + 1, 1);
     }
