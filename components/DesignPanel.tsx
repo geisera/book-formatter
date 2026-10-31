@@ -1,6 +1,6 @@
 "use client";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
-import {getSectionLayout,sectionHeadingScale,defaultSectionLayout,showSectionTitle,sectionMatter,type Book,type SectionPageLayout,type SectionType,type SectionStyle} from "../lib/model";
+import {getSectionLayout,sectionHeadingScale,defaultSectionLayout,getSectionTypographyOverrides,showSectionTitle,sectionMatter,type Book,type SectionPageLayout,type SectionType,type SectionStyle} from "../lib/model";
 import type {StructureAction} from "../lib/structure";
 import {PRINT_TRIMS,PRINT_PRESETS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
 import CoverEditor from "./CoverEditor";
@@ -43,6 +43,7 @@ export default function DesignPanel({
   const typeStyle=book.sectionStyles?.[sectionType];
   const typeLayout={...defaultSectionLayout(sectionType),...typeStyle?.layout};
   const headingScale=section?sectionHeadingScale(section,book):1;
+  const typography=section?getSectionTypographyOverrides(section,book):{};
   function typeLayoutChange(changes:Partial<SectionPageLayout>){onTypeStyle(sectionType,{...typeStyle,layout:{...typeStyle?.layout,...changes}});}
   function typeHeadingChange(value:number){onTypeStyle(sectionType,{...typeStyle,headingScale:value});}
   function sectionLayout(changes:Partial<SectionPageLayout>){if(section)onSectionAction({kind:"layout",id:section.id,changes});}
@@ -73,6 +74,11 @@ export default function DesignPanel({
           <label>Heading scale ({(typeStyle?.headingScale??1).toFixed(2)}×)
             <input aria-label="Section type heading scale" type="range" min="0.5" max="2" step="0.05" value={typeStyle?.headingScale??1}
               onChange={e=>typeHeadingChange(Number(e.target.value))}/></label>
+          <label>Default body scale ({(typeStyle?.bodyScale??1).toFixed(2)}×)<input type="range" min="0.5" max="2" step="0.05" value={typeStyle?.bodyScale??1} onChange={e=>onTypeStyle(sectionType,{...typeStyle,bodyScale:Number(e.target.value)})}/></label>
+          <label>Default heading alignment<select value={typeStyle?.headingAlign??"center"} onChange={e=>onTypeStyle(sectionType,{...typeStyle,headingAlign:e.target.value as "left"|"center"})}><option value="left">Left</option><option value="center">Center</option></select></label>
+          <label>Default body alignment<select value={typeStyle?.bodyAlign??"left"} onChange={e=>onTypeStyle(sectionType,{...typeStyle,bodyAlign:e.target.value as "left"|"center"})}><option value="left">Left</option><option value="center">Center</option></select></label>
+          <label className="design-toggle"><input type="checkbox" checked={typeStyle?.italicBody??false} onChange={e=>onTypeStyle(sectionType,{...typeStyle,italicBody:e.target.checked})}/>Italic body</label>
+          <label className="design-toggle"><input type="checkbox" checked={typeStyle?.unindentedBody??false} onChange={e=>onTypeStyle(sectionType,{...typeStyle,unindentedBody:e.target.checked})}/>No paragraph indents</label>
           {format==="print"?<>
             <label>Default start page<select aria-label="Section type start page" value={typeLayout.start} onChange={e=>typeLayoutChange({start:e.target.value as SectionPageLayout["start"]})}>
               <option value="next">Next page</option><option value="recto">Right-hand</option><option value="verso">Left-hand</option>
