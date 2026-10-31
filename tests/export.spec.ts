@@ -61,7 +61,7 @@ test("exports an imported, formatted book entirely offline and tracks exact snap
   await mkdir("artifacts/epub", { recursive: true });
   await writeFile("artifacts/epub/browser-export.epub", bytes);
   await page.reload();
-  await page.getByRole("button", { name: /Offline export novel/ }).click();
+  await page.locator(".book-card").filter({hasText:/Offline export novel/}).click();
   await page.getByRole("button", { name: "Publish", exact: true }).click();
   await expect(
     page.getByText("Current snapshot", { exact: true }),
