@@ -12,11 +12,13 @@ export const db = new Dexie("book-formatter") as Dexie & {
   sources: EntityTable<SourceFile, "bookId">;
   exports: EntityTable<ExportRecord, "id">;
   printExports: EntityTable<PrintRecord, "id">;
+  artifacts: EntityTable<{id:string;bookId:string;format:"epub"|"pdf";bytes:Uint8Array;createdAt:string},"id">;
 };
 db.version(1).stores({ books: "id, updatedAt" });
 db.version(2).stores({ sources: "bookId" });
 db.version(3).stores({ exports: "id, bookId, createdAt" });
 db.version(4).stores({ printExports: "id,bookId,createdAt" });
+db.version(5).stores({ artifacts: "id,bookId,createdAt" });
 export async function saveImportedBook(
   book: Book,
   source?: SourceFile,
@@ -62,11 +64,12 @@ export async function saveBook(
 
 /** Permanently delete a local project and all book-scoped records in one transaction. */
 export async function deleteBook(bookId: string): Promise<void> {
-  await db.transaction("rw", db.books, db.sources, db.exports, db.printExports, async () => {
+  await db.transaction("rw", db.books, db.sources, db.exports, db.printExports, db.artifacts, async () => {
     if (!(await db.books.get(bookId))) throw Error("This manuscript no longer exists.");
     await db.sources.delete(bookId);
     await db.exports.where("bookId").equals(bookId).delete();
     await db.printExports.where("bookId").equals(bookId).delete();
+    await db.artifacts.where("bookId").equals(bookId).delete();
     await db.books.delete(bookId);
   });
 }
