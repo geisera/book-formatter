@@ -81,7 +81,7 @@ export function validatePrintEdition(value: unknown): PrintEdition {
       (p.paragraphSpacing !== undefined && (!Number.isFinite(p.paragraphSpacing) || p.paragraphSpacing < 0 || p.paragraphSpacing > 24)) ||
       (p.firstLineIndent !== undefined && (!Number.isFinite(p.firstLineIndent) || p.firstLineIndent < 0 || p.firstLineIndent > 36)) ||
       (p.chapterOpeningSpace !== undefined && (!Number.isFinite(p.chapterOpeningSpace) || p.chapterOpeningSpace < 0 || p.chapterOpeningSpace > 120)))
-    throw Error("Invalid paperback typography settings.");
+    throw Error("Unsupported print profile: invalid paperback typography settings.");
   if (!Object.hasOwn(PRINT_TRIMS, p.trim)) throw Error("Unsupported print trim size.");
   if (p.alignment !== undefined && p.alignment !== "left" && p.alignment !== "justify")
     throw Error("Unsupported print alignment.");
@@ -98,7 +98,7 @@ export function getPrintEdition(book: {
   const trim = saved && Object.hasOwn(PRINT_TRIMS, saved) ? saved : "6x9";
   const preset = printPreset(id, alignment, trim);
   const prior = book.editions?.print;
-  return prior ? { ...preset, fontSize: prior.fontSize ?? preset.fontSize,
+  return prior?.template.id === id ? { ...preset, fontSize: prior.fontSize ?? preset.fontSize,
     leading: prior.leading ?? preset.leading,
     paragraphSpacing: prior.paragraphSpacing ?? preset.paragraphSpacing,
     firstLineIndent: prior.firstLineIndent ?? preset.firstLineIndent,
