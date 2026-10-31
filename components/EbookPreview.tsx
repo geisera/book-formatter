@@ -1,6 +1,7 @@
 "use client";
 import { chapterNumberLabel, chapterOrdinal } from "../lib/chapter-numbering";
 import { sectionMatter } from "../lib/model";
+import { openingDesign } from "../lib/front-matter";
 import {
   memo,
   useEffect,
@@ -207,7 +208,7 @@ export default function EbookPreview({
       </div>
       <div className={`reader-viewport theme-${theme}`} ref={viewport}>
         <article
-          className={`ebook-page heading-${edition.headingStyle} template-${edition.template.id}${chapter && sectionMatter(chapter.sectionType??"chapter")==="front"?" front-matter":""}`}
+          className={`ebook-page heading-${edition.headingStyle} template-${edition.template.id} opening-${openingDesign(chapter?.sectionType??"chapter",edition.template.id).style}${chapter && sectionMatter(chapter.sectionType??"chapter")==="front"?" front-matter":""}`}
           style={style}
           aria-label="Formatted chapter"
           aria-busy={updating}
@@ -218,16 +219,26 @@ export default function EbookPreview({
           </div> : <><header className="ebook-chapter-header">
             <p className="ebook-book-title">{book.title}</p>
             <div className="ebook-opening-rule" aria-hidden="true" />
-            {chapter && showSectionTitle(chapter) ? <>
+            {chapter && (showSectionTitle(chapter)||chapter.sectionType==="title") ? <>
               {chapterOrdinal(book.chapters,index)!==null && (edition.chapterNumberStyle??"none")!=="none"
                 ? ((edition.showChapterTitle??true)
                     ? <span className="ebook-chapter-number">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</span>
                     : <h2 className="ebook-chapter-number number-only">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</h2>)
                 : null}
-              {(chapter.sectionType??"chapter")!=="chapter" || (edition.showChapterTitle??true)
+              {chapter.sectionType==="title" ? <h2>{book.title}</h2> : openingDesign(chapter.sectionType??"chapter",edition.template.id).suppressHeading ? null : (chapter.sectionType??"chapter")!=="chapter" || (edition.showChapterTitle??true)
                 ? <h2>{chapter.title}</h2>
                 : null}
             </> : null}
+            {chapter?.sectionType==="title" ? <div className="ebook-title-details">
+              {book.metadata?.subtitle ? <p className="title-subtitle">{book.metadata.subtitle}</p> : null}
+              <p className="title-author">{book.author}</p>
+              {book.metadata?.publisher ? <p className="title-publisher">{book.metadata.publisher}</p> : null}
+            </div> : null}
+            {chapter?.sectionType==="copyright" ? <div className="ebook-copyright-details">
+              {book.metadata?.publisher ? <p>Publisher: {book.metadata.publisher}</p> : null}
+              {book.metadata?.publicationDate ? <p>Publication date: {book.metadata.publicationDate}</p> : null}
+              {book.metadata?.isbn ? <p>ISBN: {book.metadata.isbn}</p> : null}
+            </div> : null}
           </header>
           {chapter?.sectionType === "toc" ? (
             <nav aria-label="Generated table of contents" className="ebook-prose">
