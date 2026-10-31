@@ -1,6 +1,6 @@
 "use client";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
-import {getSectionLayout,showSectionTitle,sectionMatter,type Book,type SectionPageLayout} from "../lib/model";
+import {getSectionLayout,sectionHeadingScale,defaultSectionLayout,showSectionTitle,sectionMatter,type Book,type SectionPageLayout,type SectionType,type SectionStyle} from "../lib/model";
 import type {StructureAction} from "../lib/structure";
 import {PRINT_TRIMS,PRINT_PRESETS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
 import CoverEditor from "./CoverEditor";
@@ -19,11 +19,13 @@ export default function DesignPanel({
   selectedId,
   onSelectSection,
   onSectionAction,
+  onTypeStyle,
 }: {
   book: Book;
   selectedId: string;
   onSelectSection: (id:string)=>void;
   onSectionAction: (action:StructureAction)=>void;
+  onTypeStyle: (type:SectionType, style:SectionStyle|null)=>void;
   edition: EbookEdition;
   cover: Book["cover"];
   onCoverChange: (cover:Book["cover"])=>void;
@@ -36,7 +38,13 @@ export default function DesignPanel({
   onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"chapterNumberStyle"|"showChapterTitle"|"frontMatterTitleScale"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
 }) {
   const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
-  const layout=section ? getSectionLayout(section) : null;
+  const layout=section ? getSectionLayout(section,book) : null;
+  const sectionType=section?.sectionType??"chapter";
+  const typeStyle=book.sectionStyles?.[sectionType];
+  const typeLayout={...defaultSectionLayout(sectionType),...typeStyle?.layout};
+  const headingScale=section?sectionHeadingScale(section,book):1;
+  function typeLayoutChange(changes:Partial<SectionPageLayout>){onTypeStyle(sectionType,{...typeStyle,layout:{...typeStyle?.layout,...changes}});}
+  function typeHeadingChange(value:number){onTypeStyle(sectionType,{...typeStyle,headingScale:value});}
   function sectionLayout(changes:Partial<SectionPageLayout>){if(section)onSectionAction({kind:"layout",id:section.id,changes});}
   function change<K extends keyof EbookEdition>(
     key: K,
@@ -59,10 +67,37 @@ export default function DesignPanel({
             {book.chapters.map(c=><option key={c.id} value={c.id}>{c.title} · {sectionMatter(c.sectionType??"chapter")}</option>)}
           </select>
         </label>
+        {section&&layout?<details className="design-section-detail">
+          <summary>Defaults for {sectionType.replaceAll("-"," ")}</summary>
+          <p className="control-note">These settings apply to all sections of this type. Individual overrides take precedence.</p>
+          <label>Heading scale ({(typeStyle?.headingScale??1).toFixed(2)}×)
+            <input aria-label="Section type heading scale" type="range" min="0.5" max="2" step="0.05" value={typeStyle?.headingScale??1}
+              onChange={e=>typeHeadingChange(Number(e.target.value))}/></label>
+          {format==="print"?<>
+            <label>Default start page<select aria-label="Section type start page" value={typeLayout.start} onChange={e=>typeLayoutChange({start:e.target.value as SectionPageLayout["start"]})}>
+              <option value="next">Next page</option><option value="recto">Right-hand</option><option value="verso">Left-hand</option>
+            </select></label>
+            <label>Default vertical position<select aria-label="Section type vertical" value={typeLayout.vertical} onChange={e=>typeLayoutChange({vertical:e.target.value as SectionPageLayout["vertical"]})}>
+              <option value="top">Top</option><option value="center">Center</option><option value="bottom">Bottom</option>
+            </select></label>
+            <label>Default running header<select aria-label="Section type header" value={typeLayout.header} onChange={e=>typeLayoutChange({header:e.target.value as SectionPageLayout["header"]})}>
+              <option value="auto">Automatic</option><option value="show">Show</option><option value="hide">Hide</option>
+            </select></label>
+            <label>Default page number<select aria-label="Section type page number" value={typeLayout.pageNumber} onChange={e=>typeLayoutChange({pageNumber:e.target.value as SectionPageLayout["pageNumber"]})}>
+              <option value="auto">Automatic</option><option value="show">Show</option><option value="hide">Hide</option>
+            </select></label>
+            <label>Default spacing before ({typeLayout.spaceBefore} pt)<input type="range" min="0" max="120" step="5" value={typeLayout.spaceBefore} onChange={e=>typeLayoutChange({spaceBefore:Number(e.target.value)})}/></label>
+            <label>Default spacing after ({typeLayout.spaceAfter} pt)<input type="range" min="0" max="120" step="5" value={typeLayout.spaceAfter} onChange={e=>typeLayoutChange({spaceAfter:Number(e.target.value)})}/></label>
+          </>:null}
+          <button type="button" onClick={()=>onTypeStyle(sectionType,null)}>Reset section type defaults</button>
+        </details>:null}
         {section&&layout?<details open className="design-section-detail">
           <summary>Section appearance</summary>
           {(section.sectionType??"chapter")!=="chapter" ? <label className="design-toggle"><input type="checkbox" checked={showSectionTitle(section)}
             onChange={e=>onSectionAction({kind:"visibility",id:section.id,showTitle:e.target.checked})}/>Show section title</label> : null}
+          <label>Heading scale ({headingScale.toFixed(2)}×)
+            <input aria-label="Selected section heading scale" type="range" min="0.5" max="2" step="0.05" value={headingScale}
+              onChange={e=>onSectionAction({kind:"heading-scale",id:section.id,value:Number(e.target.value)})}/></label>
           {format==="print"?<>
             <label>Start page<select aria-label="Design section start" value={layout.start} onChange={e=>sectionLayout({start:e.target.value as SectionPageLayout["start"]})}>
               <option value="next">Next page</option><option value="recto">Right-hand</option><option value="verso">Left-hand</option>
@@ -83,7 +118,7 @@ export default function DesignPanel({
               <input aria-label="Design section spacing after" type="range" min="0" max="120" step="5" value={layout.spaceAfter} onChange={e=>sectionLayout({spaceAfter:Number(e.target.value)})}/>
             </label>
           </>:<p className="control-note">Ebook readers control physical pages. Use Paperback for page starts, headers, and page numbers.</p>}
-          <button type="button" onClick={()=>onSectionAction({kind:"reset-layout",id:section.id})}>Restore section defaults</button>
+          <button type="button" onClick={()=>onSectionAction({kind:"reset-style",id:section.id})}>Reset selected section overrides</button>
         </details>:null}
       </fieldset>
       <details className="design-cover-section" open><summary>Cover artwork</summary><CoverEditor cover={cover} onChange={onCoverChange}/></details>
