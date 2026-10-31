@@ -83,6 +83,22 @@ This is a feature-level implementation inventory, not a certification that all P
 
 No feature above is labeled **publication-ready** solely because it generates a file. Physical print proofs, standards checks on the exact artifact, and retailer acceptance are separate gates.
 
+## Designed front matter
+
+Structure section types now drive coordinated EPUB/PDF opening layouts: **Half title**
+(displays the publication title), **Title** (book title, optional subtitle, author,
+optional publisher), **Copyright** (compact publication metadata alongside any
+manuscript text), **Dedication** (centered), **Epigraph** (centered italic),
+and **Part** (prominent section opening). Classic, Modern, and Gothic apply
+different heading proportions or ornament where supported. The Ebook live
+preview reflects the same semantic layouts, while ebook pagination remains
+reader-controlled. When a manuscript contains an explicit Title section,
+the exporter omits its automatically generated title leaf rather than
+creating a duplicate. Existing manuscripts without one retain the automatic
+title page. Author-supplied content is preserved and no copyright claim,
+publisher, ISBN, or publication date is invented. These layouts do not
+require cloud services.
+
 ## Chapter numbering and front-matter typography
 
 Both **Design → Ebook** and **Design → Paperback** provide independent
