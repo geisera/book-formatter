@@ -357,3 +357,30 @@ describe("Design is the source of truth for print templates", () => {
     expect(b).toEqual(before);
   }, 20000);
 });
+
+describe("independent paperback typography", () => {
+  it("validates and round-trips paperback metrics without modifying ebook settings", () => {
+    const book=fixture();
+    const ebook=structuredClone(book.editions!.ebook);
+    book.editions!.print={...getPrintEdition(book),fontSize:12,leading:18,paragraphSpacing:9,firstLineIndent:22,chapterOpeningSpace:35};
+    expect(validatePrintEdition(book.editions!.print)).toEqual(book.editions!.print);
+    const restored=restoreBook(backupBook(book));
+    expect(getPrintEdition(restored)).toMatchObject({
+      fontSize:12,leading:18,paragraphSpacing:9,firstLineIndent:22,chapterOpeningSpace:35
+    });
+    expect(restored.editions!.ebook).toEqual(ebook);
+    for(const changes of [{fontSize:20},{leading:2},{paragraphSpacing:-1},{firstLineIndent:40},{chapterOpeningSpace:130}]){
+      expect(()=>validatePrintEdition({...getPrintEdition(book),...changes})).toThrow("Unsupported print profile");
+    }
+  });
+  it("uses custom paragraph spacing and line metrics in actual PDF pagination", async () => {
+    const book=fixture();
+    const standard=await buildPrintPdf(book,fonts,options);
+    book.editions!.print={...getPrintEdition(book),fontSize:12,leading:18,paragraphSpacing:24,firstLineIndent:24,chapterOpeningSpace:50};
+    const custom=await buildPrintPdf(book,fonts,options);
+    expect(custom.record.profile).toMatchObject({fontSize:12,leading:18,paragraphSpacing:24,firstLineIndent:24,chapterOpeningSpace:50});
+    expect(custom.record.pageCount).toBeGreaterThan(standard.record.pageCount);
+    expect(custom.record.inputChecksum).not.toBe(standard.record.inputChecksum);
+    expect(custom.record.checks.overflow).toBe(0);
+  },60000);
+});
