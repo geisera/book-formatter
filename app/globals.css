@@ -2081,3 +2081,25 @@ aside h2 {
 .ebook-page.front-matter .ebook-chapter-header h2{font-size:calc(1.65em * var(--front-heading-scale, 1))}
 .ebook-page.template-modern.front-matter .ebook-chapter-header h2{font-size:calc(1.5em * var(--front-heading-scale, 1))}
 .ebook-page.template-gothic.front-matter .ebook-chapter-header h2{font-size:calc(1.9em * var(--front-heading-scale, 1))}
+
+
+/* Semantic front-matter and part-opening styles, matching the EPUB edition. */
+.ebook-page.opening-half-title .ebook-chapter-header{padding-top:18vh;text-align:center}
+.ebook-page.opening-half-title .ebook-chapter-header h2{font-size:2.2em;letter-spacing:.06em}
+.ebook-page.opening-title .ebook-chapter-header{padding-top:13vh;text-align:center}
+.ebook-page.opening-title .ebook-chapter-header h2{font-size:2.4em}
+.ebook-page.opening-part .ebook-chapter-header{padding-top:18vh;text-align:center}
+.ebook-page.opening-part .ebook-chapter-header h2{font-size:2em;letter-spacing:.09em}
+.ebook-page.opening-dedication .ebook-chapter-header,.ebook-page.opening-epigraph .ebook-chapter-header{padding-top:14vh;text-align:center}
+.ebook-page.opening-dedication .ebook-prose,.ebook-page.opening-epigraph .ebook-prose{text-align:center}
+.ebook-page.opening-dedication .ebook-prose p,.ebook-page.opening-epigraph .ebook-prose p{text-indent:0}
+.ebook-page.opening-epigraph .ebook-prose p{font-style:italic}
+.ebook-page.opening-copyright .ebook-prose,.ebook-page .ebook-copyright-details{font-size:.82em;line-height:1.5}
+.ebook-page.opening-copyright .ebook-prose p,.ebook-page .ebook-copyright-details p{text-indent:0;margin:0 0 .65em}
+.ebook-page .ebook-title-details{text-align:center}
+.ebook-page .ebook-title-details p{text-indent:0}
+.ebook-page .ebook-title-details .title-subtitle{font-style:italic;margin:12px 0 32px}
+.ebook-page .ebook-title-details .title-author{font-size:1.1em;letter-spacing:.08em;margin:0 0 40px}
+.ebook-page .ebook-title-details .title-publisher{font-size:.85em;letter-spacing:.13em;text-transform:uppercase}
+.ebook-page.template-gothic.opening-title .ebook-chapter-header h2,.ebook-page.template-gothic.opening-part .ebook-chapter-header h2{text-transform:uppercase;letter-spacing:.13em}
+.ebook-page.template-modern.opening-title .ebook-chapter-header h2,.ebook-page.template-modern.opening-part .ebook-chapter-header h2{font-weight:600;letter-spacing:-.03em}
