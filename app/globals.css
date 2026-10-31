@@ -2191,3 +2191,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .design-studio-preview-content{background:#f0f1ef}
 @media(max-width:1250px){.workspace-body.mode-manuscript{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.dashboard-grid{grid-template-columns:minmax(0,1fr)}.dashboard{padding:22px 15px}.preview-pane-actions label{display:none}.preview-pane-actions{flex-wrap:wrap}}
+
+
+/* Unified publication workspace */
+.unified-publish{min-width:0;max-width:100%;padding:18px}
+.publish-format-switch{display:flex;justify-content:space-between;align-items:center;gap:18px;background:var(--panel-bg);border:1px solid var(--hairline);border-radius:9px;padding:16px 20px;margin-bottom:16px}
+.publish-format-switch strong{font-size:18px;font-weight:650}
+.publish-format-switch p{color:var(--text-secondary);font-size:12px;margin:6px 0 0}
+.publish-format-switch .design-studio-format{flex-shrink:0}
+.unified-publish .print-panel,.unified-publish .publish-panel{max-width:100%}
+@media(max-width:700px){.publish-format-switch{flex-direction:column;align-items:flex-start}.unified-publish{padding:10px}}
