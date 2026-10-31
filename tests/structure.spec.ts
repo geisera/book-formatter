@@ -106,3 +106,18 @@ test("adds new conventional sections with matching guidance and editable types",
  await page.getByLabel("Type of Foreword").selectOption("preface");
  await expect(page.locator(".structure-item").filter({hasText:"Foreword"}).getByLabel("Type of Foreword")).toHaveValue("preface");
 });
+
+
+test("sidebar adds, duplicates, and reorders sections through shared structure actions", async ({page}) => {
+  await page.goto("/");
+  await page.getByLabel("Book title", {exact:true}).fill("Sidebar section actions");
+  await page.getByLabel("Author name", {exact:true}).fill("Example Author");
+  await page.getByRole("button", {name:"Create local book"}).click();
+  await page.getByRole("button", {name:"+ Add chapter"}).click();
+  await expect(page.locator(".sidebar-section-row")).toHaveCount(2);
+  await page.getByRole("button", {name:"Actions for New chapter"}).click();
+  await page.getByRole("menuitem", {name:"Duplicate"}).click();
+  await expect(page.locator(".sidebar-section-row")).toHaveCount(3);
+  await page.getByRole("button", {name:"Organize…"}).click();
+  await expect(page.getByRole("region", {name:"Book structure editor"})).toBeVisible();
+});
