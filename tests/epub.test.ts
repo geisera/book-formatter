@@ -316,3 +316,39 @@ describe("heading-only sections", () => {
     expect(preflight(b,"ebook").some(x=>x.message.includes("no visible text"))).toBe(true);
   });
 });
+
+describe("designed front matter in EPUB",()=>{
+ it("includes subtitle, author and publisher without duplicating an explicit title leaf",()=>{
+  const b=fixture();
+  b.metadata={subtitle:"An Unpleasant Adventure",publisher:"Greywatch Press",publicationDate:"2026-10-31"};
+  const title={...b.chapters[0],id:"title-leaf",title:"Title page",sectionType:"title" as const,content:{type:"doc",content:[{type:"paragraph"}]}};
+  b.chapters=[title,...b.chapters];
+  const zip=unzipSync(buildEpub(b,fonts,options).bytes);
+  expect(zip["EPUB/title.xhtml"]).toBeUndefined();
+  const front=strFromU8(zip["EPUB/chapter-0001.xhtml"]);
+  expect(front).toContain('opening-title');
+  expect(front).toContain("An Unpleasant Adventure");
+  expect(front).toContain("Greywatch Press");
+  const opf=strFromU8(zip["EPUB/package.opf"]);
+  expect(opf).not.toContain('<item id="title"');
+  expect(opf).not.toContain('<itemref idref="title"');
+ });
+ it("formats half-title, copyright, dedication, epigraph and part sections",()=>{
+  const b=fixture();
+  b.metadata={publisher:"Greywatch Press",publicationDate:"2026-10-31"};
+  const types=["half-title","copyright","dedication","epigraph","part"] as const;
+  b.chapters=types.map((sectionType,i)=>({
+    ...b.chapters[0],id:"front-"+i,sectionType,title:sectionType+" label",
+    content:{type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Words for "+sectionType}]}]},
+  }));
+  const zip=unzipSync(buildEpub(b,fonts,options).bytes);
+  for(const [i,type] of types.entries()){
+    const html=strFromU8(zip[`EPUB/chapter-${String(i+1).padStart(4,"0")}.xhtml`]);
+    expect(html).toContain("opening-"+type);
+    if(type==="half-title")expect(html).toContain(b.title);
+    if(type==="copyright")expect(html).toContain("Publisher: Greywatch Press");
+  }
+  const css=strFromU8(zip["EPUB/style.css"]);
+  expect(css).toContain(".section-layout.opening-epigraph p{font-style:italic}");
+ });
+});
