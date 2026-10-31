@@ -1834,3 +1834,24 @@ aside h2 {
 /* Captions travel with their illustrations in editor and reader. */
 .ProseMirror figure.manuscript-image figcaption,.ebook-illustration figcaption { font-size:.83em; font-style:italic; line-height:1.5; text-align:center; margin:.45em auto 0; color:var(--muted); max-width:100%; }
 .ebook-illustration {break-inside:avoid;page-break-inside:avoid}
+
+/* Image properties editor */
+.image-properties{margin:16px 0 26px;padding:18px;border:1px solid var(--line);border-radius:8px;background:#f9f8f2;max-width:880px}
+.image-properties-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.image-properties-heading h3{font-size:17px;margin:0}
+.image-properties-heading button,.image-properties-actions button{border:1px solid var(--line);border-radius:5px;padding:8px 12px;background:white;cursor:pointer}
+.image-properties-layout{display:grid;grid-template-columns:minmax(130px,220px) minmax(0,1fr);gap:20px;align-items:start}
+.image-properties-preview{padding:12px;border:1px solid var(--line);border-radius:6px;text-align:center;background:white}
+.image-properties-preview img{width:auto;height:auto;max-width:100%;max-height:190px;object-fit:contain}
+.image-properties-preview p,.image-properties-hint{font-size:11px;line-height:1.6;color:var(--muted)}
+.image-properties-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.image-properties-fields label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600}
+.image-properties-fields .image-properties-wide{grid-column:1/-1}
+.image-properties-fields input,.image-properties-fields textarea,.image-properties-fields select{width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--line);border-radius:5px;padding:9px;background:white;color:var(--ink);font:inherit}
+.image-properties-fields textarea{resize:vertical}
+.image-properties-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.image-properties-actions button:first-child{background:var(--green);color:white;border-color:var(--green)}
+.image-properties-actions button:disabled{opacity:.5;cursor:not-allowed}
+.image-properties-actions .image-properties-remove{margin-left:auto;color:#902b2b}
+.image-properties-hint{margin:12px 0 0}
+@media(max-width:680px){.image-properties-layout{grid-template-columns:1fr}.image-properties-fields{grid-template-columns:1fr}.image-properties-actions .image-properties-remove{margin-left:0}}
