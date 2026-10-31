@@ -444,3 +444,25 @@ describe("page layout priorities",()=>{
    expect(pdf.record.checks.overflow).toBe(0);
  },30000);
 });
+
+describe("offline PDF hyphenation and justification",()=>{
+ it("validates and round-trips language, exclusions and consecutive line limits",()=>{
+   const b=fixture();const original=structuredClone(b.editions!.ebook);
+   b.editions!.print={...getPrintEdition(b),hyphenate:false,hyphenationLanguage:"en-gb",maxConsecutiveHyphens:1,hyphenationExceptions:"Sorn, Karsk"};
+   expect(validatePrintEdition(b.editions!.print)).toEqual(b.editions!.print);
+   expect(getPrintEdition(restoreBook(backupBook(b)))).toMatchObject({hyphenate:false,hyphenationLanguage:"en-gb",maxConsecutiveHyphens:1,hyphenationExceptions:"Sorn, Karsk"});
+   expect(b.editions!.ebook).toEqual(original);
+   expect(()=>validatePrintEdition({...getPrintEdition(b),hyphenationLanguage:"fr" as "en-us"})).toThrow("hyphenation");
+ });
+ it("generates valid PDF with and without hyphenation without rewriting prose",async()=>{
+   const b=fixture();const before=structuredClone(b.chapters);
+   for(const hyphenate of [true,false]){
+     b.editions!.print={...getPrintEdition(b),hyphenate,alignment:"justify"};
+     const result=await buildPrintPdf(b,fonts,options);
+     expect(result.record.profile.hyphenate).toBe(hyphenate);
+     expect(result.record.checks).toMatchObject({overflow:0,splitViolations:0});
+     expect((await PDFDocument.load(result.bytes)).getPageCount()).toBe(result.record.pageCount);
+     expect(b.chapters).toEqual(before);
+   }
+ },60000);
+});
