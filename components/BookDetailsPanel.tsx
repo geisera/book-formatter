@@ -4,13 +4,25 @@ import type {Book} from "../lib/model";
 import {validLanguage} from "../lib/epub";
 import CoverEditor from "./CoverEditor";
 import {PUBLICATION_LIMITS, validIsbn13, validPublicationDate, validatePublicationMetadata, type PublicationMetadata} from "../lib/publication-metadata";
+const COMMON_LANGUAGES = [
+ ["en","English"],["en-US","English (United States)"],["en-GB","English (United Kingdom)"],
+ ["es","Spanish"],["fr","French"],["de","German"],["it","Italian"],
+ ["pt","Portuguese"],["pt-BR","Portuguese (Brazil)"],["nl","Dutch"],
+ ["sv","Swedish"],["da","Danish"],["no","Norwegian"],["fi","Finnish"],
+ ["pl","Polish"],["cs","Czech"],["el","Greek"],["tr","Turkish"],
+ ["ru","Russian"],["uk","Ukrainian"],["ar","Arabic"],["he","Hebrew"],
+ ["hi","Hindi"],["bn","Bengali"],["zh-Hans","Chinese (Simplified)"],
+ ["zh-Hant","Chinese (Traditional)"],["ja","Japanese"],["ko","Korean"],
+] as const;
+const commonTags = new Set<string>(COMMON_LANGUAGES.map(([tag])=>tag));
 type Details = {title:string;author:string;language:string;metadata:PublicationMetadata};
 export default function BookDetailsPanel({book,onSave,onCoverChange}:{book:Book;onSave:(details:Details)=>Promise<void>;onCoverChange:(cover:Book["cover"])=>void}){
  const [form,setForm]=useState<Details>({title:book.title,author:book.author,language:book.language??"en",metadata:book.metadata??{}});
  const [busy,setBusy]=useState(false);
+ const [customLanguage,setCustomLanguage]=useState(!commonTags.has(book.language??"en"));
  const [error,setError]=useState("");
  const [notice,setNotice]=useState("");
- useEffect(()=>{setForm({title:book.title,author:book.author,language:book.language??"en",metadata:book.metadata??{}});setError("");setNotice("");},[book.id]);
+ useEffect(()=>{setForm({title:book.title,author:book.author,language:book.language??"en",metadata:book.metadata??{}});setCustomLanguage(!commonTags.has(book.language??"en"));setError("");setNotice("");},[book.id]);
  function field(key:keyof PublicationMetadata,value:string){
   setNotice("");
   setForm(current=>({...current,metadata:{...current.metadata,[key]:value}}));
@@ -38,7 +50,18 @@ export default function BookDetailsPanel({book,onSave,onCoverChange}:{book:Book;
     <label>Publication title<input aria-label="Publication title" aria-invalid={!form.title.trim()} required maxLength={200} value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/>{!form.title.trim()?<small className="field-error">A publication title is required.</small>:null}</label>
     <label>Author<input aria-label="Author" aria-invalid={!form.author.trim()} required maxLength={200} value={form.author} onChange={e=>setForm({...form,author:e.target.value})}/>{!form.author.trim()?<small className="field-error">An author name is required.</small>:null}</label>
     <label>Subtitle<input maxLength={PUBLICATION_LIMITS.subtitle} value={form.metadata.subtitle??""} onChange={e=>field("subtitle",e.target.value)}/></label>
-    <label>Language tag<input aria-label="Language tag" aria-invalid={!validLanguage(form.language)} required maxLength={35} value={form.language} placeholder="en-US" onChange={e=>setForm({...form,language:e.target.value})}/>{!validLanguage(form.language)?<small className="field-error">Enter a valid BCP-47 language tag, such as en or en-US.</small>:null}</label>
+    <label>Language
+      <select aria-label="Book language" value={customLanguage?"custom":form.language} onChange={e=>{
+        if(e.target.value==="custom"){setCustomLanguage(true);return;}
+        setCustomLanguage(false);setForm(current=>({...current,language:e.target.value}));
+      }}>
+        {COMMON_LANGUAGES.map(([tag,name])=><option key={tag} value={tag}>{name} ({tag})</option>)}
+        <option value="custom">Other / custom BCP-47 tag…</option>
+      </select>
+      {customLanguage?<input aria-label="Custom language tag" aria-invalid={!validLanguage(form.language)} required maxLength={35} value={form.language} placeholder="e.g. en-CA" onChange={e=>setForm(current=>({...current,language:e.target.value}))}/>:null}
+      <small className="control-note">Used in EPUB and PDF metadata. Choose Other for a language or regional variant not listed.</small>
+      {!validLanguage(form.language)?<small className="field-error">Enter a valid BCP-47 language tag, such as en or en-US.</small>:null}
+    </label>
     <label>Series name<input maxLength={PUBLICATION_LIMITS.seriesName} value={form.metadata.seriesName??""} onChange={e=>field("seriesName",e.target.value)}/></label>
     <label>Series number<input maxLength={PUBLICATION_LIMITS.seriesNumber} inputMode="decimal" placeholder="1 or 1.5" value={form.metadata.seriesNumber??""} onChange={e=>field("seriesNumber",e.target.value)}/></label>
     <label>Publisher / imprint<input maxLength={PUBLICATION_LIMITS.publisher} value={form.metadata.publisher??""} onChange={e=>field("publisher",e.target.value)}/></label>
