@@ -1,3 +1,4 @@
+import type { ChapterNumberStyle } from "./chapter-numbering";
 export type EbookEdition = {
   schemaVersion: 1;
   kind: "ebook";
@@ -10,6 +11,8 @@ export type EbookEdition = {
   headingStyle: "centered" | "left";
   sceneOrnament: "asterisks" | "diamonds" | "rule";
   chapterSpacing: number;
+  chapterNumberStyle?: ChapterNumberStyle;
+  frontMatterTitleScale?: number;
 };
 export const CLASSIC_EDITION: EbookEdition = Object.freeze({
   schemaVersion: 1,
@@ -23,6 +26,8 @@ export const CLASSIC_EDITION: EbookEdition = Object.freeze({
   headingStyle: "centered",
   sceneOrnament: "asterisks",
   chapterSpacing: 3,
+  chapterNumberStyle: "none",
+  frontMatterTitleScale: 1,
 });
 export const BODY_FONTS = {
   baskerville: '"Libre Baskerville", Georgia, serif',
@@ -43,6 +48,10 @@ export function validateEdition(value: unknown): EbookEdition {
     !["asterisks", "diamonds", "rule"].includes(e.sceneOrnament)
   )
     throw Error("Unsupported ebook design or template version.");
+  if (e.chapterNumberStyle !== undefined && !["none","arabic","roman"].includes(e.chapterNumberStyle))
+    throw Error("Invalid ebook chapter numbering style.");
+  if (e.frontMatterTitleScale !== undefined && (!Number.isFinite(e.frontMatterTitleScale) || e.frontMatterTitleScale < 0.75 || e.frontMatterTitleScale > 1.5))
+    throw Error("Invalid ebook front matter heading scale.");
   for (const [key, min, max] of [
     ["fontSize", 14, 24],
     ["lineHeight", 1.2, 2.2],
