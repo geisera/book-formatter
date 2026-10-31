@@ -33,7 +33,7 @@ export default function DesignPanel({
   printProfile: PrintEdition;
   onPrintTrim: (trim:PrintTrim)=>void;
   onPrintAlignment: (align:"left"|"justify")=>void;
-  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
+  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"chapterNumberStyle"|"frontMatterTitleScale"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
 }) {
   const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
   const layout=section ? getSectionLayout(section) : null;
@@ -142,7 +142,21 @@ export default function DesignPanel({
               value={printProfile.chapterOpeningSpace??0} onChange={e=>onPrintTypography({chapterOpeningSpace:Number(e.target.value)})}/>
           </label>
         </fieldset>
-        <details className="design-hyphenation"><summary>Hyphenation and justification</summary>
+        <fieldset><legend>Chapter and front-matter headings</legend>
+           <label>Chapter number display
+             <select aria-label="Paperback chapter numbering" value={printProfile.chapterNumberStyle??"none"}
+               onChange={e=>onPrintTypography({chapterNumberStyle:e.target.value as "none"|"arabic"|"roman"})}>
+               <option value="none">Title only</option><option value="arabic">Number above title (1, 2, 3)</option>
+               <option value="roman">Roman number above title (I, II, III)</option>
+             </select>
+           </label>
+           <label>Front-matter heading scale <span className="control-value">{(printProfile.frontMatterTitleScale??1).toFixed(2)}×</span>
+             <input aria-label="Paperback front-matter heading scale" type="range" min="0.75" max="1.5" step="0.05"
+               value={printProfile.frontMatterTitleScale??1} onChange={e=>onPrintTypography({frontMatterTitleScale:Number(e.target.value)})}/>
+           </label>
+           <p className="control-note">These controls affect paperback presentation only; manuscript and ebook content remain unchanged.</p>
+         </fieldset>
+         <details className="design-hyphenation"><summary>Hyphenation and justification</summary>
           <label className="design-toggle"><input type="checkbox" checked={printProfile.hyphenate??true}
             onChange={e=>onPrintTypography({hyphenate:e.target.checked})}/>Automatic hyphenation</label>
           <label>Hyphenation language<select aria-label="Hyphenation language" value={printProfile.hyphenationLanguage??"en-us"}
