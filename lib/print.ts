@@ -602,6 +602,20 @@ export async function buildPrintPdf(
       const blockAlignment = node.attrs.align as TextAlignment | null;
       const indent = blockAlignment ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
       const lines = wrap(units(node), indent);
+      // Keep a short chapter ending together when it would otherwise leave a
+      // stranded final paragraph on a nearly full page. Limit the reservation
+      // so longer endings do not cause excessive blank space.
+      if (profile.layoutPriority !== "flow" && index === doc.childCount - 2) {
+        const last = doc.child(index + 1);
+        if (last.type.name === "paragraph" && last.textContent.trim()) {
+          const finalLines = wrap(units(last), profile.firstLineIndent ?? 14).length;
+          const endingLines = lines.length + finalLines;
+          const cap = profile.layoutPriority === "balanced" ? 9 : 6;
+          if (finalLines <= 3 && endingLines <= cap &&
+              slots() < endingLines && proof.lineCount > 0)
+            bodyPage();
+        }
+      }
       // A short paragraph looks better on one page; do not force overly long
       // paragraphs to stay together and leave an unnecessarily blank page.
       const keepLimit = profile.layoutPriority==="balanced" ? 6 : profile.layoutPriority==="flow" ? 2 : 4;
