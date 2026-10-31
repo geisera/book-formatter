@@ -48,7 +48,7 @@ This is a feature-level implementation inventory, not a certification that all P
 
 - **Local-first projects (current implementation):** Existing guest/local-only bookshelf, project creation, Dexie/IndexedDB storage, transactional autosave, revision conflict protection, save/error indicators, storage persistence requests and capacity warnings. **This guest access is legacy behavior and does not satisfy the mandatory authentication requirement.**
 - **Offline foundation:** Service worker/app shell, offline local workflows and browser acceptance tests; complete PWA/cross-browser qualification is still pending.
-- **Import:** Local DOCX, Markdown and plain-text import, chapter-boundary review, diagnostics, cancellable worker, retained source file, supported PNG/JPEG DOCX images and guarded archive parsing.
+- **Import:** Offline DOCX, Markdown and plain-text import with deterministic section classification, confidence explanations, editable types, block-level split/merge, section reordering, conversion diagnostics, cancellable worker, retained original file, supported embedded PNG/JPEG images and guarded archive parsing.
 - **Editor:** Direct ProseMirror, independent chapter documents, paragraphs, headings, bold, italic, scene breaks, undo/redo, keyboard shortcuts, autosave, and chapter/book-wide find-and-replace.
 - **Images:** PNG/JPEG insertion and DOCX extraction, local embedding, alternative text, caption, alignment, width and replace/remove controls; embedded images are carried into EPUB, PDF and backups.
 - **Design:** Distinct ebook typography and paperback typography (body size, line spacing, paragraph spacing, first-line indentation, chapter opening space); shared templates, contextual preview, and independent edition settings.
@@ -82,6 +82,30 @@ This is a feature-level implementation inventory, not a certification that all P
 - **Later expansion (M6, not MVP):** Publisher collaboration, more templates/custom fonts, hardcover, advanced print formats, AI options, APIs and direct retailer integrations.
 
 No feature above is labeled **publication-ready** solely because it generates a file. Physical print proofs, standards checks on the exact artifact, and retailer acceptance are separate gates.
+
+## Intelligent manuscript import and structure review
+
+The browser-side import worker parses DOCX, Markdown, and plain text locally.
+On automatic boundary detection, Word/Markdown Heading 1 or Heading 2 establishes
+section breaks, including recognized conventional headings across the two levels.
+Text-only files detect familiar labels when they occur on short standalone lines.
+The deterministic classifier recognizes section names such as Foreword,
+Introduction, Prologue, Chapter 12, Part II, Afterword, Bibliography, Appendix A,
+Glossary, Endnotes, and About the Author. Unknown headings default to Chapter
+for review. The review labels high, medium, and low confidence are **heuristic**
+indicators, not calibrated probabilities or an AI prediction service.
+
+Before committing the import, the author can rename and reclassify every section
+using the complete section-type catalog, reorder sections, and repair boundaries
+by **splitting before a block** or **merging with the next section**. Splitting
+and merging retain the original ProseMirror document nodes (including marks
+and supported embedded images). Choosing a different boundary mode rebuilds the
+review and resets unsaved manual corrections. After import, Structure also lets
+authors edit section types. All manuscript parsing, classification, and review
+remain local-first with no cloud/LLM dependency; the original import bytes are
+retained for backup/download. The rules intentionally do not guess every
+unlabeled scene or chapter from formatting alone, and a split cannot occur
+mid-paragraph.
 
 ## Conventional publishing sections
 
