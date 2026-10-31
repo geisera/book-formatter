@@ -68,12 +68,12 @@ export default function StructurePanel({
           <select aria-label="New section type" aria-describedby="new-section-type-description" value={type} onChange={e => setType(e.target.value as SectionType)}>
             {SECTION_TYPES.map(t => <option key={t} value={t}>{labels[t]}</option>)}
           </select>
-          <span id="new-section-type-description" className="control-note" aria-live="polite">{sectionDescriptions[type]}</span>
         </label>
         <label>Section title
           <input value={title} maxLength={200} placeholder="e.g. Prologue" onChange={e => setTitle(e.target.value)} />
         </label>
         <button className="primary" type="submit">+ Add section</button>
+        <div id="new-section-type-description" className="structure-add-description" aria-live="polite">{sectionDescriptions[type]}</div>
       </form>
       {(["front", "body", "back"] as const).map(matter => (
         <div className="structure-group" key={matter}>
