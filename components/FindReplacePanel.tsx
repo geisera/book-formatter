@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useRef} from "react";
+import {useEffect,useRef,useState} from "react";
 import type {Book} from "../lib/model";
 import {findInBook,replaceAcrossBook,type FindOptions,type TextMatch} from "../lib/find-replace";
 export type SearchConfig={query:string;replacement:string;scope:"chapter"|"book";caseSensitive:boolean;wholeWord:boolean};
