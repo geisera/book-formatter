@@ -315,7 +315,7 @@ export function buildEpub(
     xhtml(
       "Contents",
       language,
-      `<nav epub:type="toc" id="toc" role="doc-toc"><h1>Contents</h1><ol><li><a href="title.xhtml">Title page</a></li>${book.chapters.map((c, i) => `<li><a href="${paths[i]}">${xml(c.title)}</a></li>`).join("")}</ol></nav>`,
+      `<nav epub:type="toc" id="toc" role="doc-toc"><h1>Contents</h1><ol>${coverNavigation}<li><a href="title.xhtml">Title page</a></li>${book.chapters.map((c, i) => `<li><a href="${paths[i]}">${xml(c.title)}</a></li>`).join("")}</ol></nav>`,
     ),
   );
   const fontManifest =
