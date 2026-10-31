@@ -1,3 +1,4 @@
+import { classifyImportedSection, splitImportedSection, mergeImportedSections } from "../lib/import-classify";
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -8,7 +9,7 @@ import {
   type ImportDraft,
   type SplitMode,
 } from "../lib/import-model";
-import { type Book, type Chapter } from "../lib/model";
+import { SECTION_TYPES, type Book, type Chapter, type SectionType } from "../lib/model";
 import { saveImportedBook } from "../lib/storage";
 
 export default function ImportPanel({
@@ -23,7 +24,9 @@ export default function ImportPanel({
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
     bytes = useRef<Uint8Array | null>(null),
     request = useRef(0);
-  const [draft, setDraft] = useState<ImportDraft | null>(null),
+  const [splitPositions,setSplitPositions]=useState<Record<string,number>>({}),
+    [reviewNotes,setReviewNotes]=useState<Record<string,string>>({}),
+    [draft, setDraft] = useState<ImportDraft | null>(null),
     [chapters, setChapters] = useState<Chapter[]>([]),
     [mode, setMode] = useState<SplitMode>("auto"),
     [title, setTitle] = useState(""),
@@ -48,6 +51,8 @@ export default function ImportPanel({
     stop();
     setError("");
     setDraft(null);
+    setReviewNotes({});
+    setSplitPositions({});
     bytes.current = null;
     if (file.size > 10_000_000) {
       setError("Choose a manuscript smaller than 10 MB.");
@@ -101,6 +106,8 @@ export default function ImportPanel({
         setDraft(imported);
         setMode("auto");
         setChapters(splitChapters(imported, "auto"));
+        setReviewNotes({});
+        setSplitPositions({});
         setTitle(file.name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " "));
         setBusy(false);
       };
@@ -137,6 +144,47 @@ export default function ImportPanel({
       setSaving(false);
     }
   }
+  function resplit(nextMode:SplitMode) {
+    if (!draft) return;
+    setMode(nextMode);
+    setChapters(splitChapters(draft,nextMode));
+    setReviewNotes({});
+    setSplitPositions({});
+  }
+  function changeType(id:string,sectionType:SectionType) {
+    setChapters(items=>items.map(c=>c.id===id?{...c,sectionType}:c));
+    setReviewNotes(current=>({...current,[id]:"Author selected this section type."}));
+  }
+  function moveSection(index:number,offset:number) {
+    setChapters(items=>{
+      const target=index+offset;
+      if(target<0||target>=items.length)return items;
+      const copy=[...items];
+      [copy[index],copy[target]]=[copy[target],copy[index]];
+      return copy;
+    });
+  }
+  function divideSection(index:number) {
+    const c=chapters[index];
+    try {
+      const [first,second]=splitImportedSection(c,splitPositions[c.id]??1);
+      setChapters(items=>[...items.slice(0,index),first,second,...items.slice(index+1)]);
+      setReviewNotes(current=>({...current,[second.id]:"Split from previous section; review its title and classification."}));
+      setError("");
+    } catch(e) { setError(e instanceof Error?e.message:"Unable to split section."); }
+  }
+  function joinSections(index:number) {
+    if(index+1>=chapters.length)return;
+    try {
+      const merged=mergeImportedSections(chapters[index],chapters[index+1]);
+      setChapters(items=>[...items.slice(0,index),merged,...items.slice(index+2)]);
+      setError("");
+    } catch(e) { setError(e instanceof Error?e.message:"Unable to merge sections."); }
+  }
+  const typeLabel=(type:SectionType):string=>{
+    const special:Partial<Record<SectionType,string>>={toc:"Table of contents","half-title":"Half title",title:"Title page","about-author":"About the Author","also-by":"Also By",praise:"Praise / Blurbs"};
+    return special[type]??type.split("-").map(word=>word[0].toUpperCase()+word.slice(1)).join(" ");
+  };
   const words =
     draft?.blocks.reduce(
       (n, b) => n + (blockText(b).match(/\S+/g)?.length ?? 0),
@@ -239,9 +287,7 @@ export default function ImportPanel({
             <select
               value={mode}
               onChange={(e) => {
-                const mode = e.target.value as SplitMode;
-                setMode(mode);
-                setChapters(splitChapters(draft, mode));
+                resplit(e.target.value as SplitMode);
               }}
             >
               <option value="auto">
@@ -257,9 +303,7 @@ export default function ImportPanel({
             </select>
           </label>
           <p className="muted">
-            Section headings become titles. Leading text stays in “Opening
-            matter.” Choose another heading level if the detected breaks look
-            wrong.
+            Local rules recognize conventional headings and classify sections automatically. Review low-confidence types, change titles or types, adjust boundaries, and reorder sections before saving. Changing the boundary mode restarts this review.
           </p>
           <section className="import-report" aria-label="Import diagnostics">
             <h3>Conversion review</h3>
@@ -282,34 +326,45 @@ export default function ImportPanel({
             )}
           </section>
           <div className="section-review" aria-label="Detected sections">
-            {chapters.map((c, index) => (
-              <div className="section-row" key={c.id}>
+            {chapters.map((c, index) => {
+              const guess=classifyImportedSection(c.title,index,chapters.length,title);
+              const blocks=(c.content.content as {type:string;content?:{text?:string}[]}[] | undefined)??[];
+              const type=c.sectionType??"chapter";
+              const overridden=!!reviewNotes[c.id] || type!==guess.type;
+              return <div className="section-row" key={c.id}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
-                <label>
-                  Section {index + 1} title
-                  <input
-                    value={c.title}
-                    onChange={(e) =>
-                      setChapters((items) =>
-                        items.map((x) =>
-                          x.id === c.id ? { ...x, title: e.target.value } : x,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <small>
-                  {String(
-                    (c.content.content as { content?: { text?: string }[] }[])
-                      ?.map(
-                        (n) =>
-                          n.content?.map((x) => x.text ?? "").join("") ?? "",
-                      )
-                      .join(" ") ?? "",
-                  ).slice(0, 140) || "Empty section — add text after import"}
-                </small>
-              </div>
-            ))}
+                <div className="import-review-main">
+                  <div className="import-review-fields">
+                    <label>Section {index + 1} title
+                      <input value={c.title} maxLength={200} onChange={e=>setChapters(items=>items.map(x=>x.id===c.id?{...x,title:e.target.value}:x))}/>
+                    </label>
+                    <label>Section {index + 1} type
+                      <select aria-label={`Section ${index+1} type`} value={type} onChange={e=>changeType(c.id,e.target.value as SectionType)}>
+                        {SECTION_TYPES.map(t=><option key={t} value={t}>{typeLabel(t)}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                  <p className="import-classification" aria-label={`Section ${index+1} classification`}>
+                    <strong>{overridden?"Review / edited":guess.confidence==="high"?"High confidence":guess.confidence==="medium"?"Medium confidence":"Review suggested"}</strong>
+                    {" · "}{reviewNotes[c.id]??(type!==guess.type?"Section type differs from the detected suggestion.":guess.reason)}
+                  </p>
+                  <small>{blocks.map(n=>n.content?.map(x=>x.text??"").join("")??"").join(" ").slice(0,140)||"Heading-only section or no body text"}</small>
+                  <div className="import-review-actions">
+                    <button type="button" disabled={index===0} onClick={()=>moveSection(index,-1)} aria-label={`Move section ${index+1} up`}>↑ Up</button>
+                    <button type="button" disabled={index===chapters.length-1} onClick={()=>moveSection(index,1)} aria-label={`Move section ${index+1} down`}>↓ Down</button>
+                    {blocks.length>1 ? <>
+                      <label>Split before block
+                        <select aria-label={`Split section ${index+1} before block`} value={splitPositions[c.id]??1} onChange={e=>setSplitPositions(old=>({...old,[c.id]:Number(e.target.value)}))}>
+                          {blocks.slice(1).map((b,i)=><option key={i+1} value={i+1}>{i+2}. {(b.content?.map(x=>x.text??"").join("")??b.type).slice(0,55)||b.type}</option>)}
+                        </select>
+                      </label>
+                      <button type="button" onClick={()=>divideSection(index)} aria-label={`Split section ${index+1}`}>Split</button>
+                    </> : null}
+                    <button type="button" disabled={index===chapters.length-1} onClick={()=>joinSections(index)} aria-label={`Merge section ${index+1} with next`}>Merge with next</button>
+                  </div>
+                </div>
+              </div>;
+            })}
           </div>
           <div className="import-actions">
             <button
