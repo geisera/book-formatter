@@ -250,3 +250,24 @@ test("saves trim selection and exports a correctly sized 5.5 × 8.5 trade paperb
   await page.getByRole("button",{name:"Print",exact:true}).click();
   await expect(page.locator('input[name="print-trim"][value="5.5x8.5"]')).toBeChecked();
 });
+
+
+test("recovers from a cancelled print build and completes repeated offline proofs", async ({page,context})=>{
+ test.setTimeout(90000);
+ await page.goto("/");
+ await expect(page.getByText("Offline app ready")).toBeVisible();
+ await page.getByLabel("Book title",{exact:true}).fill("Recovery proof");
+ await page.getByRole("button",{name:"Create local book"}).click();
+ await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("A short proof paragraph. ".repeat(240));
+ await expect(page.getByText("Saved locally",{exact:true})).toBeVisible();
+ await context.setOffline(true);
+ await page.getByRole("button",{name:"Print",exact:true}).click();
+ await page.getByRole("button",{name:/Build .* PDF proof/}).click();
+ await page.getByRole("button",{name:"Cancel print build"}).click();
+ await expect(page.getByText(/Print proof cancelled/)).toBeVisible();
+ for(let i=0;i<3;i++){
+  await page.getByRole("button",{name:/Build .* PDF proof|Rebuild PDF proof/}).click();
+  await expect(page.getByRole("button",{name:"Download PDF proof"})).toBeEnabled({timeout:30000});
+  await expect(page.getByText("PDF proof generated.")).toBeVisible();
+ }
+});
