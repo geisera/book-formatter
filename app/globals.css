@@ -1855,3 +1855,48 @@ aside h2 {
 .image-properties-actions .image-properties-remove{margin-left:auto;color:#902b2b}
 .image-properties-hint{margin:12px 0 0}
 @media(max-width:680px){.image-properties-layout{grid-template-columns:1fr}.image-properties-fields{grid-template-columns:1fr}.image-properties-actions .image-properties-remove{margin-left:0}}
+
+/* Floating, non-modal image inspector: manuscript remains visible and scrollable. */
+.image-properties-popout{
+ position:fixed;
+ top:clamp(72px,12vh,130px);
+ right:18px;
+ left:auto;
+ width:min(390px,calc(100vw - 36px));
+ max-width:none;
+ max-height:calc(100dvh - clamp(72px,12vh,130px) - 18px);
+ box-sizing:border-box;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ z-index:1200;
+ margin:0;
+ padding:16px;
+ background:#fffefb;
+ border:1px solid var(--line);
+ border-radius:10px;
+ box-shadow:0 12px 46px rgba(23,34,22,.24);
+}
+.image-properties-popout .image-properties-layout{display:block}
+.image-properties-popout .image-properties-preview{
+ padding:8px;
+ display:flex;
+ align-items:center;
+ gap:12px;
+ text-align:left;
+ margin-bottom:12px;
+}
+.image-properties-popout .image-properties-preview img{max-width:110px;max-height:90px}
+.image-properties-popout .image-properties-fields{gap:10px}
+.image-properties-popout .image-properties-actions{margin-top:12px}
+.image-properties-popout .image-properties-hint{margin-top:10px}
+@media(max-width:600px){
+ .image-properties-popout{
+  top:auto;
+  right:10px;
+  bottom:10px;
+  width:calc(100vw - 20px);
+  max-height:min(65dvh,540px);
+  padding:13px;
+ }
+ .image-properties-popout .image-properties-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
