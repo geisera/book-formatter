@@ -56,8 +56,9 @@ export type PrintResult = { bytes: Uint8Array; record: PrintRecord };
 export async function buildPrintPdf(
   input: Book,
   assets: PrintFonts,
-  options: { id: string; createdAt: string; includeFrontCover?: boolean },
+  options: { id: string; createdAt: string; includeFrontCover?: boolean; onProgress?: (percent:number,stage:string)=>void },
 ): Promise<PrintResult> {
+  options.onProgress?.(5,"Preparing manuscript");
   const book = structuredClone(validateBook(input)),
     profile = structuredClone(getPrintEdition(book));
   if (preflight(book).some((i) => i.severity === "error"))
@@ -77,6 +78,7 @@ export async function buildPrintPdf(
         "A print font file is unavailable or damaged. Open the app online once and retry.",
       );
   if (options.includeFrontCover && !book.cover) throw Error("Upload cover artwork in Design before including a front cover in the PDF.");
+  options.onProgress?.(10,"Loading print fonts");
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const fonts = {} as Record<Face, PDFFont>;
@@ -444,7 +446,8 @@ export async function buildPrintPdf(
   centered(title, 23, 31);
   y -= 35;
   centered(author, 12, 19);
-  for (const chapter of book.chapters) {
+  for (const [chapterIndex,chapter] of book.chapters.entries()) {
+    options.onProgress?.(Math.round(15+65*chapterIndex/book.chapters.length),`Laying out section ${chapterIndex+1} of ${book.chapters.length}`);
     chapterId = chapter.id;
     chapterTitle = chapter.title;
     activeLayout = getSectionLayout(chapter);
@@ -634,6 +637,7 @@ export async function buildPrintPdf(
       opening = false;
     });
   }
+  options.onProgress?.(82,"Finishing pagination");
   // Roman folios in front matter; Arabic numerals restart at 1 for main matter.
   const firstFront = pages.findIndex(p => p.chapterId && book.chapters.some(
     c => c.id === p.chapterId && sectionMatter(c.sectionType ?? "chapter") === "front"
@@ -784,6 +788,7 @@ export async function buildPrintPdf(
     ...(book.metadata?.seriesName ? [`series:${book.metadata.seriesName}${book.metadata.seriesNumber ? " #"+book.metadata.seriesNumber : ""}`] : []),
     ...(book.metadata?.publicationDate ? [`publication-date:${book.metadata.publicationDate}`] : []),
   ]);
+  options.onProgress?.(92,"Writing PDF");
   const bytes = await pdf.save({ useObjectStreams: false });
   const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}${profile.template.id === "classic" ? "" : `-${profile.template.id}`}${options.includeFrontCover ? "-with-cover" : ""}-${profile.trim}-proof.pdf`;
   return {
