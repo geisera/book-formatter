@@ -466,3 +466,17 @@ describe("offline PDF hyphenation and justification",()=>{
    }
  },60000);
 });
+
+describe("print proof progress events",()=>{
+ it("reports real stages and monotonic section pagination before returning PDF",async()=>{
+  const book=fixture();
+  const events:{percent:number;stage:string}[]=[];
+  const result=await buildPrintPdf(book,fonts,{...options,onProgress:(percent,stage)=>events.push({percent,stage})});
+  expect(events.length).toBeGreaterThanOrEqual(4);
+  expect(events[0].percent).toBe(5);
+  expect(events.some(e=>e.stage.startsWith("Laying out section"))).toBe(true);
+  expect(events.at(-1)).toEqual({percent:92,stage:"Writing PDF"});
+  expect(events.every((e,i)=>i===0||e.percent>=events[i-1].percent)).toBe(true);
+  expect(result.record.pageCount).toBeGreaterThan(0);
+ },30000);
+});
