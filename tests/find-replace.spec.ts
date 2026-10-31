@@ -20,7 +20,7 @@ test("finds, replaces and undoes matching text across book chapters",async({page
  await page.getByRole("button",{name:"← Bookshelf"}).click();
  await page.getByRole("button",{name:/Search manuscript/}).click();
  await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("Beacon in the first chapter.");
- await page.getByRole("button",{name:"Find & Replace"}).click();
+ await page.getByRole("button",{name:"Find and replace manuscript"}).click();
  await panel.getByLabel("Search scope").selectOption("chapter");
  await panel.getByLabel("Find text").fill("beacon");
  await expect(panel.getByRole("status")).toContainText("1 / 1");
