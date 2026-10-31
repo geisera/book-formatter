@@ -186,3 +186,35 @@ test("inherits print templates from Design and preserves print justification off
   await expect(page.getByText("Print design: Gothic")).toBeVisible();
   await expect(page.getByLabel("Justify body text")).toBeChecked();
 });
+
+test("prints the selected front cover as the first page with fresh and offline workers", async ({page,context}) => {
+  test.setTimeout(90000);
+  await page.goto("/");
+  await expect(page.getByText("Offline app ready")).toBeVisible();
+  await page.getByLabel("Book title",{exact:true}).fill("Cover PDF proof");
+  await page.getByLabel("Author name",{exact:true}).fill("Test Author");
+  await page.getByRole("button",{name:"Create local book"}).click();
+  await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("A chapter of manuscript text. ".repeat(90));
+  await page.getByRole("button",{name:"Design",exact:true}).click();
+  await page.getByLabel("Choose EPUB cover image").setInputFiles({
+    name:"front.png",mimeType:"image/png",
+    buffer:Buffer.from("iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=","base64"),
+  });
+  await expect(page.getByText("Current book cover")).toBeVisible();
+  await expect(page.getByRole("status").filter({hasText:"Saved locally"})).toBeVisible();
+  await page.getByRole("button",{name:"Print",exact:true}).click();
+  const checkbox=page.getByLabel("Include front cover");
+  await expect(checkbox).not.toBeChecked();
+  await checkbox.check();
+  await context.setOffline(true);
+  await page.getByRole("button",{name:"Build 6 × 9 PDF proof"}).click();
+  await expect(page.getByRole("button",{name:"Download PDF proof"})).toBeVisible({timeout:60000});
+  await expect(page.getByText("Page 1 · Front cover")).toBeVisible({timeout:30000});
+  const download=page.waitForEvent("download");
+  await page.getByRole("button",{name:"Download PDF proof"}).click();
+  const artifact=await download;
+  expect(artifact.suggestedFilename()).toContain("-with-cover-");
+  const pdf=await PDFDocument.load(new Uint8Array(await readFile((await artifact.path())!)));
+  expect(pdf.getPageCount()).toBeGreaterThan(2);
+  await expect(page.getByText("Page 1 · Front cover")).toBeVisible();
+});
