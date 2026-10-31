@@ -114,7 +114,8 @@ export default function PrintPanel({
       );
       if (n !== token.current) return;
       const fonts: PrintFonts = { regular, italic, bold, boldItalic };
-      const encoder = new Worker("/print-worker.js");
+      // A versioned URL prevents an older cached worker from silently omitting new PDF options.
+      const encoder = new Worker("/print-worker.js?renderer=print-proof-1.3.1");
       worker.current = encoder;
       encoder.onerror = () =>
         fail(
@@ -132,6 +133,15 @@ export default function PrintPanel({
         if (n !== token.current) return;
         if (!event.data.ok || !event.data.bytes || !event.data.record) {
           fail(event.data.error ?? "The PDF could not be generated.", n);
+          return;
+        }
+        // A stale offline worker must never report success for a cover-less PDF
+        // when the author explicitly requested cover artwork.
+        if (includeFrontCover && (
+          event.data.record.includeFrontCover !== true ||
+          event.data.record.pages?.[0]?.kind !== "cover"
+        )) {
+          fail("An outdated PDF worker omitted your requested cover. Reload the application online and rebuild the PDF.", n);
           return;
         }
         const built = { bytes: event.data.bytes, record: event.data.record };
