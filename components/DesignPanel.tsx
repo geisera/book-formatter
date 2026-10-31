@@ -1,6 +1,7 @@
 "use client";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
 import type {Book} from "../lib/model";
+import {PRINT_TRIMS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
 import CoverEditor from "./CoverEditor";
 export default function DesignPanel({
   edition,
@@ -8,12 +9,20 @@ export default function DesignPanel({
   onCoverChange,
   onChange,
   hidden,
+  format,
+  printProfile,
+  onPrintTrim,
+  onPrintAlignment,
 }: {
   edition: EbookEdition;
   cover: Book["cover"];
   onCoverChange: (cover:Book["cover"])=>void;
   onChange: (edition: EbookEdition) => void;
   hidden: boolean;
+  format: "ebook" | "print";
+  printProfile: PrintEdition;
+  onPrintTrim: (trim:PrintTrim)=>void;
+  onPrintAlignment: (align:"left"|"justify")=>void;
 }) {
   function change<K extends keyof EbookEdition>(
     key: K,
@@ -27,14 +36,9 @@ export default function DesignPanel({
       aria-label="Ebook design settings"
       hidden={hidden}
     >
-      <div className="eyebrow">BOOK DESIGN · EPUB + PDF</div>
-      <h2>Make it yours.</h2>
-      <p className="design-intro">
-        Select a template for both editions. The controls below customize ebook typography;
-        choose Paperback · Proof to see the actual print layout. Print-specific page
-        geometry and justification remain in Print. Your manuscript is unchanged.
-      </p>
-      <CoverEditor cover={cover} onChange={onCoverChange}/>
+      <div className="eyebrow">BOOK DESIGN</div>
+      <h2>Appearance</h2>
+      <p className="design-intro">Choose a style and refine the {format==="ebook"?"ebook":"paperback"} edition. Your manuscript stays unchanged.</p>
       <div className="template-options" role="group" aria-label="Book design template">
         {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
           <button type="button" key={id}
@@ -49,6 +53,23 @@ export default function DesignPanel({
           </button>
         ))}
       </div>
+      {format==="print"?<div className="design-print-settings">
+        <fieldset><legend>Paperback layout</legend>
+          <label>Trim size
+            <select aria-label="Design paperback trim" value={printProfile.trim} onChange={e=>onPrintTrim(e.target.value as PrintTrim)}>
+              {(Object.keys(PRINT_TRIMS) as PrintTrim[]).map(t=><option key={t} value={t}>{PRINT_TRIMS[t].label} inches</option>)}
+            </select>
+          </label>
+          <label>Paragraph alignment
+            <select aria-label="Design paperback alignment" value={printProfile.alignment??"left"} onChange={e=>onPrintAlignment(e.target.value as "left"|"justify")}>
+              <option value="left">Left-aligned</option><option value="justify">Justified</option>
+            </select>
+          </label>
+        </fieldset>
+        <p className="control-note">For section-specific page starts, headers, folios and spacing, use Structure. These settings appear in the paperback preview.</p>
+      </div>:null}
+      <div className={format==="print"?"design-ebook-controls-inactive":"design-ebook-controls"}>
+      {format==="print"?<p className="control-note">The controls below affect ebook typography only. Switch to Ebook to edit them.</p>:null}
       <fieldset>
         <legend>Typography</legend>
         <label>
@@ -177,17 +198,14 @@ export default function DesignPanel({
           </select>
         </label>
       </fieldset>
+      </div>
       <button
         className="reset-design"
         onClick={() => onChange(presetFor(edition.template.id))}
       >
         Reset selected template settings
       </button>
-      <p className="control-note">
-        The selected template applies to both EPUB and PDF. Ebook typography
-        settings save locally with the book; PDF-specific settings remain
-        independent. Reading apps may override ebook fonts.
-      </p>
+      <p className="control-note">Settings save locally. Preview updates automatically; final exports remain in Publish and Print.</p>
     </section>
   );
 }
