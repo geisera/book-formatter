@@ -1,10 +1,11 @@
+import { chapterNumberLabel, chapterOrdinal } from "./chapter-numbering";
 import { decodeImage, embeddedImages } from "./images";
 import { normalizedIsbn } from "./publication-metadata";
 import { zipSync, strToU8, unzipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-import { schema, validateBook, showSectionTitle, getSectionLayout, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
 export const EPUB_RENDERER = "epub-1.3.0";
 export type ExportIssue = {
@@ -205,6 +206,9 @@ export function editionCss(e: EbookEdition): string {
   return `${e.bodyFont === "baskerville" ? `@font-face{font-family:LibreBaskerville;src:url("fonts/regular.woff") format("woff");font-weight:400;font-style:normal}@font-face{font-family:LibreBaskerville;src:url("fonts/italic.woff") format("woff");font-weight:400;font-style:italic}@font-face{font-family:LibreBaskerville;src:url("fonts/bold.woff") format("woff");font-weight:700;font-style:normal}` : ""}
 .cover-page{margin:0;text-align:center}.cover-page img{display:block;max-width:100%;max-height:95vh;width:auto;height:auto;margin:auto}body{font-family:${e.bodyFont === "baskerville" ? "LibreBaskerville,Georgia,serif" : "Georgia,serif"};font-size:${e.fontSize / 16}em;line-height:${e.lineHeight};margin:1em;color:inherit;background:transparent}h1{font-size:1.65em;font-weight:normal;line-height:1.4;text-align:${e.headingStyle === "left" ? "left" : "center"};margin:${e.chapterSpacing}em 0 2em}h2{font-size:1.15em;line-height:1.5;margin:1.8em 0 1em}p{margin:0 0 ${e.paragraphSpacing}em;text-indent:${e.paragraphIndent}em;orphans:2;widows:2}.opening{text-indent:0}.scene{font-family:serif;text-align:center;letter-spacing:.15em;margin:1.6em 0;font-size:.8em}.scene-rule{width:3em;border:0;border-top:1px solid currentColor;margin:1.6em auto}.titlepage{text-align:center}.titlepage p{text-indent:0}.titlepage h1{margin-top:3em}.author{margin-top:1.5em}nav ol{padding-left:1.5em}nav li{margin-bottom:.6em}a{color:inherit}.illustration{margin:1.5em 0;break-inside:avoid}.illustration img{max-width:100%;height:auto}.illustration figcaption{font-size:.82em;font-style:italic;margin:.5em auto 0;text-align:center;text-indent:0}.illustration.align-left{text-align:left}.illustration.align-center{text-align:center}.illustration.align-right{text-align:right}.align-left{text-align:left;text-indent:0}.align-center{text-align:center;text-indent:0}.align-right{text-align:right;text-indent:0}.align-justify{text-align:justify;text-indent:0}
 ${e.template.id === "modern" ? "h1{font-size:1.5em;letter-spacing:-.025em;font-weight:600}.scene-rule{width:4em}" : e.template.id === "gothic" ? "h1{font-size:1.9em;letter-spacing:.09em;text-transform:uppercase}.scene{letter-spacing:.28em;margin:2em 0}" : ""}
+.section-layout .chapter-number{display:block;text-align:${e.headingStyle==="left"?"left":"center"};font-size:1em;line-height:1.3;font-weight:bold;margin:${e.chapterSpacing}em 0 .7em}
+.section-layout.has-number h1{margin-top:0}
+.section-layout.front-matter h1{font-size:${((e.template.id==="modern"?1.5:e.template.id==="gothic"?1.9:1.65)*(e.frontMatterTitleScale??1)).toFixed(3)}em}
 `;
 }
 
@@ -301,13 +305,19 @@ export function buildEpub(
       `<section class="titlepage" epub:type="titlepage"><h1>${xml(book.title)}</h1><p class="author">${xml(book.author)}</p></section>`,
     ),
   );
+  const headingFor=(c:typeof book.chapters[number],i:number)=>{
+    if(!showSectionTitle(c))return "";
+    const ordinal=chapterOrdinal(book.chapters,i);
+    const label=ordinal===null?null:chapterNumberLabel(edition.chapterNumberStyle??"none",ordinal);
+    return `${label ? `<span class="chapter-number" aria-label="Chapter ${xml(label)}">${xml(label)}</span>` : ""}<h1 id="chapter-title">${xml(c.title)}</h1>`;
+  };
   book.chapters.forEach((c, i) =>
     add(
       `EPUB/${paths[i]}`,
       xhtml(
         c.title,
         language,
-        `<section class="section-layout" style="break-before:page;page-break-before:always;padding-top:${Math.round(getSectionLayout(c).spaceBefore / 12 * 100) / 100}em;padding-bottom:${Math.round(getSectionLayout(c).spaceAfter / 12 * 100) / 100}em" epub:type="${c.sectionType === "prologue" ? "prologue" : c.sectionType === "epilogue" ? "epilogue" : c.sectionType === "part" ? "part" : c.sectionType === "preface" ? "preface" : c.sectionType === "copyright" ? "copyright-page" : c.sectionType === "dedication" ? "dedication" : c.sectionType === "epigraph" ? "epigraph" : c.sectionType === "toc" ? "toc" : "chapter"}" ${showSectionTitle(c) ? 'aria-labelledby="chapter-title"' : `aria-label="${xml(c.title)}"`}>${showSectionTitle(c) ? `<h1 id="chapter-title">${xml(c.title)}</h1>` : ""}${c.sectionType === "toc" ? `<div class="generated-contents"><ol>${book.chapters.filter(entry => entry.id !== c.id && entry.sectionType !== "toc").map(entry => { const index = book.chapters.findIndex(x => x.id === entry.id); return `<li><a href="${paths[index]}">${xml(entry.title)}</a></li>`; }).join("")}</ol></div>` : chapterBody(c.content, edition, imagePaths)}</section>`,
+        `<section class="section-layout${sectionMatter(c.sectionType??"chapter")==="front"?" front-matter":""}${chapterOrdinal(book.chapters,i)!==null && (edition.chapterNumberStyle??"none")!=="none" && showSectionTitle(c)?" has-number":""}" style="break-before:page;page-break-before:always;padding-top:${Math.round(getSectionLayout(c).spaceBefore / 12 * 100) / 100}em;padding-bottom:${Math.round(getSectionLayout(c).spaceAfter / 12 * 100) / 100}em" epub:type="${c.sectionType === "prologue" ? "prologue" : c.sectionType === "epilogue" ? "epilogue" : c.sectionType === "part" ? "part" : c.sectionType === "preface" ? "preface" : c.sectionType === "copyright" ? "copyright-page" : c.sectionType === "dedication" ? "dedication" : c.sectionType === "epigraph" ? "epigraph" : c.sectionType === "toc" ? "toc" : "chapter"}" ${showSectionTitle(c) ? 'aria-labelledby="chapter-title"' : `aria-label="${xml(c.title)}"`}>${headingFor(c,i)}${c.sectionType === "toc" ? `<div class="generated-contents"><ol>${book.chapters.filter(entry => entry.id !== c.id && entry.sectionType !== "toc").map(entry => { const index = book.chapters.findIndex(x => x.id === entry.id); return `<li><a href="${paths[index]}">${xml(entry.title)}</a></li>`; }).join("")}</ol></div>` : chapterBody(c.content, edition, imagePaths)}</section>`,
       ),
     ),
   );
