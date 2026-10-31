@@ -22,7 +22,7 @@ test("edits survive offline restart and backup restores in a fresh profile", asy
   await page.close();
   const reopened = await context.newPage();
   await reopened.goto("/");
-  await reopened.getByRole("button", { name: /Offline novel/ }).click();
+  await reopened.locator(".book-card").filter({hasText:/Offline novel/}).click();
   await expect(
     reopened.getByRole("textbox", { name: "Chapter manuscript" }),
   ).toHaveText("First chapter survives.");
