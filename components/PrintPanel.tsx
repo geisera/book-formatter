@@ -14,10 +14,12 @@ export default function PrintPanel({
   onPublish,
   onAlignmentChange,
   onTrimChange,
+  onExportSuccess,
 }: {
   book: Book;
   getSnapshot: () => Promise<Book>;
   onPublish: () => void;
+  onExportSuccess?: () => void;
   onAlignmentChange: (alignment: "left" | "justify") => void;
   onTrimChange: (trim: PrintTrim) => void;
 }) {
@@ -113,6 +115,7 @@ export default function PrintPanel({
     a.href = url;
     a.download = result.record.filename;
     a.click();
+    onExportSuccess?.();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   return (
