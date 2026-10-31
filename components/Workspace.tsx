@@ -803,15 +803,7 @@ export default function Workspace() {
                   onTrimChange={changePrintTrim}
                 />
               ) : null}
-              {mode === "manuscript" ? <EbookPreview
-                hidden={false}
-                book={book}
-                chapter={previewChapter}
-                chapterId={chapterId}
-                edition={getEbookEdition(book)}
-                onNavigate={setChapterId}
-                updating={previewChapter !== chapter}
-              /> : null}
+
             </div>
           </div>
         </main>
