@@ -13,6 +13,7 @@ export default function DesignPanel({
   printProfile,
   onPrintTrim,
   onPrintAlignment,
+  onPrintTypography,
 }: {
   edition: EbookEdition;
   cover: Book["cover"];
@@ -23,6 +24,7 @@ export default function DesignPanel({
   printProfile: PrintEdition;
   onPrintTrim: (trim:PrintTrim)=>void;
   onPrintAlignment: (align:"left"|"justify")=>void;
+  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace">>)=>void;
 }) {
   function change<K extends keyof EbookEdition>(
     key: K,
@@ -33,7 +35,7 @@ export default function DesignPanel({
   return (
     <section
       className="design-panel"
-      aria-label="Ebook design settings"
+      aria-label="Book design settings"
       hidden={hidden}
     >
       <div className="eyebrow">BOOK DESIGN</div>
@@ -64,6 +66,34 @@ export default function DesignPanel({
             <select aria-label="Design paperback alignment" value={printProfile.alignment??"left"} onChange={e=>onPrintAlignment(e.target.value as "left"|"justify")}>
               <option value="left">Left-aligned</option><option value="justify">Justified</option>
             </select>
+          </label>
+        </fieldset>
+        <fieldset><legend>Paperback typography</legend>
+          <p className="control-note">Libre Baskerville is embedded in the PDF. These adjustments affect paperback only.</p>
+          <label>Body font size <span className="control-value">{printProfile.fontSize.toFixed(1)} pt</span>
+            <input aria-label="Paperback body font size" type="range" min="9" max="14" step="0.5"
+              value={printProfile.fontSize} onChange={e=>{
+                const fontSize=Number(e.target.value);
+                const leading=Math.max(fontSize*1.15,Math.min(fontSize*2,printProfile.leading));
+                onPrintTypography({fontSize,leading:Math.round(leading*10)/10});
+              }}/>
+          </label>
+          <label>Line spacing <span className="control-value">{printProfile.leading.toFixed(1)} pt</span>
+            <input aria-label="Paperback line spacing" type="range"
+              min={(printProfile.fontSize*1.15).toFixed(1)} max={(printProfile.fontSize*2).toFixed(1)} step="0.1"
+              value={printProfile.leading} onChange={e=>onPrintTypography({leading:Number(e.target.value)})}/>
+          </label>
+          <label>Paragraph spacing <span className="control-value">{printProfile.paragraphSpacing??0} pt</span>
+            <input aria-label="Paperback paragraph spacing" type="range" min="0" max="24" step="1"
+              value={printProfile.paragraphSpacing??0} onChange={e=>onPrintTypography({paragraphSpacing:Number(e.target.value)})}/>
+          </label>
+          <label>First-line indent <span className="control-value">{printProfile.firstLineIndent??14} pt</span>
+            <input aria-label="Paperback first-line indent" type="range" min="0" max="36" step="1"
+              value={printProfile.firstLineIndent??14} onChange={e=>onPrintTypography({firstLineIndent:Number(e.target.value)})}/>
+          </label>
+          <label>Chapter opening space <span className="control-value">{printProfile.chapterOpeningSpace??0} pt</span>
+            <input aria-label="Paperback chapter opening space" type="range" min="0" max="120" step="5"
+              value={printProfile.chapterOpeningSpace??0} onChange={e=>onPrintTypography({chapterOpeningSpace:Number(e.target.value)})}/>
           </label>
         </fieldset>
         <p className="control-note">For section-specific page starts, headers, folios and spacing, use Structure. These settings appear in the paperback preview.</p>
