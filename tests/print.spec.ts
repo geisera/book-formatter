@@ -168,14 +168,14 @@ test("inherits print templates from Design and preserves print justification off
   await page.getByRole("button", { name: /Modern.*Contemporary/i }).click();
   await expect(page.getByRole("status").filter({ hasText: /Saved locally/ })).toBeVisible();
   await page.getByRole("button", { name: "Print", exact: true }).click();
-  await expect(page.getByText("Print design: Modern")).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Modern paperback"})).toBeVisible();
   await expect(page.getByLabel("Print template")).toHaveCount(0);
   await page.getByLabel("Justify body text").check();
 
   await page.getByRole("button", { name: "Design", exact: true }).click();
   await page.getByRole("button", { name: /Gothic.*Ornamental/i }).click();
   await page.getByRole("button", { name: "Print", exact: true }).click();
-  await expect(page.getByText("Print design: Gothic")).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Gothic paperback"})).toBeVisible();
   await expect(page.getByLabel("Justify body text")).toBeChecked();
   await expect(page.getByRole("status").filter({ hasText: /Saved locally/ })).toBeVisible();
   await page.getByRole("button", { name: "Build 6 × 9 PDF proof" }).click();
@@ -183,7 +183,7 @@ test("inherits print templates from Design and preserves print justification off
   await page.reload();
   await page.locator(".book-card").filter({hasText:/Template selection/}).click();
   await page.getByRole("button", { name: "Print", exact: true }).click();
-  await expect(page.getByText("Print design: Gothic")).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Gothic paperback"})).toBeVisible();
   await expect(page.getByLabel("Justify body text")).toBeChecked();
 });
 
@@ -230,7 +230,7 @@ test("saves trim selection and exports a correctly sized 5.5 × 8.5 trade paperb
   await page.getByRole("button",{name:"Print",exact:true}).click();
   await expect(page.locator('input[name="print-trim"][value="6x9"]')).toBeChecked();
   await page.locator('input[name="print-trim"][value="5.5x8.5"]').check();
-  await expect(page.getByText(/For most novels, start with/)).toBeVisible();
+  await expect(page.getByText(/For most novels/)).toBeVisible();
   await expect(page.getByRole("status").filter({hasText:"Saved locally"})).toBeVisible();
   await page.getByRole("button",{name:"Design",exact:true}).click();
   await page.getByRole("button",{name:"Print",exact:true}).click();
