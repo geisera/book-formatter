@@ -65,6 +65,8 @@ export default function Workspace() {
   const [backupRefresh,setBackupRefresh]=useState(0);
   const [backupSnooze,setBackupSnooze]=useState<string|null>(null);
   const [backupPrompt,setBackupPrompt]=useState(false);
+  const [sectionMenu,setSectionMenu]=useState<string|null>(null);
+  const [draggingSection,setDraggingSection]=useState<string|null>(null);
   const [dontAskBackup,setDontAskBackup]=useState(false);
   const [findOpen,setFindOpen]=useState(false);
   const [findConfig,setFindConfig]=useState<SearchConfig>({query:"",replacement:"",scope:"chapter",caseSensitive:false,wholeWord:false});
@@ -669,7 +671,14 @@ export default function Workspace() {
                 </button>)}</div>
               </details>)}
             </div>
-            <button className="add" onClick={()=>setMode("structure")}>+ Add or organize sections</button>
+            <div className="sidebar-section-actions">
+              <button className="add" onClick={()=>{
+                const selected=book.chapters.find(c=>c.id===chapterId);
+                updateStructure({kind:"add",title:"New chapter",sectionType:"chapter",after:selected&&sectionMatter(selected.sectionType??"chapter")==="body"?selected.id:undefined});
+                setMode("manuscript");setInspectorTab("preview");
+              }}>+ Add chapter</button>
+              <button type="button" onClick={()=>setMode("structure")}>Organize…</button>
+            </div>
             <small className="backup-time sidebar-backup-time">{backupLabel(book.id)}</small>
             <div className="aside-bottom">
               <button onClick={() => {setPublishFormat("print");setMode("publish");}}>Print PDF proof</button>
