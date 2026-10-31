@@ -118,20 +118,6 @@ export default function PublishPanel({
       });
     }finally{validator.terminate();}
   }
-  async function validateInBrowser(row:ExportRecord){
-    setValidationBusy(true);setError("");setNotice("");
-    try{
-      const stored=await db.artifacts.get(row.id);
-      if(!stored)throw Error("Saved EPUB not found. Generate the EPUB again.");
-      const result=await runEpubCheck(stored.bytes,row.id);
-      const updated:ExportRecord={...row,epubCheck:result.valid?"passed":"failed",epubCheckVersion:"5.4.0",epubCheckCheckedAt:new Date().toISOString(),epubCheckMessages:result.messages.slice(0,250)};
-      await db.exports.put(updated);
-      setHistory(items=>items.map(item=>item.id===row.id?updated:item));
-      setResult(current=>current?.id===row.id?updated:current);
-      setNotice(result.valid?"EPUBCheck passed for this saved EPUB. Review reader appearance before publishing.":"EPUBCheck found errors. Review diagnostics below, correct the book, and generate a new EPUB.");
-    }catch(e){setError(e instanceof Error?e.message:"EPUBCheck could not validate this EPUB.");}
-    finally{setValidationBusy(false);}
-  }
   async function importEpubCheckReport(row:ExportRecord,file:File) {
     setValidationBusy(true);setError("");setNotice("");
     try{
@@ -456,7 +442,7 @@ export default function PublishPanel({
                 Every time you select <strong>Generate &amp; validate EPUB</strong>, Book Formatter builds the EPUB and automatically runs EPUBCheck locally in your browser. Files that pass validation download automatically. If EPUBCheck finds errors or cannot complete, the EPUB is kept for troubleshooting and is not labeled as validated.
               </p>
               <p>
-                Results and detailed findings are saved in <strong>Export history</strong>. You can choose <strong>Run EPUBCheck in browser</strong> to recheck a saved EPUB without generating it again. No book content is uploaded.
+                Results and detailed findings are saved in <strong>Export history</strong>. No book content is uploaded.
               </p>
               <p>
                 EPUBCheck verifies technical conformance, not visual appearance or retailer approval. Review your EPUB in an ebook reader before publication.
@@ -489,7 +475,6 @@ export default function PublishPanel({
                     </small>
                   </summary>
                   <p>{row.filename}</p>
-                  <button type="button" disabled={validationBusy} onClick={()=>void validateInBrowser(row)}>{validationBusy?"Validating EPUB…":"Run EPUBCheck in browser"}</button>
                   <label className="epubcheck-report-input">Attach EPUBCheck JSON report
                     <input type="file" accept=".json,application/json" disabled={validationBusy} onChange={e=>{const file=e.target.files?.[0];if(file)void importEpubCheckReport(row,file);e.target.value="";}}/>
                   </label>
