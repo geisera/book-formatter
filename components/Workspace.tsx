@@ -384,6 +384,11 @@ export default function Workspace() {
       print: { ...getPrintEdition(b), alignment },
     } });
   }
+  function changePrintTypography(changes: Partial<Pick<ReturnType<typeof getPrintEdition>, "fontSize" | "leading" | "paragraphSpacing" | "firstLineIndent" | "chapterOpeningSpace">>) {
+    const b=current.current;if(!b)return;
+    const existing=getPrintEdition(b);
+    edit({...b,editions:{...b.editions,ebook:getEbookEdition(b),print:{...existing,...changes}}});
+  }
   function changePrintTrim(trim: PrintTrim) {
     const b=current.current;if(!b)return;
     edit({...b,editions:{...b.editions,ebook:getEbookEdition(b),print:{...getPrintEdition(b),trim}}});
@@ -395,7 +400,7 @@ export default function Workspace() {
     const printAlignment = priorPrint.alignment ?? "left";
     edit({ ...b, editions: {
       ...b.editions, ebook: edition,
-      print: printPreset(edition.template.id, printAlignment, priorPrint.trim),
+      print: { ...printPreset(edition.template.id, printAlignment, priorPrint.trim), fontSize:priorPrint.fontSize,leading:priorPrint.leading,paragraphSpacing:priorPrint.paragraphSpacing,firstLineIndent:priorPrint.firstLineIndent,chapterOpeningSpace:priorPrint.chapterOpeningSpace },
     } });
   }
   return (
@@ -741,6 +746,7 @@ export default function Workspace() {
                     printProfile={getPrintEdition(book)}
                     onPrintTrim={changePrintTrim}
                     onPrintAlignment={changePrintAlignment}
+                    onPrintTypography={changePrintTypography}
                   />
                 </aside>
                 <section className="design-studio-preview" aria-label="Book design preview">
