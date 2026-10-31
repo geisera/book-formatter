@@ -1,4 +1,4 @@
-import { validateImageAttrs, embeddedImages, MAX_PROJECT_IMAGES_BYTES } from "./images";
+import { decodeImage, validateImageAttrs, embeddedImages, MAX_PROJECT_IMAGES_BYTES } from "./images";
 import {
   CLASSIC_PRINT,
   validatePrintEdition,
@@ -138,6 +138,7 @@ export type Book = {
   language?: string;
   updatedAt: string;
   chapters: Chapter[];
+  cover?: {src:string;alt:string};
   importInfo?: ImportInfo;
   editions?: { ebook: EbookEdition; print?: PrintEdition };
 };
@@ -205,8 +206,17 @@ export function validateBook(value: unknown): Book {
     validateEdition(b.editions.ebook);
     if (b.editions.print !== undefined) validatePrintEdition(b.editions.print);
   }
+  if (b.cover !== undefined) {
+    if (!b.cover || typeof b.cover !== "object" ||
+        typeof b.cover.src !== "string" ||
+        typeof b.cover.alt !== "string" ||
+        !b.cover.alt.trim() || b.cover.alt.length > 500)
+      throw Error("Invalid cover image or alternative text.");
+    decodeImage(b.cover.src);
+  }
   const ids = new Set<string>();
-  let imageBytes = 0;
+  let imageBytes = b.cover?.src.length ?? 0;
+  if (imageBytes > MAX_PROJECT_IMAGES_BYTES) throw Error("Embedded images exceed the 12 MB project limit.");
   for (const c of b.chapters) {
     if (
       !c ||
