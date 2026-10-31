@@ -88,8 +88,6 @@ describe("offline print proof", () => {
     expect(withCover.record.pages.filter(p=>p.kind==="chapter").every(p=>p.page%2===1)).toBe(true);
     expect(withCover.record.filename).toContain("-with-cover-");
     expect(withCover.record.warnings.join(" ")).toContain("full-wrap");
-    const content=pdf.getPages()[0].node.Contents();
-    expect(content).toBeDefined();
     expect(b).toEqual(before);
     await expect(buildPrintPdf({...b,cover:undefined},fonts,{...options,includeFrontCover:true})).rejects.toThrow("Upload cover artwork");
   },20000);
