@@ -16,6 +16,7 @@ export type PrintEdition = {
   paragraphSpacing?: number;
   firstLineIndent?: number;
   chapterOpeningSpace?: number;
+  layoutPriority?: "automatic" | "balanced" | "flow";
   inside: number;
   outside: number;
   top: number;
@@ -42,6 +43,7 @@ export const CLASSIC_PRINT: PrintEdition = Object.freeze({
   bottom: 54,
   rectoChapters: true,
   alignment: "left",
+  layoutPriority: "automatic",
 });
 export const MODERN_PRINT: PrintEdition = Object.freeze({
   ...CLASSIC_PRINT,
@@ -82,6 +84,8 @@ export function validatePrintEdition(value: unknown): PrintEdition {
       (p.firstLineIndent !== undefined && (!Number.isFinite(p.firstLineIndent) || p.firstLineIndent < 0 || p.firstLineIndent > 36)) ||
       (p.chapterOpeningSpace !== undefined && (!Number.isFinite(p.chapterOpeningSpace) || p.chapterOpeningSpace < 0 || p.chapterOpeningSpace > 120)))
     throw Error("Unsupported print profile: invalid paperback typography settings.");
+  if (p.layoutPriority !== undefined && !["automatic","balanced","flow"].includes(p.layoutPriority))
+    throw Error("Unsupported print layout priority.");
   if (!Object.hasOwn(PRINT_TRIMS, p.trim)) throw Error("Unsupported print trim size.");
   if (p.alignment !== undefined && p.alignment !== "left" && p.alignment !== "justify")
     throw Error("Unsupported print alignment.");
@@ -102,5 +106,6 @@ export function getPrintEdition(book: {
     leading: prior.leading ?? preset.leading,
     paragraphSpacing: prior.paragraphSpacing ?? preset.paragraphSpacing,
     firstLineIndent: prior.firstLineIndent ?? preset.firstLineIndent,
-    chapterOpeningSpace: prior.chapterOpeningSpace ?? preset.chapterOpeningSpace } : preset;
+    chapterOpeningSpace: prior.chapterOpeningSpace ?? preset.chapterOpeningSpace,
+    layoutPriority: prior.layoutPriority ?? preset.layoutPriority } : preset;
 }
