@@ -2301,3 +2301,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 @media(min-width:1600px){.workspace-body.mode-manuscript.layout-format:not(.preview-hidden){grid-template-columns:minmax(0,1fr)}.workspace-body.mode-manuscript.layout-format .editor-area{display:none!important}}
 @media(max-width:1100px){.workspace-body.mode-manuscript.layout-write .editor-work-panels{grid-column:1;grid-row:3}.workspace-body.mode-manuscript.layout-write .editor-area{grid-row:2}}
 @media(max-width:680px){.workspace-body.layout-format .editor-work-panels{display:flex;flex-direction:column}.workspace-body.layout-format .editor-format-panel{max-height:440px}}
+
+
+/* P0-1: a single five-item workspace navigation bar. */
+.workspace-modes{justify-content:space-between;gap:12px;flex-wrap:wrap}
+.workspace-modes .workspace-primary-modes{display:flex;align-items:center;gap:3px;min-width:0;flex-wrap:wrap}
+.workspace-modes .workspace-primary-modes button{min-height:42px;padding:10px 15px;font-size:13px;white-space:nowrap}
+.workspace-modes .workspace-save{margin-left:auto}
+@media(max-width:850px){.workspace-modes .workspace-primary-modes{width:100%;justify-content:space-between;gap:1px}.workspace-modes .workspace-primary-modes button{padding:10px 9px;font-size:12px}.workspace-modes .workspace-save{margin-left:auto}}
+@media(max-width:480px){.workspace-modes .workspace-primary-modes button{padding:10px 5px;font-size:11px}}
