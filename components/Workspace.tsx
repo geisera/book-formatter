@@ -60,6 +60,7 @@ export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
   const [inspectorTab,setInspectorTab]=useState<"preview"|"formatting">("preview");
   const [templateMenuOpen,setTemplateMenuOpen]=useState(false);
+  const [mobileDrawerOpen,setMobileDrawerOpen]=useState(false);
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
@@ -722,8 +723,9 @@ export default function Workspace() {
           </footer>
         </main>
       ) : (
-        <main className="workspace">
-          <aside>
+        <main className={`workspace${mobileDrawerOpen?" mobile-drawer-open":""}`}>
+          {mobileDrawerOpen?<button type="button" className="mobile-drawer-scrim" aria-label="Close manuscript drawer" onClick={()=>setMobileDrawerOpen(false)}/>:null}
+          <aside id="mobile-manuscript-drawer" aria-label="Manuscript sections">
             <button className="text-button" onClick={dashboard}>
               ← Bookshelf
             </button>
@@ -801,6 +803,10 @@ export default function Workspace() {
             </div>
           </aside>
           <div className="workspace-content">
+            <div className="mobile-workspace-header">
+              <button type="button" aria-expanded={mobileDrawerOpen} aria-controls="mobile-manuscript-drawer" onClick={()=>setMobileDrawerOpen(v=>!v)}>☰ Sections</button>
+              <strong>{book.title}</strong>
+            </div>
             <nav className="workspace-modes" aria-label="Workspace mode">
               <div className="workspace-primary-modes">
                 <button type="button" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"}
@@ -975,7 +981,13 @@ export default function Workspace() {
               ) : null}
 
             </div>
-            
+            <nav className="mobile-bottom-navigation" aria-label="Mobile workspace navigation">
+              <button type="button" aria-current={mode==="manuscript"&&inspectorTab==="preview"?"page":undefined} onClick={()=>{setMode("manuscript");setInspectorTab("preview");setMobileDrawerOpen(false);}}>Manuscript</button>
+              <button type="button" aria-current={mode==="structure"?"page":undefined} onClick={()=>{setMode("structure");setMobileDrawerOpen(false);}}>Structure</button>
+              <button type="button" aria-current={mode==="manuscript"&&inspectorTab==="formatting"?"page":undefined} onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);setMobileDrawerOpen(false);}}>Design</button>
+              <button type="button" aria-current={mode==="details"?"page":undefined} onClick={()=>{setMode("details");setMobileDrawerOpen(false);}}>Details</button>
+              <button type="button" aria-current={mode==="publish"||mode==="print"?"page":undefined} onClick={()=>{setMode("publish");setMobileDrawerOpen(false);}}>Export</button>
+            </nav>
           </div>
         </main>
       )}
