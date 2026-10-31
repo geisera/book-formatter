@@ -239,7 +239,7 @@ export default function EbookPreview({
                     : <h2 className="ebook-chapter-number number-only">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</h2>)
                 : null}
               {(chapter.sectionType==="title" || chapter.sectionType==="half-title") ? <h2>{book.title}</h2> : openingDesign(chapter.sectionType??"chapter",edition.template.id).suppressHeading ? null : (chapter.sectionType??"chapter")!=="chapter" || (edition.showChapterTitle??true)
-                ? <h2>{chapter.title}</h2>
+                ? <h2 style={chapter.sectionType==="bibliography"?{fontSize:"1.35em",textAlign:"left",letterSpacing:".02em",fontWeight:600}:undefined}>{chapter.title}</h2>
                 : null}
             </> : null}
             {chapter?.sectionType==="title" ? <div className="ebook-title-details">
