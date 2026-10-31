@@ -5,6 +5,7 @@ import { newId } from "../lib/model";
 import { preflight, snapshotChecksum } from "../lib/epub";
 import type { PrintFonts, PrintRecord, PrintResult } from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
+import { inspectPrint } from "../lib/print-preflight";
 import { db } from "../lib/storage";
 import { getPrintEdition, PRINT_TRIMS, type PrintTrim } from "../lib/print-profile";
 import {localAsset,localWorker} from "../lib/offline-assets";
@@ -37,6 +38,7 @@ export default function PrintPanel({
     [book],
   );
   const fingerprint = useMemo(() => snapshotChecksum(book), [book]);
+  const preflightReport = useMemo(() => inspectPrint({book,record:result?.record,inputChecksum:fingerprint}),[book,result,fingerprint]);
   const profile = getPrintEdition(book);
   const trimLabel=PRINT_TRIMS[profile.trim].label;
   const trimSize=PRINT_TRIMS[profile.trim];
@@ -325,6 +327,19 @@ export default function PrintPanel({
           </button>
         ) : null}
       </div>
+      <section className="print-notes" aria-labelledby="preflight-title" aria-live="polite">
+        <h3 id="preflight-title">Print preflight</h3>
+        <p><strong>{preflightReport.status === "failed" ? "Failed" : preflightReport.status === "warnings" ? "Warnings to review" : "Checks passed"}</strong>
+          {" · "}{preflightReport.counts.error} errors · {preflightReport.counts.warning} warnings · {preflightReport.counts.info} informational</p>
+        <p>Local checks of the manuscript and the PDF renderer's page records. This is not independent PDF parsing, retailer approval, or a physical print proof.</p>
+        {preflightReport.issues.length ? <ul>
+          {preflightReport.issues.map((i,index)=><li key={index}>
+            <strong>{i.severity.toUpperCase()} · {i.category}</strong>
+            {i.location?.page ? ` · Page ${i.location.page}` : i.location?.label ? ` · ${i.location.label}` : ""}
+            {": "}{i.message} {i.action}
+          </li>)}
+        </ul> : <p>No issues reported by the implemented checks.</p>}
+      </section>
       {result ? (
         <>
           <div className="print-checks" aria-live="polite">
