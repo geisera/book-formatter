@@ -152,10 +152,11 @@ describe("offline print proof", () => {
   it("omits the heading when disabled without losing PDF body content", async () => {
     const book = fixture();
     book.chapters[0].title = "A very long section heading ".repeat(65);
-    book.chapters[0].showTitle = false;
+    book.chapters[0].showTitle = false; // legacy flag is ignored
+    book.editions!.print={...getPrintEdition(book),showChapterTitle:false};
     const hidden = await buildPrintPdf(book, fonts, options);
     expect(hidden.record.pages.some(p => p.chapterId === book.chapters[0].id && p.kind === "chapter" && p.lineCount > 0)).toBe(true);
-    book.chapters[0].showTitle = true;
+    book.editions!.print={...getPrintEdition(book),showChapterTitle:true};
     await expect(buildPrintPdf(book, fonts, options)).rejects.toThrow("chapter title is too long");
   }, 20000);
   it("renders centered and right-aligned text inside print margins", async () => {
@@ -192,6 +193,7 @@ describe("offline print proof", () => {
   },20000);
   it("vertically offsets short dedication without losing body text", async () => {
     const b=fixture();
+    b.chapters[0].sectionType="dedication";
     b.chapters[0].showTitle=false;
     b.chapters[0].content={type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"For the readers."}]}]};
     b.chapters[0].pageLayout={vertical:"bottom",pageNumber:"hide",header:"hide",start:"next"};
