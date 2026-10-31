@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Book } from "../lib/model";
-import { newId } from "../lib/model";
 import { preflight, snapshotChecksum } from "../lib/epub";
-import type { PrintFonts, PrintRecord, PrintResult } from "../lib/print";
+import type { PrintRecord, PrintResult } from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
 import { inspectPrint, authorPrintIssues, printHasInternalFailure } from "../lib/print-preflight";
 import { db } from "../lib/storage";
 import { getPrintEdition, PRINT_TRIMS, type PrintTrim } from "../lib/print-profile";
-import {localAsset,localWorker} from "../lib/offline-assets";
+import {startPdfBuild} from "../lib/pdf-worker-controller";
 export default function PrintPanel({
   book,
   getSnapshot,
@@ -29,11 +28,8 @@ export default function PrintPanel({
     [notice, setNotice] = useState(""),
     [result, setResult] = useState<PrintResult | null>(null),
     [history, setHistory] = useState<PrintRecord[]>([]);
-  const releaseWorker=useRef<(()=>void)|null>(null);
-  const worker = useRef<Worker | null>(null),
-    abort = useRef<AbortController | null>(null),
-    timer = useRef<ReturnType<typeof setTimeout> | null>(null),
-    token = useRef(0);
+  const cancelBuild=useRef<(()=>void)|null>(null);
+  const token=useRef(0);
   const issues = useMemo(
     () => preflight(book).filter((i) => i.severity === "error"),
     [book],
@@ -46,15 +42,10 @@ export default function PrintPanel({
   const trimLabel=PRINT_TRIMS[profile.trim].label;
   const trimSize=PRINT_TRIMS[profile.trim];
   const templateLabel = profile.template.id[0].toUpperCase() + profile.template.id.slice(1);
-  function stop() {
+  function stop(){
     token.current++;
-    worker.current?.terminate();
-    worker.current = null;
-    releaseWorker.current?.();releaseWorker.current=null;
-    abort.current?.abort();
-    abort.current = null;
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = null;
+    cancelBuild.current?.();
+    cancelBuild.current=null;
   }
   useEffect(() => {
     let active = true;
@@ -81,124 +72,36 @@ export default function PrintPanel({
       stop();
     };
   }, [book.id]);
-  function fail(message: string, n: number) {
-    if (n !== token.current) return;
+  async function build(){
     stop();
-    setBusy(false);
-    setError(message);
-  }
-  async function build() {
-    stop();
-    const n = token.current;
-    setBusy(true);
+    const n=token.current;
+    setBusy(true);setError("");setNotice("");
     setProgress({percent:0,stage:"Preparing manuscript"});
-    setError("");
-    setNotice("");
-    try {
-      const snapshot = await getSnapshot();
-      if (n !== token.current) return;
-      const controller = new AbortController();
-      abort.current = controller;
-      timer.current = setTimeout(
-        () =>
-          fail(
-            "The print proof took too long and was stopped. Your manuscript was not changed.",
-            n,
-          ),
-        120_000,
-      );
-      const files = [
-        "regular.woff",
-        "italic.woff",
-        "bold.woff",
-        "bold-italic.woff",
-      ];
-      const [regular, italic, bold, boldItalic] = await Promise.all(
-        files.map(async (file) => {
-          const response = await localAsset(`/epub-fonts/${file}`,controller.signal);
-          if (!response.ok)
-            throw Error(
-              "Print fonts are not cached. Open the app online once, then retry offline.",
-            );
-          return new Uint8Array(await response.arrayBuffer());
-        }),
-      );
-      if (n !== token.current) return;
-      const fonts: PrintFonts = { regular, italic, bold, boldItalic };
-      // A versioned URL prevents an older cached worker from silently omitting new PDF options.
-      const prepared=await localWorker("/print-worker.js?renderer=print-proof-1.5.0");
-      if(n!==token.current){prepared.worker.terminate();prepared.release();return;}
-      const encoder=prepared.worker;
-      releaseWorker.current=prepared.release;
-      worker.current=encoder;
-      encoder.onerror = () =>
-        fail(
-          "The local PDF worker could not start. Open the app online once to update its offline files.",
-          n,
-        );
-      encoder.onmessage = async (
-        event: MessageEvent<{
-          ok?: boolean;
-          type?: "progress";
-          percent?: number;
-          stage?: string;
-          error?: string;
-          bytes?: Uint8Array;
-          record?: PrintRecord;
-        }>,
-      ) => {
-        if (n !== token.current) return;
-        if (event.data.type === "progress") {
-          setProgress(p=>({percent:Math.max(p.percent,Math.min(99,Math.max(0,event.data.percent??0))),stage:event.data.stage??p.stage}));
-          return;
-        }
-        if (!event.data.ok || !event.data.bytes || !event.data.record) {
-          fail(event.data.error ?? "The PDF could not be generated.", n);
-          return;
-        }
-        // A stale offline worker must never report success for a cover-less PDF
-        // when the author explicitly requested cover artwork.
-        if (includeFrontCover && (
-          event.data.record.includeFrontCover !== true ||
-          event.data.record.pages?.[0]?.kind !== "cover"
-        )) {
-          fail("An outdated PDF worker omitted your requested cover. Reload the application online and rebuild the PDF.", n);
-          return;
-        }
-        const built = { bytes: event.data.bytes, record: event.data.record };
-        worker.current?.terminate();
-        worker.current = null;
-        releaseWorker.current?.();releaseWorker.current=null;
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = null;
-        try {
-          await db.printExports.add(built.record);
-          if (n !== token.current) return;
-          setHistory((items) => [built.record, ...items].slice(0, 20));
-        } catch {
-          if (n !== token.current) return;
-          setNotice(
-            "The PDF is ready, but its history entry could not be saved.",
-          );
-        }
-        setResult(built);
-        setProgress({percent:100,stage:"Proof ready"});
-        setBusy(false);
-      };
-      encoder.postMessage({
-        book: snapshot,
-        fonts,
-        id: newId(),
-        createdAt: new Date().toISOString(),
-        includeFrontCover,
-      });
-    } catch (e) {
-      fail(
-        e instanceof Error
-          ? e.message
-          : "The print proof could not be generated.",
-        n,
-      );
+    try{
+      const snapshot=await getSnapshot();
+      if(n!==token.current)return;
+      const task=startPdfBuild({book:snapshot,includeFrontCover,expectedChecksum:snapshotChecksum(snapshot),
+        onProgress:status=>{if(n===token.current)setProgress(status);}});
+      cancelBuild.current=task.cancel;
+      const built=await task.promise;
+      if(n!==token.current)return;
+      cancelBuild.current=null;
+      try{
+        await db.printExports.add(built.record);
+        if(n!==token.current)return;
+        setHistory(items=>[built.record,...items].slice(0,20));
+      }catch{
+        if(n!==token.current)return;
+        setNotice("The PDF is ready, but its history entry could not be saved.");
+      }
+      setResult(built);
+      setProgress({percent:100,stage:"Proof ready"});
+      setBusy(false);
+    }catch(e){
+      if(n!==token.current)return;
+      cancelBuild.current=null;
+      setBusy(false);
+      setError(e instanceof Error?e.message:"The PDF could not be generated.");
     }
   }
   function download() {
