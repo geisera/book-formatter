@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useDeferredValue } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
 import {sectionIsEmpty,sectionTemplateContent} from "../lib/section-samples";
-import { sectionIsEmpty, sampleForSection } from "../lib/section-samples";
+import { sampleForSection } from "../lib/section-samples";
 import FindReplacePanel,{type SearchConfig} from "./FindReplacePanel";
 import {findInBook,replaceAcrossBook,type TextMatch} from "../lib/find-replace";
 import ImportPanel from "./ImportPanel";
