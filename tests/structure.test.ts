@@ -180,3 +180,27 @@ describe("matter-safe organization and layout defaults", () => {
     expect(book.chapters[0].content).toEqual(before);
   });
 });
+
+describe("expanded conventional section catalog",()=>{
+ const front=["foreword","introduction","praise"] as const;
+ const back=["afterword","bibliography","appendix","glossary","endnotes"] as const;
+ it("creates, reclassifies and backs up all new types without changing manuscript text",()=>{
+   let b=createBook("Book","Author");
+   const sourceId=b.chapters[0].id;
+   b.chapters[0].content={type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Keep this prose."}]}]};
+   for(const type of [...front,...back]){
+     b=changeStructure(b,{kind:"add",sectionType:type,title:type}).book;
+   }
+   expect(sectionGroups(b).front.map(c=>c.sectionType)).toEqual(front);
+   expect(sectionGroups(b).back.map(c=>c.sectionType)).toEqual(back);
+   expect(sectionGroups(b).body.map(c=>c.sectionType)).toEqual(["chapter"]);
+   expect(sectionGroups(b).front.every(c=>getSectionLayout(c).header==="hide")).toBe(true);
+   expect(sectionGroups(b).back.every(c=>getSectionLayout(c).header==="auto")).toBe(true);
+   b=changeStructure(b,{kind:"type",id:sourceId,sectionType:"introduction"}).book;
+   expect(sectionGroups(b).front.some(c=>c.id===sourceId)).toBe(true);
+   expect(b.chapters.find(c=>c.id===sourceId)?.content).toEqual({type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Keep this prose."}]}]});
+   const restored=restoreBook(backupBook(b));
+   expect(restored.chapters.map(c=>c.sectionType)).toEqual(b.chapters.map(c=>c.sectionType));
+   expect(()=>validateBook(restored)).not.toThrow();
+ });
+});
