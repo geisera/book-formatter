@@ -648,6 +648,8 @@ export default function Workspace() {
               ) : null}
               <DesignPanel
                 hidden={mode !== "design"}
+                cover={book.cover}
+                onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
                 edition={getEbookEdition(book)}
                 onChange={changeEdition}
               />
