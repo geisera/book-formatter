@@ -2408,3 +2408,26 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .structure-panel .structure-inline-add input,.structure-panel .structure-inline-add select{min-height:38px}
 .structure-panel .structure-inline-add button{min-height:38px}
 @media(max-width:650px){.structure-panel .structure-compact-row{grid-template-columns:22px 22px minmax(70px,1fr) 35px;gap:4px;padding:6px}.structure-panel .structure-type-badge,.structure-panel .structure-row-words{display:none}}
+
+/* P1-4 templates, quick switch, settings impact, and preview simulator */
+.design-template-first{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.design-template-first .template-card{display:flex;flex-direction:column;align-items:stretch;min-width:0;text-align:left;gap:10px;padding:10px}
+.template-chapter-thumbnail{display:flex;flex-direction:column;justify-content:center;gap:8px;min-height:138px;padding:13px;background:#fbf8ec;color:#262c28;border:1px solid #d1cdc1;text-align:center;font-family:Georgia,serif}
+.template-chapter-thumbnail>span{font-size:9px;letter-spacing:.17em}
+.template-chapter-thumbnail>strong{font-size:17px;font-weight:normal}
+.template-chapter-thumbnail>i{font-size:9px;line-height:1.45}
+.template-modern{font-family:Arial,sans-serif;text-align:left;background:#fff}
+.template-modern>strong{font-weight:700}
+.template-gothic{font-family:Georgia,serif;background:#eee7dc;border-top:5px double #53453a}
+.template-gothic>strong{font-variant:small-caps;font-weight:bold}
+.design-affects{margin:10px 0 14px;padding:12px;border:1px solid #dce4d9;border-radius:6px;background:#f4f6ef;font-size:12px}
+.design-affects table{width:100%;border-collapse:collapse;margin-top:8px}
+.design-affects td,.design-affects th{padding:6px;border-top:1px solid #dce4d9;text-align:left}
+.design-affects button{background:transparent;border:0;text-decoration:underline;color:#275b47;cursor:pointer}
+.workspace-template-quick{position:relative;flex:0 0 auto}
+.workspace-template-quick>button{border:1px solid #b6cbbc;border-radius:20px;padding:7px 13px;font-size:12px;background:#e8f0e8;color:#24503a}
+.workspace-template-menu{position:absolute;top:100%;right:0;z-index:25;background:#fff;border:1px solid #c7d5c9;box-shadow:0 8px 20px #0002;min-width:130px;display:flex;flex-direction:column}
+.workspace-template-menu button{padding:8px 14px;border:0;background:#fff;text-align:left}
+.workspace-template-menu button[aria-pressed=true]{background:#e0ede3;font-weight:bold}
+.preview-simulator-toolbar{background:#eaf0ed;border:1px solid #c7d7cd;border-radius:6px;padding:9px}
+@media(max-width:600px){.design-template-first{grid-template-columns:1fr}.template-chapter-thumbnail{min-height:90px}}
