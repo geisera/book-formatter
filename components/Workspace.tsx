@@ -18,8 +18,27 @@ import { changeStructure, type StructureAction } from "../lib/structure";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { getPrintEdition, printPreset, type PrintTrim } from "../lib/print-profile";
 import { blankChapter, createBook, sectionMatter, type Book } from "../lib/model";
+import { romanNumeral } from "../lib/chapter-numbering";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
+/** UI-only section labels; never modifies manuscript content. */
+function manuscriptSectionLabel(book: Book, section: Book["chapters"][number]): string {
+  const type=section.sectionType??"chapter";
+  const matter=sectionMatter(type);
+  const label=type.replaceAll("-"," ").toUpperCase();
+  if(matter==="front")return `FRONT MATTER · ${label}`;
+  if(matter==="back")return `BACK MATTER · ${label}`;
+  const index=book.chapters.findIndex(c=>c.id===section.id);
+  if(type==="chapter"){
+    const n=book.chapters.slice(0,index+1).filter(c=>(c.sectionType??"chapter")==="chapter"&&sectionMatter(c.sectionType??"chapter")==="body").length;
+    return `CHAPTER ${n}`;
+  }
+  if(type==="part"){
+    const n=book.chapters.slice(0,index+1).filter(c=>c.sectionType==="part").length;
+    return `PART ${n<=3999?romanNumeral(n):n}`;
+  }
+  return label;
+}
 export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
   const [inspectorTab,setInspectorTab]=useState<"preview"|"formatting">("preview");
@@ -650,14 +669,14 @@ export default function Workspace() {
                   canUndo={!!replacementHistory&&!replacementUndone} canRedo={!!replacementHistory&&replacementUndone}/>:null}
 
                 <div className="editor-meta">
-                  <span>MANUSCRIPT / {chapter?.title}</span>
+                  <span>MANUSCRIPT</span>
                   <button type="button" onClick={()=>setFindOpen(v=>!v)} aria-label="Find and replace manuscript">Find & Replace</button>
                   <button type="button" onClick={()=>setPreviewVisible(v=>!v)}>{previewVisible?"Hide preview":"Show preview"}</button>
                 </div>
                 {chapter ? (
                   <article className="paper">
                     <div className="eyebrow">
-                      CHAPTER {book.chapters.indexOf(chapter) + 1}
+                      {manuscriptSectionLabel(book,chapter)}
                     </div>
                     <input
                       className="chapter-title"
