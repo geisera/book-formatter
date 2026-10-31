@@ -818,6 +818,11 @@ export default function Workspace() {
                       }
                     />
                     <Editor
+                      statusBar={<div className="editor-inline-word-status" role="status" aria-label="Manuscript word counts">
+                        <span>Section: <strong>{selectedWordCount.toLocaleString()}</strong> words</span>
+                        <span>Book: <strong>{totalWordCount.toLocaleString()}</strong> words</span>
+                        <span>Estimated reading: <strong>~{readingHours} h {readingRemainder} min</strong></span>
+                      </div>}
                       key={`${book.id}-${chapter.id}-${editorVersion}`}
                       search={findOpen?{query:findConfig.query,options:{caseSensitive:findConfig.caseSensitive,wholeWord:findConfig.wholeWord}}:undefined}
                       focusMatch={findFocus}
@@ -894,11 +899,7 @@ export default function Workspace() {
               ) : null}
 
             </div>
-            <div className="workspace-word-status" role="status" aria-label="Manuscript word counts">
-              <span>Section: <strong>{selectedWordCount.toLocaleString()}</strong> words</span>
-              <span>Book: <strong>{totalWordCount.toLocaleString()}</strong> words</span>
-              <span>Estimated reading: <strong>~{readingHours} h {readingRemainder} min</strong></span>
-            </div>
+            
           </div>
         </main>
       )}
