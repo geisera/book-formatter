@@ -97,7 +97,7 @@ export function validatePrintEdition(value: unknown): PrintEdition {
   if ((p.hyphenate!==undefined && typeof p.hyphenate!=="boolean") ||
       (p.hyphenationLanguage!==undefined && !["en-us","en-gb"].includes(p.hyphenationLanguage)) ||
       (p.maxConsecutiveHyphens!==undefined && (!Number.isInteger(p.maxConsecutiveHyphens)||p.maxConsecutiveHyphens<0||p.maxConsecutiveHyphens>5)) ||
-      (p.hyphenationExceptions!==undefined && (typeof p.hyphenationExceptions!=="string" || p.hyphenationExceptions.length>4000 || !/^[a-zA-Z,\\s-]*$/.test(p.hyphenationExceptions))))
+      (p.hyphenationExceptions!==undefined && (typeof p.hyphenationExceptions!=="string" || p.hyphenationExceptions.length>4000 || !/^[a-zA-Z,\s-]*$/.test(p.hyphenationExceptions))))
     throw Error("Invalid paperback hyphenation settings.");
   if (!Object.hasOwn(PRINT_TRIMS, p.trim)) throw Error("Unsupported print trim size.");
   if (p.alignment !== undefined && p.alignment !== "left" && p.alignment !== "justify")
