@@ -328,6 +328,28 @@ export async function buildPrintPdf(
       add(word.runs, word.space);
     }
     if (runs.length) flush();
+    // Avoid a one-word final line where the preceding line can safely yield
+    // its last word. Never alter manuscript text or force overflow.
+    if (result.length > 1) {
+      const last = result[result.length - 1];
+      const previous = result[result.length - 2];
+      const finalWords = last.runs.map(r=>r.text).join("").trim().split(/\\s+/);
+      const prevText = previous.runs.map(r=>r.text).join("");
+      if (finalWords.length === 1 && /\\S+\\s+\\S+\\s*$/.test(prevText)) {
+        const cut = prevText.trimEnd().lastIndexOf(" ");
+        const word = prevText.slice(cut + 1).trim();
+        const candidate = word + " " + last.runs.map(r=>r.text).join("");
+        // Only move plain, unstyled lines; marked spans retain their styling.
+        if (previous.runs.every(r=>r.face==="regular") && last.runs.every(r=>r.face==="regular") &&
+            measure(candidate,"regular",fontSize) <= maxWidth - last.indent) {
+          const kept = prevText.slice(0,cut).trimEnd();
+          previous.runs=[{text:kept,face:"regular"}];
+          previous.width=measure(kept,"regular",fontSize);
+          last.runs=[{text:candidate,face:"regular"}];
+          last.width=measure(candidate,"regular",fontSize);
+        }
+      }
+    }
     return result;
   }
   function textLines(text: string, fontSize: number, face: Face): Line[] {
@@ -452,7 +474,11 @@ export async function buildPrintPdf(
         return;
       }
       if (node.type.name === "scene_break") {
-        if (slots() < 5) bodyPage();
+        const following=index+1<doc.childCount?doc.child(index+1):null;
+        const followingLines=following?.type.name==="paragraph" && following.textContent.trim()
+          ? Math.min(2,wrap(units(following),0).length) : 0;
+        const sceneRequired=3 + followingLines;
+        if (slots() < sceneRequired && proof.lineCount>0) bodyPage();
         y -= leading;
         if (template === "modern") {
           page.drawLine({
@@ -516,7 +542,8 @@ export async function buildPrintPdf(
       const lines = wrap(units(node), indent);
       // A short paragraph looks better on one page; do not force overly long
       // paragraphs to stay together and leave an unnecessarily blank page.
-      if (lines.length <= 4 && slots() < lines.length && proof.lineCount > 0)
+      const keepLimit = profile.layoutPriority==="balanced" ? 6 : profile.layoutPriority==="flow" ? 2 : 4;
+      if (lines.length <= keepLimit && slots() < lines.length && proof.lineCount > 0)
         bodyPage();
       let offset = 0;
       while (offset < lines.length) {
