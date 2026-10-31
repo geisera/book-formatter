@@ -221,7 +221,7 @@ export default function StructurePanel({
                     if (window.confirm(`Delete "${section.title}" and all its text? This cannot be undone.`)) dispatch({kind:"delete",id:section.id});
                   }}>Delete</button>
                 </div>
-                </div>
+                </div>:null}
                 <button type="button" className="structure-add-here between" onClick={()=>{setInsertion({matter,after:section.id});setType(section.sectionType??"chapter");}}>+ Add here</button>
                 {insertion?.matter===matter&&insertion.after===section.id?<form className="structure-inline-add" onSubmit={e=>{e.preventDefault();if(!title.trim()){setError("Enter a title for the new section.");return;}dispatch({kind:"add",sectionType:type,title:title.trim(),after:section.id});setTitle("");setInsertion(null);}}>
                   <label>Type<select aria-label="New section type" value={type} onChange={e=>setType(e.target.value as SectionType)}>{SECTION_TYPES.filter(t=>sectionMatter(t)===matter).map(t=><option key={t} value={t}>{labels[t]}</option>)}</select></label>
