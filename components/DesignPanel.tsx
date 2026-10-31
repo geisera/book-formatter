@@ -302,7 +302,15 @@ export default function DesignPanel({
         </label>
         <label>Chapter number display
           <select aria-label="Ebook chapter numbering" value={edition.chapterNumberStyle??"none"}
-            onChange={e=>change("chapterNumberStyle",e.target.value as EbookEdition["chapterNumberStyle"])}>
+            onChange={e=>{
+              change("chapterNumberStyle",e.target.value as EbookEdition["chapterNumberStyle"]);
+              // If front matter, a part, or an interlude is selected, show the
+              // first numbered chapter so the change is visible immediately.
+              if ((section?.sectionType??"chapter")!=="chapter") {
+                const firstChapter=book.chapters.find(c=>(c.sectionType??"chapter")==="chapter"&&showSectionTitle(c));
+                if (firstChapter) onSelectSection(firstChapter.id);
+              }
+            }}>
             <option value="none">Title only</option>
             <option value="arabic">Number above title (1, 2, 3)</option>
             <option value="roman">Roman number above title (I, II, III)</option>
