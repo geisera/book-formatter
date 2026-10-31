@@ -70,7 +70,7 @@ books (under 24 pages) can be proofed but get a non-retail warning.
 
 Fonts are included locally under SIL OFL 1.1; see `docs/fonts.md` and the
 public license. All font, PDF worker, PDF.js worker and JS assets are precached.
-No cloud account or manuscript upload is needed. Build cancellation and failures
+Once an author is authenticated, no cloud manuscript upload is needed. Authentication is mandatory for the web application (PRD v1.2); the local PDF renderer still needs no network service. The existing feasibility prototype predates the authentication gate. Build cancellation and failures
 leave the working manuscript unchanged. History stores records, not PDF files,
 and remains local to this browser; the print profile travels in project backups.
 
