@@ -1,7 +1,7 @@
 "use client";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
 import type {Book} from "../lib/model";
-import {PRINT_TRIMS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
+import {PRINT_TRIMS,PRINT_PRESETS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
 import CoverEditor from "./CoverEditor";
 export default function DesignPanel({
   edition,
@@ -74,13 +74,13 @@ export default function DesignPanel({
             <input aria-label="Paperback body font size" type="range" min="9" max="14" step="0.5"
               value={printProfile.fontSize} onChange={e=>{
                 const fontSize=Number(e.target.value);
-                const leading=Math.max(fontSize*1.15,Math.min(fontSize*2,printProfile.leading));
+                const leading=Math.max(Math.ceil(fontSize*11.5)/10,Math.min(fontSize*2,printProfile.leading));
                 onPrintTypography({fontSize,leading:Math.round(leading*10)/10});
               }}/>
           </label>
           <label>Line spacing <span className="control-value">{printProfile.leading.toFixed(1)} pt</span>
             <input aria-label="Paperback line spacing" type="range"
-              min={(printProfile.fontSize*1.15).toFixed(1)} max={(printProfile.fontSize*2).toFixed(1)} step="0.1"
+              min={Math.ceil(printProfile.fontSize*11.5)/10} max={printProfile.fontSize*2} step="0.1"
               value={printProfile.leading} onChange={e=>onPrintTypography({leading:Number(e.target.value)})}/>
           </label>
           <label>Paragraph spacing <span className="control-value">{printProfile.paragraphSpacing??0} pt</span>
@@ -231,9 +231,11 @@ export default function DesignPanel({
       </div>
       <button
         className="reset-design"
-        onClick={() => onChange(presetFor(edition.template.id))}
+        onClick={() => format === "print"
+          ? onPrintTypography({fontSize:PRINT_PRESETS[edition.template.id].fontSize,leading:PRINT_PRESETS[edition.template.id].leading,paragraphSpacing:0,firstLineIndent:14,chapterOpeningSpace:0})
+          : onChange(presetFor(edition.template.id))}
       >
-        Reset selected template settings
+        {format === "print" ? "Reset paperback typography" : "Reset ebook typography"}
       </button>
       <p className="control-note">Settings save locally. Preview updates automatically; final exports remain in Publish and Print.</p>
     </section>
