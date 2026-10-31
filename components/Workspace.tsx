@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useDeferredValue, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, useDeferredValue, type CSSProperties } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
 import {sectionIsEmpty,sectionTemplateContent} from "../lib/section-samples";
@@ -392,6 +392,14 @@ export default function Workspace() {
   }
   const chapter = book?.chapters.find((c) => c.id === chapterId);
   const previewChapter = useDeferredValue(chapter);
+  const deferredChapters=useDeferredValue(book?.chapters);
+  const wordCounts=useMemo(()=>deferredChapters?.map(c=>schema.nodeFromJSON(c.content).textContent.trim().match(/\\S+/g)?.length??0)??[],[deferredChapters]);
+  const totalWordCount=wordCounts.reduce((sum,count)=>sum+count,0);
+  const chapterWordCount=book?.chapters.findIndex(c=>c.id===chapterId)??-1;
+  const selectedWordCount=wordCounts[chapterWordCount]??0;
+  const readingMinutes=Math.ceil(totalWordCount/250);
+  const readingHours=Math.floor(readingMinutes/60);
+  const readingRemainder=readingMinutes%60;
   useEffect(()=>{
     if(!book)return;
     const key=`book-formatter:backup-first-seen:${book.id}`;
@@ -674,7 +682,7 @@ export default function Workspace() {
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
                 <div className="chapter-list" onDragOver={e=>{e.preventDefault();if(draggingSection)setDropTarget({group});}} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});clearDrag();}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className={`sidebar-section-row${draggingSection===c.id?" is-dragging":""}${dropTarget?.group===group&&dropTarget.before===c.id?" drop-before":""}`} onDragEnd={clearDrag} onDragOver={e=>{e.preventDefault();e.stopPropagation();if(draggingSection)setDropTarget({group,before:c.id});}} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});clearDrag();}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
-                  <small>{(c.sectionType??"chapter").replaceAll("-"," ")}
+                  <small title={`${wordCounts[book.chapters.indexOf(c)]??0} words`}>{(c.sectionType??"chapter").replaceAll("-"," ")}
                     {readinessIssues.some(issue=>issue.severity==="error"&&issue.location.startsWith(`Section ${book.chapters.indexOf(c)+1}:`))?
                       <span className="section-issue-dot" title="Export validation issue" aria-label="Export validation issue">●</span>:null}
                   </small><span>{c.title}</span>
@@ -829,7 +837,7 @@ export default function Workspace() {
                   </article>
                 ) : null}
                 <p className="editor-foot">
-                  A quiet space for your story.{" "}
+                  <span className="editor-word-count" role="status">Chapter: {selectedWordCount.toLocaleString()} words · Book: {totalWordCount.toLocaleString()} words · ~{readingHours} h {readingRemainder} min read</span>
                   <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
                 </p>
               </section>
