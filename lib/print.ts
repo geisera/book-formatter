@@ -310,6 +310,23 @@ export async function buildPrintPdf(
         width += wordWidth;
         return;
       }
+      // Hyphenate at a normal line boundary before pushing an entire word
+      // to the next line; this reduces excessive justification gaps.
+      if(runs.length && profile.hyphenate!==false && word.length===1 &&
+         /^[a-z]+$/i.test(word[0].text) &&
+         consecutiveHyphens < (profile.maxConsecutiveHyphens??2)){
+        const fitting=hyphenationPoints(word[0].text,locale,exceptionWords).filter(pos=>
+          measure(word[0].text.slice(0,pos)+"-",word[0].face,fontSize)+blank <= maxWidth-indent-width+0.001);
+        if(fitting.length){
+          const at=fitting[fitting.length-1];
+          const prefix=word[0].text.slice(0,at)+"-";
+          if(blank){runs.push({text:" ",face:"regular"});width+=blank;}
+          runs.push({text:prefix,face:word[0].face});width+=measure(prefix,word[0].face,fontSize);
+          flush();
+          add([{text:word[0].text.slice(at),face:word[0].face}],false);
+          return;
+        }
+      }
       if (runs.length) flush();
       if (wordWidth <= maxWidth - indent + 0.001) {
         runs.push(...word);
