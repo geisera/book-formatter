@@ -1772,6 +1772,7 @@ aside h2 {
 .structure-panel h2 { font-size:30px; margin:8px 0 12px; }
 .structure-panel > p { font-size:13px; line-height:1.7; color:var(--muted); }
 .structure-add { display:grid; grid-template-columns:minmax(150px,1fr) minmax(220px,2fr) auto; align-items:end; gap:12px; padding:18px; border:1px solid var(--line); border-radius:8px; margin:22px 0 30px; background:#f8f7f0; }
+.structure-add-description { grid-column:1 / -1; width:100%; box-sizing:border-box; padding-top:10px; border-top:1px solid var(--line); font-size:12px; line-height:1.6; font-weight:400; color:var(--muted); }
 .structure-add label,.structure-item-fields label { display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--ink); font-weight:600; }
 .structure-add input,.structure-add select,.structure-item-fields input,.structure-item-fields select { width:100%; padding:9px 10px; min-width:0; border:1px solid var(--line); border-radius:4px; background:#fff; }
 .structure-group { margin:28px 0; }
