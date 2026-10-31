@@ -146,8 +146,8 @@ export default function DesignPanel({
            <label>Chapter number display
              <select aria-label="Paperback chapter numbering" value={printProfile.chapterNumberStyle??"none"}
                onChange={e=>onPrintTypography({chapterNumberStyle:e.target.value as "none"|"arabic"|"roman"})}>
-               <option value="none">Title only</option><option value="arabic">Number above title (1, 2, 3)</option>
-               <option value="roman">Roman number above title (I, II, III)</option>
+               <option value="none">No chapter number</option><option value="arabic">Arabic (1, 2, 3)</option>
+               <option value="roman">Roman (I, II, III)</option>
              </select>
            </label>
            <label className="design-toggle"><input type="checkbox" checked={printProfile.showChapterTitle??true}
@@ -313,9 +313,9 @@ export default function DesignPanel({
                 if (firstChapter) onSelectSection(firstChapter.id);
               }
             }}>
-            <option value="none">Title only</option>
-            <option value="arabic">Number above title (1, 2, 3)</option>
-            <option value="roman">Roman number above title (I, II, III)</option>
+            <option value="none">No chapter number</option>
+            <option value="arabic">Arabic (1, 2, 3)</option>
+            <option value="roman">Roman (I, II, III)</option>
           </select>
         </label>
         <label className="design-toggle"><input type="checkbox" checked={edition.showChapterTitle??true}
