@@ -4,6 +4,7 @@ import {createBook,blankChapter} from "../lib/model";
 import {buildPrintPdf,type PrintFonts} from "../lib/print";
 import {getPrintEdition} from "../lib/print-profile";
 
+async function main(){
 const requested=Number(process.argv[2]??100000);
 if(!Number.isInteger(requested)||requested<1000||requested>200000)throw Error("Word count must be 1,000–200,000.");
 const words="The traveller crossed the forest beneath the autumn sky while distant bells rang through the valley";
@@ -42,3 +43,6 @@ mkdirSync("artifacts",{recursive:true});
 writeFileSync("artifacts/print-performance.json",JSON.stringify(report,null,2));
 console.log(JSON.stringify(report,null,2));
 if(report.overflow||report.splitViolations)process.exitCode=1;
+
+}
+void main().catch(e=>{console.error(e);process.exitCode=1;});
