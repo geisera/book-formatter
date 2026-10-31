@@ -9,6 +9,14 @@ test("organizes and persists sections locally, including reordered export order"
   await page.getByRole("button", { name: "Create local book" }).click();
   await page.getByRole("button", { name: "Structure", exact: true }).click();
   await expect(page.getByRole("region", { name: "Book structure editor" })).toBeVisible();
+  const description=page.locator("#new-section-type-description");
+  await expect(description).toContainText("main story");
+  await page.getByLabel("New section type").selectOption("epigraph");
+  await expect(description).toContainText("quotation");
+  await page.getByLabel("New section type").selectOption("title");
+  await expect(description).toContainText("subtitle, author, and publisher");
+  await page.getByLabel("New section type").selectOption("chapter");
+  await expect(description).toContainText("heading appearance is set in Design");
   await expect(page.getByRole("checkbox",{name:"Show title on page for Chapter One"})).toHaveCount(0);
   await page.getByLabel("New section type").selectOption("prologue");
   await page.getByLabel("Section title").fill("Before the story");
