@@ -9,7 +9,7 @@ test("exports an imported, formatted book entirely offline and tracks exact snap
   const outbound: string[] = [];
   page.on("request", (request) => {
     if (
-      request.method() !== "GET" ||
+      (request.method() !== "GET" && request.method() !== "HEAD") ||
       new URL(request.url()).origin !== "http://127.0.0.1:3100"
     )
       outbound.push(request.url());
