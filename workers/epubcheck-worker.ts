@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
-import {validate} from "epubcheck-standalone";
+import {validate,configureEngine} from "epubcheck-standalone";
+configureEngine({url:"/epubcheck-engine.js"});
 import {blob} from "epubcheck-standalone/plugins";
 type Request={id:string;bytes:Uint8Array};
 self.onmessage=async(event:MessageEvent<Request>)=>{
