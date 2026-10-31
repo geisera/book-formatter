@@ -74,6 +74,7 @@ export default function Workspace() {
   const [backupSnooze,setBackupSnooze]=useState<string|null>(null);
   const [backupPrompt,setBackupPrompt]=useState(false);
   const [sectionMenu,setSectionMenu]=useState<string|null>(null);
+  const [recentlyDeleted,setRecentlyDeleted]=useState<{bookId:string;section:Book["chapters"][number];before?:string}|null>(null);
   const [draggingSection,setDraggingSection]=useState<string|null>(null);
   const [dropTarget,setDropTarget]=useState<{group:"front"|"body"|"back";before?:string}|null>(null);
   const [dontAskBackup,setDontAskBackup]=useState(false);
@@ -545,8 +546,12 @@ export default function Workspace() {
     const b = current.current;
     if (!b) return;
     try {
+      const removed=action.kind==="delete"?b.chapters.find(c=>c.id===action.id):undefined;
+      const after=removed?b.chapters[b.chapters.findIndex(c=>c.id===removed.id)+1]?.id:undefined;
       const result = changeStructure(b, action);
       edit(result.book);
+      if(removed)setRecentlyDeleted({bookId:b.id,section:structuredClone(removed),before:after});
+      if(action.kind==="restore")setRecentlyDeleted(null);
       if (result.selectedId) setChapterId(result.selectedId);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Structure update failed.");
@@ -877,6 +882,11 @@ export default function Workspace() {
             <div className="workspace-context-help">
               <Link href={mode==="structure"?"/help/#structure":mode==="details"?"/help/#details":mode==="publish"||mode==="print"?"/help/#epub":mode==="manuscript"&&inspectorTab==="formatting"?"/help/#design":"/help/#editor"} target="_blank" rel="noopener noreferrer" aria-label="Help for current workspace">? Help for {mode==="manuscript"?(inspectorTab==="formatting"?"Design":"Manuscript"):mode==="publish"||mode==="print"?"Export":mode[0].toUpperCase()+mode.slice(1)}</Link>
             </div>
+            {recentlyDeleted?.bookId===book.id?<div className="delete-undo-notice" role="status">
+              <span>Section deleted: <strong>{recentlyDeleted.section.title}</strong></span>
+              <button type="button" onClick={()=>{if(recentlyDeleted)updateStructure({kind:"restore",section:recentlyDeleted.section,before:recentlyDeleted.before});}}>Undo deletion</button>
+              <button type="button" aria-label="Dismiss section recovery" onClick={()=>setRecentlyDeleted(null)}>Dismiss</button>
+            </div>:null}
             {backupDue&&!backupSnoozed?<div className="backup-nudge" role="status">
               <span>Your changes exist only in this browser. Download a backup.</span>
               <button type="button" onClick={()=>void backup()}>Download</button>
