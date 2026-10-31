@@ -1951,3 +1951,16 @@ aside h2 {
 .cover-preview-toggle button[aria-pressed="true"]{background:var(--green);color:white}
 .ebook-cover-preview{display:flex;align-items:center;justify-content:center;min-height:300px}
 .ebook-cover-preview img{display:block;max-width:100%;max-height:80vh;width:auto;height:auto;object-fit:contain}
+
+/* Book Details: publishing metadata independent of the manuscript. */
+.book-details-panel{max-width:920px;padding:28px;background:#fffefb;border:1px solid var(--line);border-radius:8px}
+.book-details-panel h2{margin:8px 0 12px;font:normal 30px Georgia,serif}
+.book-details-panel form{margin-top:22px}
+.book-details-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.book-details-fields label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600}
+.book-details-fields input,.book-details-fields textarea{box-sizing:border-box;width:100%;min-width:0;padding:11px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);font:inherit;font-weight:400}
+.book-details-fields .book-details-wide{grid-column:1/-1}
+.book-details-fields textarea{resize:vertical}
+.book-details-panel .primary{margin-top:18px}
+.book-details-fields [aria-invalid="true"]{border-color:#982e2e}
+@media(max-width:660px){.book-details-panel{padding:16px}.book-details-fields{grid-template-columns:1fr}}
