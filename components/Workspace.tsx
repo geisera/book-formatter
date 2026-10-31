@@ -663,12 +663,19 @@ export default function Workspace() {
             <div className="section-navigator" aria-label="Book sections">
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
-                <div className="chapter-list">{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><button key={c.id} type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
+                <div className="chapter-list" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});setDraggingSection(null);}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className="sidebar-section-row" draggable onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.effectAllowed="move";}} onDragEnd={()=>setDraggingSection(null)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});setDraggingSection(null);}}><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
                   <small>{(c.sectionType??"chapter").replaceAll("-"," ")}
                     {readinessIssues.some(issue=>issue.severity==="error"&&issue.location.startsWith(`Section ${book.chapters.indexOf(c)+1}:`))?
                       <span className="section-issue-dot" title="Export validation issue" aria-label="Export validation issue">●</span>:null}
                   </small><span>{c.title}</span>
-                </button>)}</div>
+                </button><button type="button" className="sidebar-section-menu-trigger" aria-label={`Actions for ${c.title}`} aria-expanded={sectionMenu===c.id} onClick={()=>setSectionMenu(sectionMenu===c.id?null:c.id)}>⋯</button>
+                {sectionMenu===c.id?<div className="sidebar-section-menu" role="menu">
+                  <button role="menuitem" onClick={()=>{setSectionMenu(null);const title=window.prompt("Section title",c.title);if(title!==null)updateStructure({kind:"rename",id:c.id,title});}}>Rename</button>
+                  <button role="menuitem" disabled={book.chapters.indexOf(c)===0||sectionMatter(book.chapters[book.chapters.indexOf(c)-1].sectionType??"chapter")!==group} onClick={()=>{setSectionMenu(null);updateStructure({kind:"move",id:c.id,to:book.chapters.indexOf(c)-1});}}>Move up</button>
+                  <button role="menuitem" disabled={book.chapters.indexOf(c)===book.chapters.length-1||sectionMatter(book.chapters[book.chapters.indexOf(c)+1].sectionType??"chapter")!==group} onClick={()=>{setSectionMenu(null);updateStructure({kind:"move",id:c.id,to:book.chapters.indexOf(c)+1});}}>Move down</button>
+                  <button role="menuitem" onClick={()=>{setSectionMenu(null);updateStructure({kind:"duplicate",id:c.id});}}>Duplicate</button>
+                  <button role="menuitem" disabled={book.chapters.length===1} onClick={()=>{setSectionMenu(null);if(window.confirm("Delete this section and its content?"))updateStructure({kind:"delete",id:c.id});}}>Delete</button>
+                </div>:null}</div>)}</div>
               </details>)}
             </div>
             <div className="sidebar-section-actions">
