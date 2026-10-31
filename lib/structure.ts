@@ -47,6 +47,8 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
       selectedId = action.id;
       break;
     case "visibility":
+      if ((chapters[index].sectionType ?? "chapter") === "chapter")
+        throw Error("Chapter title visibility is controlled separately in each edition’s Design settings.");
       chapters[index] = { ...chapters[index], showTitle: action.showTitle };
       selectedId = action.id;
       break;
