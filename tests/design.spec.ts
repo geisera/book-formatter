@@ -119,7 +119,7 @@ test("formats an imported manuscript offline and restores text plus design in a 
   });
   expect(saved.editions.ebook).not.toHaveProperty("theme");
   await page.reload();
-  await page.getByRole("button", { name: /A designed book/ }).click();
+  await page.locator(".book-card").filter({hasText:/A designed book/}).click();
   await expect(
     page.getByRole("article", { name: "Formatted chapter" }),
   ).toHaveCSS("font-size", "24px");
