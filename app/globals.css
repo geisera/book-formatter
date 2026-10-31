@@ -2500,3 +2500,19 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
  .mobile-bottom-navigation button{min-width:0;min-height:48px;border:0;border-radius:5px;font-size:clamp(10px,2vw,13px);padding:5px 1px;overflow:hidden;text-overflow:ellipsis}
  .mobile-bottom-navigation button[aria-current=page]{background:#dbe9dd;color:#204e36;font-weight:750}
 }
+
+
+/* P2-3 mobile follow-up: keep navigation accessible during long preview scrolls */
+@media(max-width:900px){
+ html,body{max-width:100%;overflow-x:hidden}
+ .workspace{width:100%;max-width:100%;padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+ .workspace-content{overflow:visible}
+ .mobile-workspace-header{position:sticky;top:0;z-index:70}
+ .mobile-bottom-navigation{position:fixed!important;bottom:0;left:0;right:0;width:100%;z-index:100;min-height:58px}
+ .workspace-body.mode-manuscript .editor-shared-toolbar{position:sticky;top:54px;z-index:65}
+ .workspace-body .editor-work-panels{display:flex!important;flex-direction:column!important;max-width:100%;overflow-x:hidden}
+ .workspace-body .editor-live-proof,.workspace-body .preview-panel,.workspace-body .reader-viewport{max-width:100%;min-width:0}
+ .workspace-body .reader-viewport{overflow-x:auto}
+ .workspace-body .paper{max-width:100%;min-width:0}
+ .workspace-body .editor-format-panel{max-width:100%;min-width:0}
+}
