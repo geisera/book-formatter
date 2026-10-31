@@ -13,6 +13,7 @@ export type StructureAction =
   | { kind: "reset-style"; id: string }
   | { kind: "add"; title: string; sectionType: SectionType; after?: string; before?: string }
   | { kind: "delete"; id: string }
+  | { kind: "restore"; section: Chapter; before?: string }
   | { kind: "split"; id: string; blockIndex: number; title: string }
   | { kind: "merge"; id: string };
 
@@ -30,6 +31,13 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
   if ("id" in action && index === -1) throw Error("Section was not found.");
   let selectedId: string | undefined;
   switch (action.kind) {
+    case "restore": {
+      if(chapters.some(c=>c.id===action.section.id))throw Error("Section already exists.");
+      const at=action.before?chapters.findIndex(c=>c.id===action.before):-1;
+      chapters.splice(at>=0?at:chapters.length,0,structuredClone(action.section));
+      selectedId=action.section.id;
+      break;
+    }
     case "move": {
       if (!Number.isInteger(action.to) || action.to < 0 || action.to >= chapters.length) throw Error("Invalid destination.");
       const source = chapters[index];
