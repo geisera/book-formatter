@@ -639,7 +639,7 @@ export async function buildPrintPdf(
       }
       if (!node.textContent.trim()) return;
       const blockAlignment = (node.attrs.align as TextAlignment | null) ?? (design.centered ? "center" : null);
-      const indent = blockAlignment ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
+      const indent = blockAlignment || design.unindentedBody ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
       const mainUnits=design.italicBody ? units(node).map(w=>({...w,runs:w.runs.map(r=>({...r,face:r.face==="regular"?"italic" as const:r.face}))})) : units(node);
       const lines = wrap(mainUnits, indent);
       // In Balanced mode, consider the last few *whole paragraphs* as a
