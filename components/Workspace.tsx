@@ -6,6 +6,7 @@ import FindReplacePanel,{type SearchConfig} from "./FindReplacePanel";
 import {findInBook,replaceAcrossBook,type TextMatch} from "../lib/find-replace";
 import ImportPanel from "./ImportPanel";
 import DesignPanel from "./DesignPanel";
+import DesignPrintPreview from "./DesignPrintPreview";
 import BookDetailsPanel from "./BookDetailsPanel";
 import type {PublicationMetadata} from "../lib/publication-metadata";
 import EbookPreview from "./EbookPreview";
@@ -19,6 +20,7 @@ import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
+  const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
   const [findOpen,setFindOpen]=useState(false);
   const [findConfig,setFindConfig]=useState<SearchConfig>({query:"",replacement:"",scope:"chapter",caseSensitive:false,wholeWord:false});
   const [findFocus,setFindFocus]=useState<{from:number;to:number;nonce:number}|undefined>();
@@ -727,6 +729,12 @@ export default function Workspace() {
                   onPreviewPrint={() => setMode("print")}
                 />
               ) : null}
+              {mode==="design"?<div className="design-preview-switch" role="group" aria-label="Design preview format" style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",margin:"12px 0"}}>
+                <strong>Preview format</strong>
+                <button type="button" aria-pressed={designPreview==="ebook"} className={designPreview==="ebook"?"primary":"secondary"} onClick={()=>setDesignPreview("ebook")}>Ebook · Live</button>
+                <button type="button" aria-pressed={designPreview==="print"} className={designPreview==="print"?"primary":"secondary"} onClick={()=>setDesignPreview("print")}>Paperback · Proof</button>
+                <span className="control-note">{designPreview==="ebook"?"Live reflowable preview of selected chapter.":"Accurate pages update automatically after local saves."}</span>
+              </div>:null}
               <DesignPanel
                 hidden={mode !== "design"}
                 cover={book.cover}
@@ -751,8 +759,9 @@ export default function Workspace() {
                   onTrimChange={changePrintTrim}
                 />
               ) : null}
+              {mode==="design"&&designPreview==="print"?<DesignPrintPreview book={book} getSnapshot={exportSnapshot}/>:null}
               <EbookPreview
-                hidden={mode === "publish" || mode === "print" || mode === "structure" || mode === "details"}
+                hidden={mode === "publish" || mode === "print" || mode === "structure" || mode === "details" || (mode==="design" && designPreview==="print")}
                 book={book}
                 chapter={previewChapter}
                 chapterId={chapterId}
