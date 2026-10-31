@@ -95,7 +95,7 @@ Numbering counts chapter-type sections only, excluding prefaces, prologues,
 parts and back matter. The default is **Title only**, retaining prior output
 for existing manuscripts. Front-matter section placement, folio, and header
 controls remain independent in the section layout editor. These settings persist in local project backups and never alter the
-underlying manuscript. Ebook and paperback values remain independent. Chapter titles entered by the author are never rewritten;
+underlying manuscript. Ebook and paperback values remain independent. For chapter-type sections, Structure does not control heading visibility: use the edition’s **Show chapter title** and **Chapter number display** settings in Design. The per-section title checkbox remains available for non-chapter sections. Older chapter-level visibility flags are ignored rather than deleting manuscript data. Chapter titles entered by the author are never rewritten;
 authors should review potential redundancy when a title already spells out a
 chapter number.
 
