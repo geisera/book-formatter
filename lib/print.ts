@@ -1,11 +1,12 @@
 import { decodeImage, embeddedImages } from "./images";
+import { normalizedIsbn } from "./publication-metadata";
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage, type PDFImage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter, type SectionPageLayout, type TextAlignment, type Book } from "./model";
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-export const PRINT_RENDERER = "print-proof-1.3.0";
+export const PRINT_RENDERER = "print-proof-1.4.0";
 export type PrintFonts = {
   regular: Uint8Array;
   italic: Uint8Array;
@@ -668,8 +669,9 @@ export async function buildPrintPdf(
   if (!Number.isFinite(created.getTime()))
     throw Error("Invalid print build timestamp.");
   const inputChecksum = snapshotChecksum(book);
-  pdf.setTitle(book.title);
+  pdf.setTitle(book.metadata?.subtitle ? `${book.title}: ${book.metadata.subtitle}` : book.title);
   pdf.setAuthor(book.author);
+  if (book.metadata?.description) pdf.setSubject(book.metadata.description);
   pdf.setCreator("Book Formatter");
   pdf.setProducer(PRINT_RENDERER);
   pdf.setCreationDate(created);
@@ -679,6 +681,10 @@ export async function buildPrintPdf(
     `${profile.template.id} 6x9 no bleed`,
     `revision:${book.revision}`,
     `snapshot:${inputChecksum}`,
+    ...(book.metadata?.isbn ? [`isbn:${normalizedIsbn(book.metadata.isbn)}`] : []),
+    ...(book.metadata?.publisher ? [`publisher:${book.metadata.publisher}`] : []),
+    ...(book.metadata?.seriesName ? [`series:${book.metadata.seriesName}${book.metadata.seriesNumber ? " #"+book.metadata.seriesNumber : ""}`] : []),
+    ...(book.metadata?.publicationDate ? [`publication-date:${book.metadata.publicationDate}`] : []),
   ]);
   const bytes = await pdf.save({ useObjectStreams: false });
   const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}${profile.template.id === "classic" ? "" : `-${profile.template.id}`}${options.includeFrontCover ? "-with-cover" : ""}-6x9-proof.pdf`;
