@@ -6,18 +6,20 @@ import { preflight, snapshotChecksum } from "../lib/epub";
 import type { PrintFonts, PrintRecord, PrintResult } from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
 import { db } from "../lib/storage";
-import { getPrintEdition } from "../lib/print-profile";
+import { getPrintEdition, PRINT_TRIMS, type PrintTrim } from "../lib/print-profile";
 import {localAsset,localWorker} from "../lib/offline-assets";
 export default function PrintPanel({
   book,
   getSnapshot,
   onPublish,
   onAlignmentChange,
+  onTrimChange,
 }: {
   book: Book;
   getSnapshot: () => Promise<Book>;
   onPublish: () => void;
   onAlignmentChange: (alignment: "left" | "justify") => void;
+  onTrimChange: (trim: PrintTrim) => void;
 }) {
   const [includeFrontCover, setIncludeFrontCover] = useState(false);
   const [busy, setBusy] = useState(false),
@@ -36,6 +38,8 @@ export default function PrintPanel({
   );
   const fingerprint = useMemo(() => snapshotChecksum(book), [book]);
   const profile = getPrintEdition(book);
+  const trimLabel=PRINT_TRIMS[profile.trim].label;
+  const trimSize=PRINT_TRIMS[profile.trim];
   const templateLabel = profile.template.id[0].toUpperCase() + profile.template.id.slice(1);
   function stop() {
     token.current++;
@@ -116,7 +120,7 @@ export default function PrintPanel({
       if (n !== token.current) return;
       const fonts: PrintFonts = { regular, italic, bold, boldItalic };
       // A versioned URL prevents an older cached worker from silently omitting new PDF options.
-      const prepared=await localWorker("/print-worker.js?renderer=print-proof-1.3.1");
+      const prepared=await localWorker("/print-worker.js?renderer=print-proof-1.5.0");
       if(n!==token.current){prepared.worker.terminate();prepared.release();return;}
       const encoder=prepared.worker;
       releaseWorker.current=prepared.release;
@@ -201,11 +205,11 @@ export default function PrintPanel({
           <div className="eyebrow">OFFLINE PAPERBACK PROOF</div>
           <h2 id="print-title">A book you can hold.</h2>
           <p>
-            6 × 9-inch interior using your selected print design. Build the PDF on this device, inspect
+            {trimLabel}-inch interior using your selected print design. Build the PDF on this device, inspect
             its actual pages, then download that same file.
           </p>
         </div>
-        <span className="format-stamp">6 × 9 · NO BLEED</span>
+        <span className="format-stamp">{trimLabel} · NO BLEED</span>
       </div>
       <div className="print-profile">
         <div>
@@ -213,7 +217,7 @@ export default function PrintPanel({
           <p>
             Libre Baskerville {profile.fontSize} pt · {profile.leading} pt leading
             <br />
-            Inside 0.75″ · outside 0.5625″ · top/bottom 0.75″
+            Inside {(profile.inside/72).toFixed(3)}″ · outside {(profile.outside/72).toFixed(3)}″ · top/bottom {(profile.top/72).toFixed(3)}″
             <br />
             Mirrored margins · right-hand chapter openings · page numbers
           </p>
@@ -230,6 +234,16 @@ export default function PrintPanel({
                 ? "Left-aligned chapter titles, fine scene rules, minimal running headers."
                 : "Dramatic centered chapter openings, diamond scene ornaments and chapter running headers."}
           </p>
+          <label className="print-trim-selector">Trim size
+            <select aria-label="Trim size" value={profile.trim} disabled={busy}
+              onChange={e=>{onTrimChange(e.target.value as PrintTrim);setResult(null);}}>
+              {(Object.keys(PRINT_TRIMS) as PrintTrim[]).map(trim=>
+                <option key={trim} value={trim}>{PRINT_TRIMS[trim].label} inches — {PRINT_TRIMS[trim].description}</option>
+              )}
+            </select>
+          </label>
+          <p><strong>Which size should I choose?</strong> For most novels, start with <strong>5.5 × 8.5</strong>: a comfortable trade-paperback format. Choose <strong>5 × 8</strong> for a compact, traditional fiction paperback; it usually yields more pages. Choose <strong>6 × 9</strong> for a larger, roomier edition that generally uses fewer pages; it remains the default for existing books.</p>
+          <p>Page count and production cost depend on your manuscript and printer. Select the same trim size when configuring your print retailer. Rebuild the PDF after changing size.</p>
           <label className="print-justification-toggle">
             <input
               type="checkbox"
@@ -307,7 +321,7 @@ export default function PrintPanel({
             ? "Building PDF locally…"
             : result
               ? "Rebuild PDF proof"
-              : "Build 6 × 9 PDF proof"}
+              : `Build ${trimLabel} PDF proof`}
         </button>
         {busy ? (
           <button
@@ -343,7 +357,7 @@ export default function PrintPanel({
                 : "Earlier snapshot — rebuild to include your changes"}
             </span>
             <span>
-              Geometry: 432 × 648 pt · Fonts embedded · Layout overflow: 0
+              Geometry: {trimSize.width} × {trimSize.height} pt · Fonts embedded · Layout overflow: 0
             </span>
           </div>
           <details className="print-notes">
@@ -364,7 +378,7 @@ export default function PrintPanel({
         </>
       ) : (
         <div className="print-empty">
-          <span>6 × 9</span>
+          <span>{trimLabel}</span>
           <h3>From manuscript to printed page.</h3>
           <p>
             Build a proof to check right-hand openings, gutters, page flow and
