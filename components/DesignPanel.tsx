@@ -33,7 +33,7 @@ export default function DesignPanel({
   printProfile: PrintEdition;
   onPrintTrim: (trim:PrintTrim)=>void;
   onPrintAlignment: (align:"left"|"justify")=>void;
-  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace">>)=>void;
+  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"layoutPriority">>)=>void;
 }) {
   const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
   const layout=section ? getSectionLayout(section) : null;
@@ -142,6 +142,17 @@ export default function DesignPanel({
               value={printProfile.chapterOpeningSpace??0} onChange={e=>onPrintTypography({chapterOpeningSpace:Number(e.target.value)})}/>
           </label>
         </fieldset>
+        <details className="design-advanced-layout"><summary>Advanced page layout</summary>
+          <label>Layout priority
+            <select aria-label="Paperback layout priority" value={printProfile.layoutPriority??"automatic"}
+              onChange={e=>onPrintTypography({layoutPriority:e.target.value as "automatic"|"balanced"|"flow"})}>
+              <option value="automatic">Automatic · recommended</option>
+              <option value="balanced">Balanced pages</option>
+              <option value="flow">Reading flow</option>
+            </select>
+          </label>
+          <p className="control-note">Automatic prevents isolated paragraph lines and keeps headings with following text. Balanced also moves short paragraphs to avoid sparse facing pages when practical. Reading flow favors continuous text.</p>
+        </details>
         <p className="control-note">For section-specific page starts, headers, folios and spacing, use Structure. These settings appear in the paperback preview.</p>
       </div>:null}
       <div className={format==="print"?"design-ebook-controls-inactive":"design-ebook-controls"}>
