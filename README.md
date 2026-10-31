@@ -227,6 +227,23 @@ balance, hyphenation exceptions, typography review) and long-manuscript
 performance measurement on 100k+ word projects. These are next-phase items,
 not claimed complete by this feature.
 
+### Long-manuscript rendering optimizations
+
+The paperback PDF worker now limits its font-width cache to 12,000 entries
+and memoizes TeX hyphenation decisions with a separate 12,000-entry limit.
+This caps retained per-word caches for large manuscripts while preserving
+the same PDF rendering algorithm and output records. Outdated Design preview
+workers are already terminated when input changes, and the UI suppresses
+out-of-date PDF proofs.
+
+**Performance validation:** Run `npm run bench:print -- 50000`,
+`npm run bench:print -- 100000`, `npm run bench:print -- 150000`,
+and `npm run bench:print -- 200000` on the same machine and capture
+`artifacts/print-performance.json` after each run. Record time, heap
+delta, output size, and warnings. The benchmark file is overwritten each
+run; copy results before starting another. Benchmark execution is not yet
+automated in CI, and there are no verified 100k-word timings yet.
+
 ### Print quality audit and long-manuscript performance
 
 Run `npm run bench:print` to generate and render a **synthetic 100,000-word
