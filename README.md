@@ -1,8 +1,36 @@
 # Book Formatter
 
-Local-first book formatting application, built with Next.js, React, TypeScript,
-direct ProseMirror and Dexie/IndexedDB. No account, cloud database, analytics or
-manuscript upload is used by the foundation.
+Authenticated, local-first web book formatting application built with Next.js,
+React, TypeScript, direct ProseMirror and Dexie/IndexedDB. **Users must sign in
+before accessing the author workspace.** Browser-local manuscripts remain the
+authoritative working copies; authentication does not require manuscript upload,
+cloud synchronization or server-side PDF/EPUB rendering.
+
+## Product access and data model
+
+**Product decision (October 31, 2026):** Book Formatter is a web application
+requiring authenticated accounts for all authoring, formatting, preview and
+export workflows. Public marketing, sign-in, registration and recovery pages may
+remain accessible without a session.
+
+**Authentication and storage are separate concerns.** Sign-in exchanges
+identity/session data with an identity service; it does not upload manuscript
+prose, media, EPUBs, PDFs or project backups. The local browser database remains
+the default authoritative project store. Cloud sync and remote backups, if
+offered, remain explicitly opt-in.
+
+**Offline use:** After the author signs in online and caches the application,
+local editing and export may continue while a previously issued offline
+authorization remains valid. A fresh offline sign-in is not supported. Offline
+session lifetime, session revocation limitations and account-switch isolation
+must be designed and tested before this access policy can be shipped. Browser
+storage is not automatically encrypted or isolated between OS users.
+
+**Implementation status:** Authentication is a mandatory requirement but has
+**not yet been implemented** in this codebase. Existing guest-mode screens
+reflect the prior prototype rather than the target product behavior. See
+[PRD v1.2](docs/PRD.md) and the
+[authentication architecture decision](docs/authentication-local-first.md).
 
 ## Run
 
@@ -12,13 +40,13 @@ Deploy with Vercel's Next.js preset or serve `out/` over HTTPS.
 Offline installation requires HTTPS (localhost is allowed for development).
 The managed preview launcher serves the production build, so build before previewing.
 
-## Feature status (PRD v1.1)
+## Feature status (PRD v1.2)
 
 This is a feature-level implementation inventory, not a certification that all PRD acceptance criteria pass. **Implemented** means the capability is present in the application or documented verification workflow; **partial / needs validation** means further work is required. See [PRD](docs/PRD.md) for the complete requirements and milestone exit criteria.
 
 ### Implemented
 
-- **Local-first projects:** Guest/local-only bookshelf, project creation, Dexie/IndexedDB storage, transactional autosave, revision conflict protection, save/error indicators, storage persistence requests and capacity warnings.
+- **Local-first projects (current implementation):** Existing guest/local-only bookshelf, project creation, Dexie/IndexedDB storage, transactional autosave, revision conflict protection, save/error indicators, storage persistence requests and capacity warnings. **This guest access is legacy behavior and does not satisfy the mandatory authentication requirement.**
 - **Offline foundation:** Service worker/app shell, offline local workflows and browser acceptance tests; complete PWA/cross-browser qualification is still pending.
 - **Import:** Local DOCX, Markdown and plain-text import, chapter-boundary review, diagnostics, cancellable worker, retained source file, supported PNG/JPEG DOCX images and guarded archive parsing.
 - **Editor:** Direct ProseMirror, independent chapter documents, paragraphs, headings, bold, italic, scene breaks, undo/redo, keyboard shortcuts, autosave, and chapter/book-wide find-and-replace.
@@ -44,9 +72,11 @@ This is a feature-level implementation inventory, not a certification that all P
 
 ### To be implemented / planned
 
+- **Mandatory authentication (release blocker; PRD AUTH-001–008):** Registration, sign-in/sign-out, route/API authorization, account-bound local project visibility, session expiry and recovery, and a bounded offline continuation policy. The currently deployed local-only application is **not yet authentication-gated**. Anonymous author-workspace access must be removed before release.
+
 - **Complete author workspace (M2):** Modern and Gothic templates, expanded front-matter typography, chapter-numbering presentation controls and recovery tools.
 - **Publication readiness (M1–M4):** Author-facing EPUB/PDF issue reports with severity/location/remediation; retailer-profile validation and actual paperback proofing; performance/reliability and cross-reader/browser test passes.
-- **Optional cloud sync (M3):** Account sign-in, private Supabase storage, per-project opt-in sync, offline change queue, divergent-revision conflict resolution, tenant authorization/RLS and cloud backup.
+- **Optional cloud sync (M3):** Private Supabase storage, per-project opt-in sync, offline change queue, divergent-revision conflict resolution, tenant authorization/RLS and cloud backup. Sign-in is a separate mandatory platform requirement, whether or not sync is enabled.
 - **Private beta (M4):** External author evaluations, retailer acceptance checks, physical print proofs, accessibility and security review.
 - **Commercial launch (M5):** Stripe purchases/subscriptions, entitlements, billing portal, onboarding, support, privacy/legal policies and administration.
 - **Later expansion (M6, not MVP):** Publisher collaboration, more templates/custom fonts, hardcover, advanced print formats, AI options, APIs and direct retailer integrations.
