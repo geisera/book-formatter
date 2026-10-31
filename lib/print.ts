@@ -5,7 +5,7 @@ import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter
 import { getPrintEdition, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-export const PRINT_RENDERER = "print-proof-1.2.0";
+export const PRINT_RENDERER = "print-proof-1.3.0";
 export type PrintFonts = {
   regular: Uint8Array;
   italic: Uint8Array;
@@ -18,7 +18,7 @@ type Word = { runs: Run[]; space: boolean; hardBreak?: boolean };
 type Line = { runs: Run[]; width: number; indent: number };
 export type PageProof = {
   page: number;
-  kind: "title" | "blank" | "chapter" | "body";
+  kind: "cover" | "title" | "blank" | "chapter" | "body";
   chapterId?: string;
   chapterTitle?: string;
   left: number;
@@ -43,6 +43,7 @@ export type PrintRecord = {
   artifactChecksum: string;
   byteLength: number;
   pageCount: number;
+  includeFrontCover?: boolean;
   filename: string;
   checks: { overflow: number; splitViolations: number; fonts: "embedded" };
   warnings: string[];
@@ -53,7 +54,7 @@ export type PrintResult = { bytes: Uint8Array; record: PrintRecord };
 export async function buildPrintPdf(
   input: Book,
   assets: PrintFonts,
-  options: { id: string; createdAt: string },
+  options: { id: string; createdAt: string; includeFrontCover?: boolean },
 ): Promise<PrintResult> {
   const book = structuredClone(validateBook(input)),
     profile = structuredClone(getPrintEdition(book));
@@ -73,6 +74,7 @@ export async function buildPrintPdf(
       throw Error(
         "A print font file is unavailable or damaged. Open the app online once and retry.",
       );
+  if (options.includeFrontCover && !book.cover) throw Error("Upload cover artwork in Design before including a front cover in the PDF.");
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const fonts = {} as Record<Face, PDFFont>;
@@ -636,6 +638,32 @@ export async function buildPrintPdf(
     if (!p.lineCount) {
       p.minX = p.maxX = p.minY = p.maxY = 0;
     }
+  // Add a cover and its unnumbered reverse *after* laying out the print interior.
+  // Two front leaves preserve existing recto/verso chapter parity and interior folios.
+  if (options.includeFrontCover && book.cover) {
+    const decoded = decodeImage(book.cover.src);
+    const art = decoded.mediaType === "image/png"
+      ? await pdf.embedPng(decoded.bytes)
+      : await pdf.embedJpg(decoded.bytes);
+    const coverPage = pdf.insertPage(0, [WIDTH, HEIGHT]);
+    const verso = pdf.insertPage(1, [WIDTH, HEIGHT]);
+    for (const sheet of [coverPage, verso]) {
+      sheet.setTrimBox(0, 0, WIDTH, HEIGHT);
+      sheet.setBleedBox(0, 0, WIDTH, HEIGHT);
+    }
+    const scale = Math.min(WIDTH / art.width, HEIGHT / art.height);
+    const coverWidth = art.width * scale, coverHeight = art.height * scale;
+    coverPage.drawImage(art, {
+      x: (WIDTH - coverWidth) / 2, y: (HEIGHT - coverHeight) / 2,
+      width: coverWidth, height: coverHeight,
+    });
+    pages.unshift(
+      {page:1,kind:"cover",left:0,right:WIDTH,lineCount:0,minX:0,maxX:0,minY:0,maxY:0},
+      {page:2,kind:"blank",left:0,right:WIDTH,lineCount:0,minX:0,maxX:0,minY:0,maxY:0},
+    );
+    for (let i = 2; i < pages.length; i++) pages[i].page = i + 1;
+    warnings.add("Front cover is for digital proofs only. Print retailers typically require separate full-wrap paperback cover artwork.");
+  }
   const created = new Date(options.createdAt);
   if (!Number.isFinite(created.getTime()))
     throw Error("Invalid print build timestamp.");
@@ -653,7 +681,7 @@ export async function buildPrintPdf(
     `snapshot:${inputChecksum}`,
   ]);
   const bytes = await pdf.save({ useObjectStreams: false });
-  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}${profile.template.id === "classic" ? "" : `-${profile.template.id}`}-6x9-proof.pdf`;
+  const filename = `${book.title.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(0, 100) || "book"}${profile.template.id === "classic" ? "" : `-${profile.template.id}`}${options.includeFrontCover ? "-with-cover" : ""}-6x9-proof.pdf`;
   return {
     bytes,
     record: {
@@ -668,6 +696,7 @@ export async function buildPrintPdf(
       artifactChecksum: checksum(bytes),
       byteLength: bytes.length,
       pageCount: pages.length,
+      includeFrontCover: Boolean(options.includeFrontCover),
       filename,
       checks: { overflow: 0, splitViolations, fonts: "embedded" },
       warnings: [...warnings],
