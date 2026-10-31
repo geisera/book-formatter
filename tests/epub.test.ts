@@ -86,6 +86,7 @@ describe("local EPUB generation", () => {
   });
   it("hides section headings but retains content and table-of-contents titles", () => {
     const b = fixture();
+    b.chapters[0].sectionType = "preface";
     b.chapters[0].showTitle = false;
     const files = unzipSync(buildEpub(b, fonts, options).bytes);
     const section = strFromU8(files["EPUB/chapter-0001.xhtml"]);
@@ -97,6 +98,17 @@ describe("local EPUB generation", () => {
     b.chapters[0].showTitle = true;
     expect(strFromU8(unzipSync(buildEpub(b, fonts, options).bytes)["EPUB/chapter-0001.xhtml"]))
       .toContain('<h1 id="chapter-title">Chapter One</h1>');
+  });
+  it("ignores legacy chapter section visibility but obeys ebook title and numeral choices", () => {
+    const b=fixture();
+    b.chapters[0].showTitle=false;
+    b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"roman",showChapterTitle:false};
+    let chapter=strFromU8(unzipSync(buildEpub(b,fonts,options).bytes)["EPUB/chapter-0001.xhtml"]);
+    expect(chapter).toContain('class="chapter-number number-only"');
+    expect(chapter).toContain('>I</h1>');
+    b.editions!.ebook={...getEbookEdition(b),showChapterTitle:true};
+    chapter=strFromU8(unzipSync(buildEpub(b,fonts,options).bytes)["EPUB/chapter-0001.xhtml"]);
+    expect(chapter).toContain('<h1 id="chapter-title">Chapter One</h1>');
   });
   it("preserves centered and right-aligned paragraphs through EPUB export", () => {
     const b = fixture();
