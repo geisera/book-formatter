@@ -1,5 +1,5 @@
-import { classifyImportedSection, splitImportedSection, mergeImportedSections } from "../lib/import-classify";
 "use client";
+import { classifyImportedSection, splitImportedSection, mergeImportedSections } from "../lib/import-classify";
 import { useEffect, useRef, useState } from "react";
 import {
   importedBook,
