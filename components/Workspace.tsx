@@ -14,7 +14,7 @@ import PrintPanel from "./PrintPanel";
 import StructurePanel from "./StructurePanel";
 import { changeStructure, type StructureAction } from "../lib/structure";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
-import { getPrintEdition, printPreset } from "../lib/print-profile";
+import { getPrintEdition, printPreset, type PrintTrim } from "../lib/print-profile";
 import { blankChapter, createBook, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
@@ -382,13 +382,18 @@ export default function Workspace() {
       print: { ...getPrintEdition(b), alignment },
     } });
   }
+  function changePrintTrim(trim: PrintTrim) {
+    const b=current.current;if(!b)return;
+    edit({...b,editions:{...b.editions,ebook:getEbookEdition(b),print:{...getPrintEdition(b),trim}}});
+  }
   function changeEdition(edition: EbookEdition) {
     const b = current.current;
     if (!b) return;
-    const printAlignment = getPrintEdition(b).alignment ?? "left";
+    const priorPrint = getPrintEdition(b);
+    const printAlignment = priorPrint.alignment ?? "left";
     edit({ ...b, editions: {
       ...b.editions, ebook: edition,
-      print: printPreset(edition.template.id, printAlignment),
+      print: printPreset(edition.template.id, printAlignment, priorPrint.trim),
     } });
   }
   return (
@@ -742,6 +747,7 @@ export default function Workspace() {
                   getSnapshot={exportSnapshot}
                   onPublish={() => setMode("publish")}
                   onAlignmentChange={changePrintAlignment}
+                  onTrimChange={changePrintTrim}
                 />
               ) : null}
               <EbookPreview
