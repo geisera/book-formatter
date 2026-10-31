@@ -1985,3 +1985,47 @@ aside h2 {
 .ProseMirror ::selection{background:#b5d3d2}
 .editor-meta>button{border:1px solid var(--line);padding:5px 8px;background:white;border-radius:4px;cursor:pointer}
 @media(max-width:660px){.find-panel-fields{grid-template-columns:1fr}}
+
+
+/* Paperback print settings */
+.print-panel{max-width:1160px;padding:32px 26px 64px}
+.print-settings{display:grid;grid-template-columns:minmax(0,1fr) 270px;border:1px solid #d7ded2;border-radius:12px;overflow:hidden;background:#fffefb}
+.print-settings-main{padding:30px;min-width:0}
+.print-section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}
+.print-section-kicker{display:block;font:700 10px/1.4 system-ui,sans-serif;letter-spacing:.14em;color:#71836e}
+.print-section-head h3{margin:7px 0;font:24px Georgia,serif;color:#293b2d}
+.print-section-head p,.print-format-note{font:12px/1.65 system-ui,sans-serif;color:#69766a;margin:0}
+.print-format-note{margin-top:15px}
+.print-design-pill{font:600 10px system-ui,sans-serif;border:1px solid #cfdace;border-radius:20px;padding:8px 11px;white-space:nowrap;color:#466548}
+.print-trim-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0;padding:0;border:0}
+.print-trim-card{display:flex;position:relative;align-items:flex-end;justify-content:space-between;gap:5px;padding:15px 12px;min-width:0;min-height:115px;border:1px solid #d6ded3;border-radius:8px;background:white;cursor:pointer}
+.print-trim-card.selected{border-color:#4a7046;background:#f2f8ef;box-shadow:inset 0 0 0 1px #4a7046}
+.print-trim-card:hover{border-color:#81a17c}
+.print-trim-card:focus-within{outline:2px solid #4a7046;outline-offset:2px}
+.print-trim-card input{position:absolute;right:12px;top:12px;width:16px;height:16px;margin:0;accent-color:#466c43}
+.print-trim-card-content{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}
+.print-trim-card-head{display:flex;flex-direction:column;gap:4px}
+.print-trim-card-head strong{font:22px Georgia,serif;color:#2c3c30}
+.print-trim-card-head small{font:11px system-ui,sans-serif}
+.print-trim-card-head em{font:700 9px system-ui,sans-serif;font-style:normal;background:#dcead5;color:#365735;padding:4px 6px;border-radius:3px;width:max-content}
+.print-trim-description{font:11px/1.4 system-ui,sans-serif;color:#6a786d}
+.print-trim-shape{flex:none;background:#dce6d9;border:1px solid #a6bda2;border-radius:2px}
+.print-settings-divider{border-top:1px solid #e2e7de;margin:27px 0}
+.print-option-list{border:1px solid #e0e5dc;border-radius:8px;overflow:hidden}
+.print-option-row{display:flex;gap:13px;align-items:flex-start;padding:16px;cursor:pointer;background:#fff}
+.print-option-row+.print-option-row{border-top:1px solid #e0e5dc}
+.print-option-row input{width:18px;height:18px;flex:none;margin:0;accent-color:#4a7046}
+.print-option-row>span{display:flex;flex-direction:column;gap:5px}
+.print-option-row strong{font:650 13px system-ui,sans-serif;color:#2b3d2e}
+.print-option-row small{font:11px/1.5 system-ui,sans-serif;color:#6b796c}
+.print-option-row:has(input:disabled){opacity:.6;cursor:not-allowed}
+.print-settings-aside{padding:28px 23px;background:#f4f6f0;border-left:1px solid #dce4d7}
+.print-mini-book{display:flex;width:78px;height:112px;margin:23px auto;align-items:center;justify-content:center;background:#294434;border-left:5px solid #1d3426;border-radius:2px 6px 6px 2px;box-shadow:5px 5px 0 #d4ddd0;color:#e9e9dd;font:17px Georgia,serif}
+.print-settings-aside h3{text-align:center;font:21px Georgia,serif;color:#2b3c2c;margin:0 0 8px}
+.print-aside-subtitle{text-align:center;color:#718072;font:11px/1.6 system-ui,sans-serif;margin:0 0 23px}
+.print-spec-list{margin:0;border-top:1px solid #dbe4d8}
+.print-spec-list div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #dbe4d8;padding:10px 0;font:11px system-ui,sans-serif}
+.print-spec-list dt{color:#697969}.print-spec-list dd{margin:0;text-align:right;color:#2f4933;font-weight:650}
+.print-aside-footnote{font:11px/1.7 system-ui,sans-serif;color:#718072;margin:22px 0 0}
+@media(max-width:900px){.print-settings{grid-template-columns:1fr}.print-settings-aside{border-left:0;border-top:1px solid #dce4d7}.print-mini-book{display:none}.print-settings-aside h3,.print-aside-subtitle{text-align:left}}
+@media(max-width:560px){.print-panel{padding:20px 12px}.print-settings-main{padding:20px 16px}.print-trim-options{grid-template-columns:1fr}.print-trim-card{min-height:70px}.print-trim-card-head{flex-direction:row;align-items:center}.print-section-head{flex-wrap:wrap}}
