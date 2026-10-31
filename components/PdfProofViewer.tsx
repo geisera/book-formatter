@@ -81,7 +81,9 @@ function PageCanvas({
 export default function PdfProofViewer({
   bytes,
   record,
+  selectedSectionId,
 }: {
+  selectedSectionId?: string;
   bytes: Uint8Array;
   record: PrintRecord;
 }) {
@@ -125,6 +127,11 @@ export default function PdfProofViewer({
       destroy?.();
     };
   }, [bytes]);
+  useEffect(() => {
+    if(!selectedSectionId)return;
+    const opening=record.pages.find(p=>p.chapterId===selectedSectionId&&p.kind==="chapter");
+    if(opening)setPage(opening.page);
+  },[selectedSectionId,record]);
   const {width,height}=PRINT_TRIMS[record.profile.trim] ?? PRINT_TRIMS["6x9"];
   const first = facing ? (page % 2 ? page - 1 : page) : page;
   const visible = facing ? [first, first + 1] : [first];
