@@ -25,6 +25,7 @@ export default function PrintPanel({
   const [includeFrontCover, setIncludeFrontCover] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
+    [progress, setProgress] = useState({percent:0,stage:"Preparing proof"}),
     [notice, setNotice] = useState(""),
     [result, setResult] = useState<PrintResult | null>(null),
     [history, setHistory] = useState<PrintRecord[]>([]);
@@ -90,6 +91,7 @@ export default function PrintPanel({
     stop();
     const n = token.current;
     setBusy(true);
+    setProgress({percent:0,stage:"Preparing manuscript"});
     setError("");
     setNotice("");
     try {
@@ -136,13 +138,20 @@ export default function PrintPanel({
         );
       encoder.onmessage = async (
         event: MessageEvent<{
-          ok: boolean;
+          ok?: boolean;
+          type?: "progress";
+          percent?: number;
+          stage?: string;
           error?: string;
           bytes?: Uint8Array;
           record?: PrintRecord;
         }>,
       ) => {
         if (n !== token.current) return;
+        if (event.data.type === "progress") {
+          setProgress(p=>({percent:Math.max(p.percent,Math.min(99,Math.max(0,event.data.percent??0))),stage:event.data.stage??p.stage}));
+          return;
+        }
         if (!event.data.ok || !event.data.bytes || !event.data.record) {
           fail(event.data.error ?? "The PDF could not be generated.", n);
           return;
@@ -173,6 +182,7 @@ export default function PrintPanel({
           );
         }
         setResult(built);
+        setProgress({percent:100,stage:"Proof ready"});
         setBusy(false);
       };
       encoder.postMessage({
