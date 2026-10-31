@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
-import {decodeImage,MAX_IMAGE_BYTES,type ImageAlign,type ImageWidth} from "../lib/images";
+import {createPortal} from "react-dom";
+import {MAX_IMAGE_BYTES,type ImageAlign,type ImageWidth} from "../lib/images";
 
 export type ImageProperties = {
  src:string; alt:string; caption:string; width:ImageWidth; align:ImageAlign;
@@ -19,6 +20,9 @@ export function ImagePropertiesPanel({image,onSave,onReplace,onRemove,onClose}:{
  const [error,setError]=useState("");
  const [busy,setBusy]=useState(false);
  const fileRef=useRef<HTMLInputElement>(null);
+ const [mounted,setMounted]=useState(false);
+ useEffect(()=>{setMounted(true);return()=>setMounted(false);},[]);
+ useEffect(()=>{const key=(event:KeyboardEvent)=>{if(event.key==="Escape"){event.preventDefault();onClose();}};document.addEventListener("keydown",key);return()=>document.removeEventListener("keydown",key);},[onClose]);
  useEffect(()=>{setAlt(image.alt);setCaption(image.caption);setWidth(image.width);setAlign(image.align);setError("");},[image.src,image.alt,image.caption,image.width,image.align]);
  const dirty=alt!==image.alt || caption!==image.caption || width!==image.width || align!==image.align;
  function save(){
@@ -37,7 +41,8 @@ export function ImagePropertiesPanel({image,onSave,onReplace,onRemove,onClose}:{
   }catch(e){setError(e instanceof Error?e.message:"Could not replace the image.");}
   finally{setBusy(false);if(fileRef.current)fileRef.current.value="";}
  }
- return <section className="image-properties" aria-label="Image properties">
+ if(!mounted)return null;
+ return createPortal(<section className="image-properties image-properties-popout" aria-label="Image properties" role="region">
   <div className="image-properties-heading"><h3>Image properties</h3><button type="button" onClick={onClose} aria-label="Close image properties">Close</button></div>
   <div className="image-properties-layout">
    <div className="image-properties-preview">
@@ -72,5 +77,5 @@ export function ImagePropertiesPanel({image,onSave,onReplace,onRemove,onClose}:{
    <button type="button" className="image-properties-remove" disabled={busy} onClick={onRemove}>Remove image</button>
   </div>
   <p className="image-properties-hint">Replacing an image keeps its position, alignment, size, alternative text, and caption. Image files remain local.</p>
- </section>;
+ </section>,document.body);
 }
