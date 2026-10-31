@@ -716,6 +716,11 @@ export default function Workspace() {
                   <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
                 </p>
               </section>
+              {mode === "manuscript" ? <aside className="workspace-live-preview" aria-label="Live book preview">
+                <div className="workspace-live-preview-head"><strong>Live preview</strong><button type="button" onClick={()=>setMode("design")}>Customize</button></div>
+                <EbookPreview hidden={false} book={book} chapter={chapter} chapterId={chapterId}
+                  edition={getEbookEdition(book)} onNavigate={setChapterId} updating={false}/>
+              </aside> : null}
               {mode === "structure" ? (
                 <StructurePanel
                   book={book}
