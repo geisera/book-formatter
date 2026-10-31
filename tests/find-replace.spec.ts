@@ -18,7 +18,7 @@ test("finds, replaces and undoes matching text across book chapters",async({page
  await panel.getByRole("button",{name:"Replace all"}).click();
  await expect(panel.getByRole("status")).toContainText("0 matches");
  await page.getByRole("button",{name:"← Bookshelf"}).click();
- await page.getByRole("button",{name:/Search manuscript/}).click();
+ await page.locator(".book-card").filter({hasText:/Search manuscript/}).click();
  await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("Beacon in the first chapter.");
  await page.getByRole("button",{name:"Find and replace manuscript"}).click();
  await panel.getByLabel("Search scope").selectOption("chapter");
