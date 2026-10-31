@@ -53,6 +53,7 @@ export function validLanguage(language: string): boolean {
  * actually renders a heading before treating an empty body as publishable. */
 export function hasVisibleSectionHeading(book: Book, chapter: Book["chapters"][number], format: "ebook" | "print"): boolean {
   if (!chapter.title.trim()) return false;
+  if (chapter.sectionType === "title") return !!book.title.trim();
   if (!showSectionTitle(chapter)) return false;
   if ((chapter.sectionType ?? "chapter") !== "chapter") return true;
   const settings = format === "print" ? getPrintEdition(book) : getEbookEdition(book);
@@ -323,7 +324,8 @@ export function buildEpub(
       `<section epub:type="cover" class="cover-page"><img src="${coverPath}" alt="${xml(book.cover.alt)}"/></section>`));
   }
   add("EPUB/style.css", editionCss(edition));
-  add(
+  const explicitTitle=book.chapters.some(c=>c.sectionType==="title");
+  if (!explicitTitle) add(
     "EPUB/title.xhtml",
     xhtml(
       book.title,
@@ -365,7 +367,7 @@ export function buildEpub(
     xhtml(
       "Contents",
       language,
-      `<nav epub:type="toc" id="toc" role="doc-toc"><h1>Contents</h1><ol>${coverNavigation}<li><a href="title.xhtml">Title page</a></li>${book.chapters.map((c, i) => `<li><a href="${paths[i]}">${xml(c.title)}</a></li>`).join("")}</ol></nav>`,
+      `<nav epub:type="toc" id="toc" role="doc-toc"><h1>Contents</h1><ol>${coverNavigation}${explicitTitle ? "" : '<li><a href="title.xhtml">Title page</a></li>'}${book.chapters.map((c, i) => `<li><a href="${paths[i]}">${xml(c.title)}</a></li>`).join("")}</ol></nav>`,
     ),
   );
   const fontManifest =
@@ -391,7 +393,7 @@ export function buildEpub(
   ].join("");
   add(
     "EPUB/package.opf",
-    `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang="${xml(language)}"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pub-id">urn:book-formatter:${xml(encodeURIComponent(book.id))}</dc:identifier><dc:title>${xml(book.title)}</dc:title><dc:creator>${xml(book.author)}</dc:creator><dc:language>${xml(language)}</dc:language><meta property="dcterms:modified">${modified}</meta><meta name="generator" content="Book Formatter ${EPUB_RENDERER}"/>${additionalMetadata}</metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/><item id="style" href="style.css" media-type="text/css"/>${paths.map((p, i) => `<item id="chapter-${i + 1}" href="${p}" media-type="application/xhtml+xml"/>`).join("")}${fontManifest}${imageManifest.join("")}${coverManifest}</manifest><spine>${coverSpine}<itemref idref="title"/><itemref idref="nav"/>${paths.map((_, i) => `<itemref idref="chapter-${i + 1}"/>`).join("")}</spine></package>`,
+    `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang="${xml(language)}"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pub-id">urn:book-formatter:${xml(encodeURIComponent(book.id))}</dc:identifier><dc:title>${xml(book.title)}</dc:title><dc:creator>${xml(book.author)}</dc:creator><dc:language>${xml(language)}</dc:language><meta property="dcterms:modified">${modified}</meta><meta name="generator" content="Book Formatter ${EPUB_RENDERER}"/>${additionalMetadata}</metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${explicitTitle ? "" : '<item id="title" href="title.xhtml" media-type="application/xhtml+xml"/>'}<item id="style" href="style.css" media-type="text/css"/>${paths.map((p, i) => `<item id="chapter-${i + 1}" href="${p}" media-type="application/xhtml+xml"/>`).join("")}${fontManifest}${imageManifest.join("")}${coverManifest}</manifest><spine>${coverSpine}${explicitTitle ? "" : '<itemref idref="title"/>'}<itemref idref="nav"/>${paths.map((_, i) => `<itemref idref="chapter-${i + 1}"/>`).join("")}</spine></package>`,
   );
   add(
     "META-INF/book-formatter-build.json",
