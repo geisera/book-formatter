@@ -12,6 +12,7 @@ export type EbookEdition = {
   sceneOrnament: "asterisks" | "diamonds" | "rule";
   chapterSpacing: number;
   chapterNumberStyle?: ChapterNumberStyle;
+  showChapterTitle?: boolean;
   frontMatterTitleScale?: number;
 };
 export const CLASSIC_EDITION: EbookEdition = Object.freeze({
@@ -27,6 +28,7 @@ export const CLASSIC_EDITION: EbookEdition = Object.freeze({
   sceneOrnament: "asterisks",
   chapterSpacing: 3,
   chapterNumberStyle: "none",
+  showChapterTitle: true,
   frontMatterTitleScale: 1,
 });
 export const BODY_FONTS = {
@@ -48,6 +50,8 @@ export function validateEdition(value: unknown): EbookEdition {
     !["asterisks", "diamonds", "rule"].includes(e.sceneOrnament)
   )
     throw Error("Unsupported ebook design or template version.");
+  if (e.showChapterTitle !== undefined && typeof e.showChapterTitle !== "boolean")
+    throw Error("Invalid ebook chapter title visibility.");
   if (e.chapterNumberStyle !== undefined && !["none","arabic","roman"].includes(e.chapterNumberStyle))
     throw Error("Invalid ebook chapter numbering style.");
   if (e.frontMatterTitleScale !== undefined && (!Number.isFinite(e.frontMatterTitleScale) || e.frontMatterTitleScale < 0.75 || e.frontMatterTitleScale > 1.5))
