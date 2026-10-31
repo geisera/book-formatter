@@ -70,6 +70,24 @@ export default function Workspace() {
         .register("/sw.js")
         .then(async () => {
           await navigator.serviceWorker.ready;
+          // An active worker is not necessarily controlling this first tab yet.
+          // Offline mode is only safe after the controlling worker is attached.
+          if (!navigator.serviceWorker.controller) {
+            await new Promise<void>((resolve, reject) => {
+              const timeout = window.setTimeout(() => {
+                navigator.serviceWorker.removeEventListener("controllerchange", changed);
+                reject(Error("Offline worker did not take control."));
+              }, 15000);
+              function changed() {
+                if (!navigator.serviceWorker.controller) return;
+                window.clearTimeout(timeout);
+                navigator.serviceWorker.removeEventListener("controllerchange", changed);
+                resolve();
+              }
+              navigator.serviceWorker.addEventListener("controllerchange", changed);
+              changed();
+            });
+          }
           setInstalled(true);
         })
         .catch(() =>
