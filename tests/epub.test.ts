@@ -209,6 +209,7 @@ describe("local EPUB generation", () => {
   });
   it("blocks empty content and missing metadata, and rejects missing fonts or invalid XML characters", () => {
     const empty = createBook("Book", "");
+    empty.editions!.ebook={...getEbookEdition(empty),showChapterTitle:false,chapterNumberStyle:"none"};
     expect(preflight(empty).filter((i) => i.severity === "error")).toHaveLength(
       2,
     );
