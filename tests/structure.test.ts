@@ -149,3 +149,32 @@ describe("section page layout settings", () => {
     expect(() => validateBook({...b,chapters:[{...b.chapters[0],pageLayout:{spaceAfter:121}}]})).toThrow("Invalid section page layout");
   });
 });
+
+describe("matter-safe organization and layout defaults", () => {
+  it("inserts new front and back matter into the correct group", () => {
+    let book=createBook("Book","Author");
+    book=changeStructure(book,{kind:"add",title:"About",sectionType:"about-author"}).book;
+    book=changeStructure(book,{kind:"add",title:"Dedication",sectionType:"dedication"}).book;
+    expect(book.chapters.map(c=>c.title)).toEqual(["Dedication","Chapter One","About"]);
+    const bodyId=book.chapters[1].id;
+    book=changeStructure(book,{kind:"add",title:"Two",sectionType:"chapter",after:bodyId}).book;
+    expect(book.chapters.map(c=>c.title)).toEqual(["Dedication","Chapter One","Two","About"]);
+  });
+  it("rejects a merge across different matter groups without modifying the original", () => {
+    let book=createBook("Book","Author");
+    book=changeStructure(book,{kind:"add",title:"Back",sectionType:"about-author"}).book;
+    const id=book.chapters[0].id;
+    expect(()=>changeStructure(book,{kind:"merge",id})).toThrow("Cannot merge");
+    expect(book.chapters).toHaveLength(2);
+  });
+  it("restores default section layout without changing text or title", () => {
+    let book=createBook("Book","Author");
+    const id=book.chapters[0].id;
+    book=changeStructure(book,{kind:"layout",id,changes:{start:"verso",spaceBefore:22}}).book;
+    const before=structuredClone(book.chapters[0].content);
+    book=changeStructure(book,{kind:"reset-layout",id}).book;
+    expect(getSectionLayout(book.chapters[0]).start).toBe("recto");
+    expect(getSectionLayout(book.chapters[0]).spaceBefore).toBe(0);
+    expect(book.chapters[0].content).toEqual(before);
+  });
+});
