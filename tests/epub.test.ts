@@ -153,6 +153,29 @@ describe("local EPUB generation", () => {
     const invalid={...b,chapters:b.chapters.map(c=>({...c,content:{type:"doc",content:[{type:"image",attrs:{src:"https://bad.example/test.png",alt:"Unsafe",width:50,align:"center"}}]}}))};
     expect(()=>validateBook(invalid)).toThrow("Only embedded PNG");
   });
+  it("embeds a separate official cover and includes it in EPUB navigation and reading order", () => {
+    const b=fixture();
+    const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
+    b.cover={src,alt:"Cover: a tower above the city"};
+    expect(validateBook(b)).toBe(b);
+    const files=unzipSync(buildEpub(b,fonts,options).bytes);
+    const packageXml=strFromU8(files["EPUB/package.opf"]);
+    const cover=strFromU8(files["EPUB/cover.xhtml"]);
+    expect(packageXml).toContain('id="cover-image" href="images/cover.png" media-type="image/png" properties="cover-image"');
+    expect(packageXml).toContain('id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"');
+    expect(packageXml).toContain('<spine><itemref idref="cover-page"/><itemref idref="title"/>');
+    expect(cover).toContain('epub:type="cover"');
+    expect(cover).toContain('src="images/cover.png"');
+    expect(cover).toContain('alt="Cover: a tower above the city"');
+    expect(strFromU8(files["EPUB/nav.xhtml"])).toContain('href="cover.xhtml"');
+    expect(files["EPUB/images/cover.png"].length).toBeGreaterThan(30);
+    expect(preflight(b).some(i=>i.message.includes("No cover image"))).toBe(false);
+    const without=fixture();
+    const plain=unzipSync(buildEpub(without,fonts,options).bytes);
+    expect(plain["EPUB/cover.xhtml"]).toBeUndefined();
+    expect(preflight(without).some(i=>i.message.includes("No cover image"))).toBe(true);
+    expect(()=>validateBook({...b,cover:{src:"https://example.invalid/img.png",alt:"Unsafe"}})).toThrow("Only embedded PNG");
+  });
   it("supports system fonts without bundling unlicensed system binaries", () => {
     const b = fixture();
     b.editions = {
