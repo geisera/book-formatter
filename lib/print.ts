@@ -1,5 +1,6 @@
 import { decodeImage, embeddedImages } from "./images";
 import {hyphenationPoints} from "./hyphenation";
+import {shouldBalanceParagraphTail} from "./facing-balance";
 import { normalizedIsbn } from "./publication-metadata";
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage, type PDFImage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
@@ -602,6 +603,28 @@ export async function buildPrintPdf(
       const blockAlignment = node.attrs.align as TextAlignment | null;
       const indent = blockAlignment ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
       const lines = wrap(units(node), indent);
+      // In Balanced mode, consider the last few *whole paragraphs* as a
+      // group. Move them onto the following recto only when that page was
+      // already necessary, the tail fits on it, and the estimated facing
+      // page bottom disparity improves. No added leaves or moved headings.
+      if (profile.layoutPriority === "balanced" && proof.kind === "body" &&
+          proof.page % 2 === 0 && index < doc.childCount - 1 &&
+          doc.childCount - index <= 4) {
+        const tail:ManuscriptNode[] = [];
+        for(let i=index;i<doc.childCount;i++)tail.push(doc.child(i));
+        if(tail.every(p=>p.type.name==="paragraph"&&p.textContent.trim())) {
+          const spacingSlots=Math.ceil((profile.paragraphSpacing??0)/leading);
+          const tailLines=tail.reduce((total,p,i)=>
+            total+(i===0?lines.length:wrap(units(p),p.attrs.align?0:(profile.firstLineIndent??14)).length)+spacingSlots,0);
+          const nextSlots=Math.max(0,Math.floor(
+            (HEIGHT-profile.top-size-bottom-activeLayout.spaceAfter)/leading)+1);
+          if(shouldBalanceParagraphTail({
+            page:proof.page,kind:proof.kind,writtenLines:proof.lineCount,
+            remainingSlots:slots(),nextPageSlots:nextSlots,
+            tailLines,tailParagraphs:tail.length,firstParagraphLines:lines.length
+          }))bodyPage();
+        }
+      }
       // Keep a short chapter ending together when it would otherwise leave a
       // stranded final paragraph on a nearly full page. Limit the reservation
       // so longer endings do not cause excessive blank space.
