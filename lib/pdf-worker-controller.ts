@@ -7,9 +7,9 @@ export type PdfProgress={percent:number;stage:string};
 type WorkerMessage={type?:"progress";ok?:boolean;percent?:number;stage?:string;error?:string;bytes?:Uint8Array;record?:PrintRecord};
 const files=["regular","italic","bold","bold-italic"] as const;
 let cachedFonts:Promise<PrintFonts>|null=null;
-async function loadFonts(signal:AbortSignal):Promise<PrintFonts>{
+async function loadFonts():Promise<PrintFonts>{
  if(!cachedFonts)cachedFonts=Promise.all(files.map(async name=>{
-  const response=await localAsset("/epub-fonts/"+name+".woff",signal);
+  const response=await localAsset("/epub-fonts/"+name+".woff");
   if(!response.ok)throw Error("Print fonts are unavailable offline. Open the app online once and retry.");
   return new Uint8Array(await response.arrayBuffer());
  })).then(([regular,italic,bold,boldItalic])=>({regular,italic,bold,boldItalic})).catch(e=>{cachedFonts=null;throw e;});
@@ -41,7 +41,7 @@ export function startPdfBuild(request:PdfBuildRequest):{promise:Promise<PrintRes
    try{
     timer=setTimeout(()=>fail(new Error("The PDF build timed out. Retry the proof.")),request.timeoutMs??120000);
     progress(0,"Loading print assets");
-    const fonts=await loadFonts(controller.signal);
+    const fonts=await loadFonts();
     if(settled)return;
     progress(3,"Starting PDF worker");
     const startAttempt=async():Promise<void>=>{
@@ -51,7 +51,9 @@ export function startPdfBuild(request:PdfBuildRequest):{promise:Promise<PrintRes
     catch(error){if(attempts<2&&!settled){progress(highestProgress,"Retrying PDF worker startup");void startAttempt();}else fail(error);return;}
     if(settled){prepared.worker.terminate();prepared.release();return;}
     worker=prepared.worker;release=prepared.release;
+    const activeWorker=prepared.worker;
     const failedWorker=()=>{
+      if(worker!==activeWorker)return;
       if(settled)return;
       worker?.terminate();worker=null;release?.();release=null;
       if(attempts<2){progress(highestProgress,"Restarting PDF worker after a crash");void startAttempt();}
@@ -60,7 +62,7 @@ export function startPdfBuild(request:PdfBuildRequest):{promise:Promise<PrintRes
     worker.onerror=failedWorker;
     worker.onmessageerror=failedWorker;
     worker.onmessage=(event:MessageEvent<WorkerMessage>)=>{
-     if(settled)return;
+     if(settled||worker!==activeWorker)return;
      const data=event.data;
      if(data.type==="progress"){progress(data.percent??0,data.stage??"Building PDF");return;}
      if(!data.ok||!data.bytes||!data.record){fail(new Error(data.error??"The PDF could not be generated."));return;}
