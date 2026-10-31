@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useDeferredValue } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
+import {sectionIsEmpty,sectionTemplateContent} from "../lib/section-samples";
 import { sectionIsEmpty, sampleForSection } from "../lib/section-samples";
 import FindReplacePanel,{type SearchConfig} from "./FindReplacePanel";
 import {findInBook,replaceAcrossBook,type TextMatch} from "../lib/find-replace";
@@ -765,6 +766,26 @@ export default function Workspace() {
                     onSectionAction={updateStructure}
                   onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}
                   />
+                  {chapter ? <div className="design-section-editor" style={{padding:"1rem",marginTop:"1rem",borderTop:"1px solid var(--border, #ddd)"}}>
+                    <h3>Edit section text</h3>
+                    <p className="control-note">Edit this section directly. Changes save locally and update previews.</p>
+                    <button type="button" disabled={!sectionIsEmpty(chapter)}
+                      onClick={()=>{
+                        const b=current.current;
+                        if(!b)return;
+                        const target=b.chapters.find(c=>c.id===chapter.id);
+                        if(!target || !sectionIsEmpty(target))return;
+                        edit({...b,chapters:b.chapters.map(c=>c.id===target.id?{...c,content:sectionTemplateContent(target)}:c)});
+                        setEditorVersion(v=>v+1);
+                      }}>Insert {chapter.sectionType??"chapter"} template</button>
+                    {!sectionIsEmpty(chapter)?<p className="control-note">The template can only be inserted when the section is empty.</p>:null}
+                    <Editor key={`design-${book.id}-${chapter.id}-${editorVersion}`} content={chapter.content}
+                      onChange={content=>{
+                        const b=current.current;
+                        if(!b)return;
+                        edit({...b,chapters:b.chapters.map(c=>c.id===chapter.id?{...c,content}:c)});
+                      }}/>
+                  </div>:null}
                 </aside>
                 <section className="design-studio-preview" aria-label="Book design preview">
                   <div className="design-studio-preview-head">
