@@ -190,3 +190,27 @@ test("Design Paperback renders the same local PDF proof with offline assets",asy
  await expect(preview.getByText("Proof is up to date")).toBeVisible({timeout:45000});
  await expect(preview.locator('canvas[data-rendered="true"]').first()).toBeVisible({timeout:30000});
 });
+
+test("Design and Print use matching pagination for the same offline manuscript",async({page,context})=>{
+ test.setTimeout(90000);
+ await page.goto("/");
+ await expect(page.getByText("Offline app ready")).toBeVisible();
+ await page.getByLabel("Book title",{exact:true}).fill("Pagination parity");
+ await page.getByLabel("Author name",{exact:true}).fill("Test Author");
+ await page.getByRole("button",{name:"Create local book"}).click();
+ await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("The printing press stood at the edge of the square. ".repeat(240));
+ await expect(page.getByText("Saved locally",{exact:true})).toBeVisible();
+ await context.setOffline(true);
+ await page.getByRole("button",{name:"Design",exact:true}).click();
+ await page.getByRole("button",{name:"Paperback",exact:true}).click();
+ const preview=page.getByRole("region",{name:"Paperback design preview"});
+ await expect(preview.getByText("Proof is up to date")).toBeVisible({timeout:45000});
+ const designPages=Number((await preview.locator(".pdf-toolbar span").first().textContent())?.replace(/[^0-9]/g,""));
+ expect(designPages).toBeGreaterThan(0);
+ await page.getByRole("button",{name:"Print",exact:true}).click();
+ await page.getByRole("button",{name:/Build .* PDF proof/}).click();
+ await expect(page.getByRole("button",{name:"Download PDF proof"})).toBeVisible({timeout:45000});
+ const printPages=Number((await page.locator(".pdf-proof-viewer .pdf-toolbar span").first().textContent())?.replace(/[^0-9]/g,""));
+ expect(printPages).toBe(designPages);
+ await expect(page.locator('.pdf-proof-viewer canvas[data-rendered="true"]').first()).toBeVisible({timeout:30000});
+});
