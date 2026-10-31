@@ -331,11 +331,11 @@ export default function Workspace() {
     folderHandle.current=null;folderLastRevision.current.clear();setFolderBackup("off");
     setFolderMessage("Automatic folder backups disabled. Existing backup files were not deleted.");
   }
-  async function folderBackupNow(){
+  async function folderBackupNow(force=false){
     const folder=folderHandle.current;
     if(!folder||folderWriting.current||pending.current||failed.current)return;
     const snapshot=current.current;
-    if(!snapshot||folderLastRevision.current.get(snapshot.id)===snapshot.revision)return;
+    if(!snapshot||(!force&&folderLastRevision.current.get(snapshot.id)===snapshot.revision))return;
     if(await folderPermission(folder)!=="granted"){setFolderBackup("permission");setFolderMessage("Folder permission needs renewal. Select Reconnect folder.");return;}
     folderWriting.current=true;
     try{
@@ -788,7 +788,7 @@ export default function Workspace() {
                 {folderBackup==="unsupported"?<small>Not supported in this browser. Manual backup remains available.</small>:folderBackup==="off"?<button type="button" onClick={()=>void enableFolderBackups()}>Choose backup folder</button>:<>
                   <small>{folderBackup==="ready"?"Folder connected":"Folder permission required"}</small>
                   <button type="button" onClick={()=>void enableFolderBackups()}>{folderBackup==="ready"?"Change folder":"Reconnect folder"}</button>
-                  {folderBackup==="ready"?<button type="button" onClick={()=>void folderBackupNow()}>Back up now</button>:null}
+                  {folderBackup==="ready"?<button type="button" onClick={()=>void folderBackupNow(true)}>Back up now</button>:null}
                   <button type="button" onClick={()=>void disableFolderBackups()}>Turn off</button>
                 </>}
                 {folderMessage?<small role="status">{folderMessage}</small>:null}
