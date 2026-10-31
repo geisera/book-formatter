@@ -10,7 +10,7 @@ test("Design selects a section and saves its contextual formatting",async({page}
   await page.getByLabel("Section title").fill("Second Chapter");
   await page.getByRole("button",{name:"+ Add section"}).click();
   await page.getByRole("button",{name:"Design",exact:true}).click();
-  await page.getByLabel("Design section").selectOption({label:/Second Chapter/});
+  await page.getByLabel("Design section").selectOption({index:1});
   await expect(page.getByRole("heading",{name:"Second Chapter",exact:true})).toBeVisible();
   await page.getByRole("button",{name:"Paperback",exact:true}).click();
   await page.getByLabel("Design section start").selectOption("verso");
