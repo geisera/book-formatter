@@ -1,3 +1,4 @@
+import { openingDesign } from "./front-matter";
 import { chapterNumberLabel } from "./chapter-numbering";
 import { decodeImage, embeddedImages } from "./images";
 import {hyphenationPoints} from "./hyphenation";
@@ -438,16 +439,18 @@ export async function buildPrintPdf(
       y -= step;
     }
   }
-  // Front title leaf and all chapter openings use physical right-hand pages.
-  newPage("title");
-  y = HEIGHT - 160;
-  const title = textLines(book.title, 23, "regular"),
-    author = textLines(book.author, 12, "regular");
-  if (title.length > 8 || author.length > 5)
-    throw Error("The title or author is too long for this proof's title page.");
-  centered(title, 23, 31);
-  y -= 35;
-  centered(author, 12, 19);
+  // Avoid generating a duplicate title leaf when Structure contains a title page.
+  if (!book.chapters.some(c=>c.sectionType==="title")) {
+    newPage("title");
+    y=HEIGHT-160;
+    const title=textLines(book.title,profile.template.id==="gothic"?25:23,"regular");
+    const author=textLines(book.author,12,"regular");
+    if(title.length>8||author.length>5) throw Error("The book title or author is too long for the title page.");
+    centered(title,profile.template.id==="gothic"?25:23,31);
+    if(book.metadata?.subtitle){y-=17;centered(textLines(book.metadata.subtitle,14,"italic"),14,21);}
+    y-=35;centered(author,12,19);
+    if(book.metadata?.publisher){y-=55;centered(textLines(book.metadata.publisher,10,"regular"),10,16);}
+  }
   let numberedChapters=0;
   for (const [chapterIndex,chapter] of book.chapters.entries()) {
     options.onProgress?.(Math.round(15+65*chapterIndex/book.chapters.length),`Laying out section ${chapterIndex+1} of ${book.chapters.length}`);
@@ -468,14 +471,15 @@ export async function buildPrintPdf(
     }
     newPage("chapter");
     const template = profile.template.id;
+    const design=openingDesign(chapter.sectionType??"chapter",template);
     const frontHeading=sectionMatter(chapter.sectionType??"chapter")==="front";
-    const headingSize = (template === "gothic" ? 19 : template === "modern" ? 17 : 18) * (frontHeading?(profile.frontMatterTitleScale??1):1);
+    const headingSize = (template === "gothic" ? 19 : template === "modern" ? 17 : 18) * design.headingFactor * (frontHeading?(profile.frontMatterTitleScale??1):1);
     const topBaseline = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
     // Estimate short-section height before drawing; on multi-page sections top alignment is safer.
     // Use conservative line counts and reserve some headroom to avoid orphaned layout.
     const doc = schema.nodeFromJSON(chapter.content);
     const numberedOpening=(chapter.sectionType??"chapter")==="chapter" && (profile.chapterNumberStyle??"none")!=="none";
-    const visibleOpeningTitle=(chapter.sectionType??"chapter")!=="chapter" || (profile.showChapterTitle??true);
+    const visibleOpeningTitle=!design.suppressHeading && ((chapter.sectionType??"chapter")!=="chapter" || (profile.showChapterTitle??true));
     let estimated = showSectionTitle(chapter) ? (visibleOpeningTitle?110:55) : 0;
     doc.forEach(node => {
       if (node.type.name === "image") {
@@ -490,14 +494,16 @@ export async function buildPrintPdf(
       ? activeLayout.vertical === "center" ? room / 2 : activeLayout.vertical === "bottom" ? room : 0
       : 0;
     y = topBaseline - activeLayout.spaceBefore - offset - (profile.chapterOpeningSpace ?? 0);
-    if (showSectionTitle(chapter)) {
+    if (design.style==="half-title" || design.style==="title" || design.style==="part") y-=Math.min(65,HEIGHT*0.09);
+    if (showSectionTitle(chapter) || design.style==="title") {
       if ((chapter.sectionType??"chapter")==="chapter" && profile.chapterNumberStyle && profile.chapterNumberStyle!=="none") {
         const label=chapterNumberLabel(profile.chapterNumberStyle,numberedChapters)!;
         centered(textLines(label,Math.max(10,headingSize*0.75),"bold"),Math.max(10,headingSize*0.75),24);
         y-=10;
       }
       if (visibleOpeningTitle) {
-      const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
+      const openingText=design.style==="title" ? book.title : chapter.title;
+      const headingText = template === "gothic" ? openingText.toLocaleUpperCase(book.language ?? "en") : openingText;
       const heading = textLines(headingText, headingSize, "bold");
       if (heading.length > 8)
         throw Error(
@@ -613,9 +619,10 @@ export async function buildPrintPdf(
         return;
       }
       if (!node.textContent.trim()) return;
-      const blockAlignment = node.attrs.align as TextAlignment | null;
+      const blockAlignment = (node.attrs.align as TextAlignment | null) ?? (design.centered ? "center" : null);
       const indent = blockAlignment ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
-      const lines = wrap(units(node), indent);
+      const mainUnits=design.italicBody ? units(node).map(w=>({...w,runs:w.runs.map(r=>({...r,face:r.face==="regular"?"italic" as const:r.face}))})) : units(node);
+      const lines = wrap(mainUnits, indent);
       // In Balanced mode, consider the last few *whole paragraphs* as a
       // group. Move them onto the following recto only when that page was
       // already necessary, the tail fits on it, and the estimated facing
