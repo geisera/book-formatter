@@ -12,6 +12,7 @@ import {
 } from "../lib/epub";
 import { getEbookEdition } from "../lib/edition";
 import { db } from "../lib/storage";
+import {localAsset,localWorker} from "../lib/offline-assets";
 
 export default function PublishPanel({
   book,
@@ -35,6 +36,7 @@ export default function PublishPanel({
     [notice, setNotice] = useState(""),
     [result, setResult] = useState<ExportRecord | null>(null),
     [metadataBusy, setMetadataBusy] = useState(false);
+  const releaseWorker=useRef<(()=>void)|null>(null);
   const worker = useRef<Worker | null>(null),
     abort = useRef<AbortController | null>(null),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
@@ -43,6 +45,7 @@ export default function PublishPanel({
     generation.current++;
     worker.current?.terminate();
     worker.current = null;
+    releaseWorker.current?.();releaseWorker.current=null;
     abort.current?.abort();
     abort.current = null;
     if (timer.current) clearTimeout(timer.current);
@@ -138,7 +141,7 @@ export default function PublishPanel({
         ];
         const [regular, italic, bold, license] = await Promise.all(
           paths.map(async (path) => {
-            const response = await fetch(path, { signal: controller.signal });
+            const response = await localAsset(path,controller.signal);
             if (!response.ok)
               throw Error(
                 "The included fonts are not cached. Open the app online once and retry.",
@@ -150,8 +153,11 @@ export default function PublishPanel({
       }
       if (token !== generation.current) return;
       setPhase("Building your EPUB locally…");
-      const encoder = new Worker(`/epub-worker.js?renderer=${EPUB_RENDERER}`);
-      worker.current = encoder;
+      const prepared=await localWorker(`/epub-worker.js?renderer=${EPUB_RENDERER}`);
+      if(token!==generation.current){prepared.worker.terminate();prepared.release();return;}
+      const encoder=prepared.worker;
+      releaseWorker.current=prepared.release;
+      worker.current=encoder;
       encoder.onerror = () =>
         fail(
           "The EPUB worker could not start. Reopen the app online once to update its offline files.",
@@ -177,6 +183,7 @@ export default function PublishPanel({
         const { bytes, record } = event.data;
         worker.current?.terminate();
         worker.current = null;
+        releaseWorker.current?.();releaseWorker.current=null;
         if (timer.current) clearTimeout(timer.current);
         timer.current = null;
         try {
