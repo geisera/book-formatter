@@ -1,6 +1,6 @@
 import { unzipSync, strFromU8 } from "fflate";
 import { decodeImage, MAX_PROJECT_IMAGES_BYTES } from "./images";
-import type { Diagnostic, ImportDraft, ImportBlock } from "./import-model";
+import type { ImportDraft, ImportBlock } from "./import-model";
 
 /** Recover supported raster images directly from DOCX drawing references.
  * This does not permit linked, remote, or macro-embedded resources. */
@@ -50,7 +50,7 @@ export function recoverDocxImages(bytes: Uint8Array, draft: ImportDraft): Import
   let nextImage = existing;
   let recovered = 0;
   const blocks: ImportBlock[] = [];
-  const marker = /\\[Image: [^\\]]*\\]/g;
+  const marker = /\[Image: [^\]]*\]/g;
   for (const block of draft.blocks) {
     if (block.type !== "paragraph" && block.type !== "heading") {blocks.push(block);continue;}
     let pending: typeof block.content = [];
