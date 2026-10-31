@@ -1,0 +1,28 @@
+import {test,expect} from "@playwright/test";
+test("edits publishing metadata without changing the manuscript",async({page})=>{
+ await page.goto("/");
+ await page.getByLabel("Book title",{exact:true}).fill("Publishing test");
+ await page.getByLabel("Author name",{exact:true}).fill("Initial Author");
+ await page.getByRole("button",{name:"Create local book"}).click();
+ await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("Original manuscript prose.");
+ await expect(page.getByRole("status").filter({hasText:"Saved locally"})).toBeVisible();
+ await page.getByRole("button",{name:"Details",exact:true}).click();
+ const details=page.getByRole("region",{name:"Book details editor"});
+ await details.getByLabel("Subtitle").fill("Beyond the Horizon");
+ await details.getByLabel("Series name").fill("The Expedition");
+ await details.getByLabel("Series number").fill("2");
+ await details.getByLabel("Publisher / imprint").fill("North Press");
+ await details.getByLabel("ISBN-13").fill("978-0-306-40615-7");
+ await details.getByLabel("Publication date").fill("2026-10-31");
+ await details.getByLabel("Description").fill("An adventurous novel.");
+ await details.getByRole("button",{name:"Save book details"}).click();
+ await expect(details.getByText("Book details saved locally.")).toBeVisible();
+ await page.getByRole("button",{name:"Manuscript",exact:true}).click();
+ await expect(page.getByRole("textbox",{name:"Chapter manuscript"})).toContainText("Original manuscript prose.");
+ await page.getByRole("button",{name:"← Bookshelf"}).click();
+ await page.getByRole("button",{name:/Publishing test/}).click();
+ await page.getByRole("button",{name:"Details",exact:true}).click();
+ await expect(details.getByLabel("Subtitle")).toHaveValue("Beyond the Horizon");
+ await expect(details.getByLabel("Series name")).toHaveValue("The Expedition");
+ await expect(details.getByLabel("ISBN-13")).toHaveValue("978-0-306-40615-7");
+});
