@@ -142,7 +142,9 @@ describe("offline print proof", () => {
     expect(firstPages.every(p=>p.header===undefined && p.footer===undefined)).toBe(true);
     expect(secondPages[0].page % 2).toBe(1);
     expect(secondPages[0].header).toBeDefined();
-    expect(secondPages[0].footer).toBe(String(secondPages[0].page));
+    // Main-matter folios restart at 1 and exclude the front matter and blanks.
+    const firstMainPage=result.record.pages.find(p=>p.chapterId===second.id || p.chapterId===b.chapters[2].id)!;
+    expect(secondPages[0].footer).toBe(String(secondPages[0].page-firstMainPage.page+1));
     expect(result.record.checks.overflow).toBe(0);
   },20000);
   it("vertically offsets short dedication without losing body text", async () => {
