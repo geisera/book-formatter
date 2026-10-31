@@ -107,14 +107,16 @@ describe("per-section title visibility", () => {
     let book = createBook("Book", "Author");
     book.chapters[0].content = {type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Original text"}]}]};
     const id = book.chapters[0].id;
-    book = changeStructure(book,{kind:"visibility",id,showTitle:false}).book;
-    expect(showSectionTitle(book.chapters[0])).toBe(false);
+    expect(() => changeStructure(book,{kind:"visibility",id,showTitle:false})).toThrow("Design settings");
+    book.chapters[0].showTitle = false; // legacy backup: ignored for chapters
+    expect(showSectionTitle(book.chapters[0])).toBe(true);
     book = changeStructure(book,{kind:"add",title:"Dedication",sectionType:"dedication"}).book;
     const firstId = book.chapters[0].id;
     book = changeStructure(book,{kind:"visibility",id:firstId,showTitle:true}).book;
-    expect(book.chapters.map(showSectionTitle)).toEqual([true,false]);
+    expect(book.chapters.map(showSectionTitle)).toEqual([true,true]);
     const restored = restoreBook(backupBook(book));
-    expect(restored.chapters.map(showSectionTitle)).toEqual([true,false]);
+    expect(restored.chapters.map(showSectionTitle)).toEqual([true,true]);
+    expect(restored.chapters[1].showTitle).toBe(false);
     expect(restored.chapters[1].content).toEqual(book.chapters[1].content);
     expect(() => validateBook({...book,chapters:[{...book.chapters[0],showTitle:"maybe"}]})).toThrow("Invalid chapter structure");
   });
