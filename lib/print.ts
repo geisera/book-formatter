@@ -474,7 +474,9 @@ export async function buildPrintPdf(
     // Estimate short-section height before drawing; on multi-page sections top alignment is safer.
     // Use conservative line counts and reserve some headroom to avoid orphaned layout.
     const doc = schema.nodeFromJSON(chapter.content);
-    let estimated = showSectionTitle(chapter) ? 110 : 0;
+    const numberedOpening=(chapter.sectionType??"chapter")==="chapter" && (profile.chapterNumberStyle??"none")!=="none";
+    const visibleOpeningTitle=(chapter.sectionType??"chapter")!=="chapter" || (profile.showChapterTitle??true);
+    let estimated = showSectionTitle(chapter) ? (visibleOpeningTitle?110:55) : 0;
     doc.forEach(node => {
       if (node.type.name === "image") {
         const asset = embedded.get(node.attrs.src)!;
@@ -494,6 +496,7 @@ export async function buildPrintPdf(
         centered(textLines(label,Math.max(10,headingSize*0.75),"bold"),Math.max(10,headingSize*0.75),24);
         y-=10;
       }
+      if (visibleOpeningTitle) {
       const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
       const heading = textLines(headingText, headingSize, "bold");
       if (heading.length > 8)
@@ -510,6 +513,7 @@ export async function buildPrintPdf(
         centered(heading, headingSize, template === "gothic" ? 30 : 25);
         y -= template === "gothic" ? 36 : 25;
       }
+      } else if (numberedOpening) y -= 10;
     }
     let opening = true;
     doc.forEach((node, _offset, index) => {
