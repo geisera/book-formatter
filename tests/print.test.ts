@@ -68,6 +68,31 @@ describe("offline print proof", () => {
     });
     expect(b).toEqual(before);
   }, 20000);
+  it("keeps front cover off by default and adds it as an unnumbered PDF first page when selected", async () => {
+    const b=fixture();
+    b.cover={src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=",alt:"A picture of a tower"};
+    const before=structuredClone(b);
+    const plain=await buildPrintPdf(b,fonts,options);
+    const withCover=await buildPrintPdf(b,fonts,{...options,includeFrontCover:true});
+    const pdf=await PDFDocument.load(withCover.bytes);
+    expect(plain.record.includeFrontCover).toBe(false);
+    expect(withCover.record.includeFrontCover).toBe(true);
+    expect(withCover.record.pageCount).toBe(plain.record.pageCount+2);
+    expect(pdf.getPageCount()).toBe(withCover.record.pageCount);
+    expect(withCover.record.pages[0]).toMatchObject({page:1,kind:"cover"});
+    expect(withCover.record.pages[1]).toMatchObject({page:2,kind:"blank"});
+    expect(withCover.record.pages[0].header).toBeUndefined();
+    expect(withCover.record.pages[0].footer).toBeUndefined();
+    expect(withCover.record.pages[2].kind).toBe("title");
+    expect(withCover.record.pages[2].page).toBe(3);
+    expect(withCover.record.pages.filter(p=>p.kind==="chapter").every(p=>p.page%2===1)).toBe(true);
+    expect(withCover.record.filename).toContain("-with-cover-");
+    expect(withCover.record.warnings.join(" ")).toContain("full-wrap");
+    const content=pdf.getPages()[0].node.Contents();
+    expect(content).toBeDefined();
+    expect(b).toEqual(before);
+    await expect(buildPrintPdf({...b,cover:undefined},fonts,{...options,includeFrontCover:true})).rejects.toThrow("Upload cover artwork");
+  },20000);
   it("preserves a separate print profile through project backups and supplies defaults for old books", () => {
     const b = fixture();
     expect(getPrintEdition(restoreBook(backupBook(b)))).toEqual(CLASSIC_PRINT);
