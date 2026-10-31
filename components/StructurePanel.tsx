@@ -8,7 +8,9 @@ const labels: Record<SectionType, string> = {
   part: "Part", "half-title": "Half title", title: "Title page", copyright: "Copyright",
   dedication: "Dedication", epigraph: "Epigraph", toc: "Table of contents", preface: "Preface",
   "about-author": "About the Author", "also-by": "Also By", notes: "Notes",
-  acknowledgments: "Acknowledgments", custom: "Custom section",
+  acknowledgments: "Acknowledgments", foreword: "Foreword", introduction: "Introduction",
+  afterword: "Afterword", bibliography: "Bibliography", praise: "Praise / Blurbs",
+  appendix: "Appendix", glossary: "Glossary", endnotes: "Endnotes", custom: "Custom section",
 };
 /** Purpose and placement guidance for each available section type. */
 const sectionDescriptions: Record<SectionType, string> = {
@@ -28,6 +30,14 @@ const sectionDescriptions: Record<SectionType, string> = {
   "also-by": "A list of other works by the author.",
   notes: "Explanatory, research, or reference notes for the reader.",
   acknowledgments: "Thanks and recognition for people who contributed to the work.",
+  foreword: "An opening note written by someone other than the author, recommending or contextualizing the book.",
+  introduction: "An author-written guide to the book’s subject, approach, or purpose before the main text.",
+  afterword: "Closing commentary or context after the main text, distinct from a fictional epilogue.",
+  bibliography: "A list of books, articles, and other works cited or consulted.",
+  praise: "Endorsements, reviews, and promotional quotations placed before the main text.",
+  appendix: "Supplementary material such as tables, maps, documents, or extended explanations.",
+  glossary: "Definitions of terms, names, and specialized vocabulary used in the book.",
+  endnotes: "Explanatory notes collected after the main text rather than at the bottom of pages.",
   custom: "A section for material that does not fit a standard book section type.",
 };
 const sectionUseCases: Record<SectionType, string> = {
@@ -47,6 +57,14 @@ const sectionUseCases: Record<SectionType, string> = {
   "also-by": "Use this when you want to direct readers to your other published books or series.",
   notes: "Use this when readers may need source references, explanations, or supplementary details outside the main narrative.",
   acknowledgments: "Use this when you want to thank people or organizations who helped create the book.",
+  foreword: "Use this when a guest contributor introduces the work or lends an outside perspective.",
+  introduction: "Use this when the reader needs orientation or essential context before starting the main text.",
+  afterword: "Use this when you want to discuss the work’s creation or implications after it concludes.",
+  bibliography: "Use this when you need to credit cited or recommended sources in one organized list.",
+  praise: "Use this when you have permission to feature review excerpts or endorsements ahead of the book.",
+  appendix: "Use this when supplemental reference material would interrupt the main narrative or argument.",
+  glossary: "Use this when readers may need to look up recurring terminology or fictional-world vocabulary.",
+  endnotes: "Use this when you want to collect numbered annotations or explanations at the end; add the text of the notes manually.",
   custom: "Use this when the material has a specific purpose that none of the standard section types describes.",
 };
 export default function StructurePanel({
