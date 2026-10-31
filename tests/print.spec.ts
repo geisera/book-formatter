@@ -257,6 +257,7 @@ test("recovers from a cancelled print build and completes repeated offline proof
  await page.goto("/");
  await expect(page.getByText("Offline app ready")).toBeVisible();
  await page.getByLabel("Book title",{exact:true}).fill("Recovery proof");
+ await page.getByLabel("Author name",{exact:true}).fill("Test Author");
  await page.getByRole("button",{name:"Create local book"}).click();
  await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("A short proof paragraph. ".repeat(240));
  await expect(page.getByText("Saved locally",{exact:true})).toBeVisible();
