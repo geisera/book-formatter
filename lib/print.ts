@@ -278,6 +278,16 @@ export async function buildPrintPdf(
   }
   const exceptionWords=new Set((profile.hyphenationExceptions??"").toLowerCase().split(/[\s,]+/).filter(Boolean));
   const locale=profile.hyphenationLanguage??"en-us";
+  const hyphenCache=new Map<string,number[]>();
+  function hyphenPoints(word:string):number[]{
+    const key=locale+":"+word.toLowerCase();
+    const cached=hyphenCache.get(key);
+    if(cached)return cached;
+    const points=hyphenationPoints(word,locale,exceptionWords);
+    if(hyphenCache.size>=12000)hyphenCache.clear();
+    hyphenCache.set(key,points);
+    return points;
+  }
   function wrap(
     words: Word[],
     firstIndent: number,
@@ -319,7 +329,7 @@ export async function buildPrintPdf(
       if(runs.length && profile.hyphenate!==false && word.length===1 &&
          /^[a-z]+$/i.test(word[0].text) &&
          consecutiveHyphens < (profile.maxConsecutiveHyphens??2)){
-        const fitting=hyphenationPoints(word[0].text,locale,exceptionWords).filter(pos=>
+        const fitting=hyphenPoints(word[0].text).filter(pos=>
           measure(word[0].text.slice(0,pos)+"-",word[0].face,fontSize)+blank <= maxWidth-indent-width+0.001);
         if(fitting.length){
           const at=fitting[fitting.length-1];
@@ -344,7 +354,7 @@ export async function buildPrintPdf(
         let remaining=word[0].text;
         while(remaining){
           const candidates=consecutiveHyphens < (profile.maxConsecutiveHyphens??2)
-            ? hyphenationPoints(remaining,locale,exceptionWords) : [];
+            ? hyphenPoints(remaining) : [];
           const available=maxWidth-indent-width;
           const fit=candidates.filter(pos=>measure(remaining.slice(0,pos)+"-",word[0].face,fontSize)<=available+0.001);
           if(fit.length){
