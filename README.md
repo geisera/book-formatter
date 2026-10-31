@@ -147,6 +147,27 @@ Running header to Hide; confirm the PDF regenerates with those changes. Reset
 section defaults, switch tabs and restore a backup to verify saved settings.
 Run `npm run typecheck && npm test && npm run build` and browser tests.
 
+### Paperback pagination safeguards
+
+The local PDF renderer keeps at least two lines of split paragraphs on either
+side of a page break, moves short paragraphs of up to four lines together when
+the remaining page cannot hold them, and keeps subheadings with the first two
+lines of a following paragraph when the page has enough room. Longer paragraphs
+may still span pages; the renderer does not yet implement optical spread
+balancing or hyphenation. The Design paperback proof and final Print export use
+the **same PDF generator** and produce matching page records from the same book,
+assets and options. The proof is rebuilt after local changes.
+
+**User testing:** Create a book containing several long paragraphs followed by
+a subheading and a short paragraph near a page boundary. In Design → Paperback,
+inspect heading placement and two-line paragraph splits, then export the PDF
+from Print and compare page breaks. Vary trim size and type size to force
+different break points. Verify the ebook preview and its controls remain
+functional. Open Design → Cover artwork and verify upload is available.
+
+Run `npm run typecheck && npm test && npm run build && npm run test:e2e`.
+CI checks are not a substitute for inspecting the final printed proof.
+
 ## Book structure management (STR-001–STR-004)
 
 Open a book → **Structure** to manage front matter, body matter, and back matter.
