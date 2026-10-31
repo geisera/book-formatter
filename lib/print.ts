@@ -630,8 +630,12 @@ export async function buildPrintPdf(
           capacity = slots();
         }
         let count = Math.min(remaining, capacity);
-        if (remaining > count && remaining - count === 1) count--;
-        if (count < 1 || (remaining > count && count < 2)) {
+        // Balanced pages favor three lines at both sides of a split when the
+        // paragraph is long enough; the other modes preserve two-line minima.
+        const minFragment = profile.layoutPriority === "balanced" && remaining >= 6 ? 3 : 2;
+        if (remaining > count && remaining - count < minFragment)
+          count = remaining - minFragment;
+        if (count < 1 || (remaining > count && count < minFragment)) {
           bodyPage();
           continue;
         }
