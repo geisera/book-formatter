@@ -15,7 +15,7 @@ test("cover upload persists and appears in live ebook preview",async ({page})=>{
  await page.getByRole("group",{name:"Preview page"}).getByRole("button",{name:"Cover"}).click();
  await expect(page.locator(".ebook-cover-preview img")).toHaveAttribute("alt","A tower on the cover");
  await page.getByRole("button",{name:"← Bookshelf"}).click();
- await page.getByRole("button",{name:/Cover test book/}).click();
+ await page.locator(".book-card").filter({hasText:/Cover test book/}).click();
  await page.getByRole("button",{name:"Design",exact:true}).click();
  await expect(page.getByRole("region",{name:"EPUB cover settings"}).getByLabel("Cover alternative text")).toHaveValue("A tower on the cover");
  await settings.getByRole("button",{name:"Remove cover"}).click();
