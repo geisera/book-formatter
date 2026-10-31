@@ -5,6 +5,7 @@ import { newId } from "../lib/model";
 import {
   preflight,
   snapshotChecksum,
+  EPUB_RENDERER,
   validLanguage,
   type ExportRecord,
   type FontAssets,
@@ -149,7 +150,7 @@ export default function PublishPanel({
       }
       if (token !== generation.current) return;
       setPhase("Building your EPUB locally…");
-      const encoder = new Worker("/epub-worker.js");
+      const encoder = new Worker(`/epub-worker.js?renderer=${EPUB_RENDERER}`);
       worker.current = encoder;
       encoder.onerror = () =>
         fail(
@@ -167,6 +168,10 @@ export default function PublishPanel({
         if (token !== generation.current) return;
         if (!event.data.ok || !event.data.bytes || !event.data.record) {
           fail(event.data.error ?? "EPUB generation failed.", token);
+          return;
+        }
+        if (event.data.record.renderer !== EPUB_RENDERER) {
+          fail("An outdated EPUB worker generated this book. Reload the application online and try again.", token);
           return;
         }
         const { bytes, record } = event.data;
