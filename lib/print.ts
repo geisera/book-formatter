@@ -447,8 +447,15 @@ export async function buildPrintPdf(
   centered(title, 23, 31);
   y -= 35;
   centered(author, 12, 19);
+  let numberedChapters=0;
+  const roman=(n:number):string=>{
+    let out="";for(const [value,glyph] of [[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]] as const){
+      while(n>=value){out+=glyph;n-=value;}
+    }return out;
+  };
   for (const [chapterIndex,chapter] of book.chapters.entries()) {
     options.onProgress?.(Math.round(15+65*chapterIndex/book.chapters.length),`Laying out section ${chapterIndex+1} of ${book.chapters.length}`);
+    if ((chapter.sectionType??"chapter")==="chapter") numberedChapters++;
     chapterId = chapter.id;
     chapterTitle = chapter.title;
     activeLayout = getSectionLayout(chapter);
@@ -465,7 +472,8 @@ export async function buildPrintPdf(
     }
     newPage("chapter");
     const template = profile.template.id;
-    const headingSize = template === "gothic" ? 19 : template === "modern" ? 17 : 18;
+    const frontHeading=sectionMatter(chapter.sectionType??"chapter")==="front";
+    const headingSize = (template === "gothic" ? 19 : template === "modern" ? 17 : 18) * (frontHeading?(profile.frontMatterTitleScale??1):1);
     const topBaseline = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
     // Estimate short-section height before drawing; on multi-page sections top alignment is safer.
     // Use conservative line counts and reserve some headroom to avoid orphaned layout.
@@ -485,6 +493,11 @@ export async function buildPrintPdf(
       : 0;
     y = topBaseline - activeLayout.spaceBefore - offset - (profile.chapterOpeningSpace ?? 0);
     if (showSectionTitle(chapter)) {
+      if ((chapter.sectionType??"chapter")==="chapter" && profile.chapterNumberStyle && profile.chapterNumberStyle!=="none") {
+        const label=profile.chapterNumberStyle==="roman"?roman(numberedChapters):String(numberedChapters);
+        centered(textLines(label,Math.max(10,headingSize*0.75),"bold"),Math.max(10,headingSize*0.75),24);
+        y-=10;
+      }
       const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
       const heading = textLines(headingText, headingSize, "bold");
       if (heading.length > 8)
