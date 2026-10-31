@@ -17,6 +17,10 @@ export type PrintEdition = {
   firstLineIndent?: number;
   chapterOpeningSpace?: number;
   layoutPriority?: "automatic" | "balanced" | "flow";
+  hyphenate?: boolean;
+  hyphenationLanguage?: "en-us" | "en-gb";
+  maxConsecutiveHyphens?: number;
+  hyphenationExceptions?: string;
   inside: number;
   outside: number;
   top: number;
@@ -44,6 +48,10 @@ export const CLASSIC_PRINT: PrintEdition = Object.freeze({
   rectoChapters: true,
   alignment: "left",
   layoutPriority: "automatic",
+  hyphenate: true,
+  hyphenationLanguage: "en-us",
+  maxConsecutiveHyphens: 2,
+  hyphenationExceptions: "",
 });
 export const MODERN_PRINT: PrintEdition = Object.freeze({
   ...CLASSIC_PRINT,
@@ -86,6 +94,11 @@ export function validatePrintEdition(value: unknown): PrintEdition {
     throw Error("Unsupported print profile: invalid paperback typography settings.");
   if (p.layoutPriority !== undefined && !["automatic","balanced","flow"].includes(p.layoutPriority))
     throw Error("Unsupported print layout priority.");
+  if ((p.hyphenate!==undefined && typeof p.hyphenate!=="boolean") ||
+      (p.hyphenationLanguage!==undefined && !["en-us","en-gb"].includes(p.hyphenationLanguage)) ||
+      (p.maxConsecutiveHyphens!==undefined && (!Number.isInteger(p.maxConsecutiveHyphens)||p.maxConsecutiveHyphens<0||p.maxConsecutiveHyphens>5)) ||
+      (p.hyphenationExceptions!==undefined && (typeof p.hyphenationExceptions!=="string" || p.hyphenationExceptions.length>4000 || !/^[a-zA-Z,\\s-]*$/.test(p.hyphenationExceptions))))
+    throw Error("Invalid paperback hyphenation settings.");
   if (!Object.hasOwn(PRINT_TRIMS, p.trim)) throw Error("Unsupported print trim size.");
   if (p.alignment !== undefined && p.alignment !== "left" && p.alignment !== "justify")
     throw Error("Unsupported print alignment.");
@@ -107,5 +120,9 @@ export function getPrintEdition(book: {
     paragraphSpacing: prior.paragraphSpacing ?? preset.paragraphSpacing,
     firstLineIndent: prior.firstLineIndent ?? preset.firstLineIndent,
     chapterOpeningSpace: prior.chapterOpeningSpace ?? preset.chapterOpeningSpace,
-    layoutPriority: prior.layoutPriority ?? preset.layoutPriority } : preset;
+    layoutPriority: prior.layoutPriority ?? preset.layoutPriority,
+    hyphenate:prior.hyphenate ?? preset.hyphenate,
+    hyphenationLanguage:prior.hyphenationLanguage ?? preset.hyphenationLanguage,
+    maxConsecutiveHyphens:prior.maxConsecutiveHyphens ?? preset.maxConsecutiveHyphens,
+    hyphenationExceptions:prior.hyphenationExceptions ?? preset.hyphenationExceptions } : preset;
 }
