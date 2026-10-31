@@ -18,7 +18,7 @@ export function openingDesign(type: SectionType = "chapter", template: PrintTemp
     headingFactor: fontFactor * (template === "gothic" && isDisplay ? 1.1 : 1),
     centered: isDisplay || isQuotation,
     italicBody: style === "epigraph",
-    unindentedBody: style !== "standard",
+    unindentedBody: style !== "standard" || ["bibliography", "glossary", "endnotes"].includes(type),
     suppressHeading: style === "copyright" || style === "dedication" || style === "epigraph",
   };
 }
