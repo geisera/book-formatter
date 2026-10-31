@@ -2384,3 +2384,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .workspace-word-status{flex:0 0 auto;display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:10px 20px;border-top:1px solid #cad6cc;background:#e9f0e8;color:#234737;font-size:13px;font-variant-numeric:tabular-nums;position:relative;z-index:3}
 .workspace-word-status strong{font-weight:750}
 @media(max-width:700px){.workspace-word-status{gap:9px 16px;padding:9px 12px;font-size:12px}}
+
+/* Word counts adjacent to manuscript text controls, not at page bottom */
+.editor-inline-word-status{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;padding:9px 12px;margin:0 0 14px;border:1px solid #cbd9cf;border-top:0;border-radius:0 0 6px 6px;background:#edf3ed;color:#254a39;font-size:12px;font-variant-numeric:tabular-nums}
+.editor-inline-word-status strong{font-weight:750}
