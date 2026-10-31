@@ -37,8 +37,7 @@ export default function PublishPanel({
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [result, setResult] = useState<ExportRecord | null>(null),
-    [metadataBusy, setMetadataBusy] = useState(false),
-    [validationBusy,setValidationBusy]=useState(false);
+    [metadataBusy, setMetadataBusy] = useState(false);
   const unsavedExport=useRef<{id:string;bytes:Uint8Array}|null>(null);
   const releaseWorker=useRef<(()=>void)|null>(null);
   const worker = useRef<Worker | null>(null),
@@ -117,35 +116,6 @@ export default function PublishPanel({
         validator.postMessage({id,bytes:new Uint8Array(bytes)});
       });
     }finally{validator.terminate();}
-  }
-  async function importEpubCheckReport(row:ExportRecord,file:File) {
-    setValidationBusy(true);setError("");setNotice("");
-    try{
-      if(file.size>2_000_000)throw Error("Report exceeds the 2 MB limit.");
-      const report=JSON.parse(await file.text()) as Record<string,unknown>;
-      if(report.format!=="book-formatter-epubcheck"||report.version!==1||!Array.isArray(report.messages))throw Error("Select the report created by scripts/validate-epub.mjs.");
-      if(report.sha256!==row.artifactChecksum)throw Error("Report checksum does not match this EPUB export. Validate the exact downloaded EPUB file.");
-      const artifact=await db.artifacts.get(row.id);
-      if(!artifact)throw Error("Saved EPUB artifact not found. Regenerate the EPUB and validate the downloaded copy.");
-      const digest=await crypto.subtle.digest("SHA-256",new Uint8Array(artifact.bytes));
-      const actual=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
-      if(actual!==report.sha256)throw Error("Stored EPUB content differs from the validated file.");
-      const allMessages=report.messages as Record<string,unknown>[];
-      const messages=allMessages.slice(0,250).map(m=>({
-        severity:String(m.severity||"INFO").slice(0,24),
-        code:String(m.code||"").slice(0,40),
-        message:String(m.message||"").slice(0,900),
-        location:String(m.location||"").slice(0,250),
-        suggestion:typeof m.suggestion==="string"?m.suggestion.slice(0,900):undefined
-      }));
-      const passed=report.passed===true&&!allMessages.some(m=>["ERROR","FATAL"].includes(String(m.severity||m.level||"").toUpperCase()));
-      const updated:ExportRecord={...row,epubCheck:passed?"passed":"failed",epubCheckVersion:String(report.epubCheckVersion||"unknown"),epubCheckCheckedAt:String(report.checkedAt||new Date().toISOString()),epubCheckMessages:messages};
-      await db.exports.put(updated);
-      setHistory(items=>items.map(item=>item.id===row.id?updated:item));
-      setResult(current=>current?.id===row.id?updated:current);
-      setNotice(passed?"EPUBCheck report attached to matching EPUB checksum. Publication conformance reported as passed; visually proof the book before publication.":"EPUBCheck reported errors. Review the findings and regenerate the EPUB.");
-    }catch(e){setError(e instanceof Error?e.message:"Could not import EPUBCheck results.");}
-    finally{setValidationBusy(false);}
   }
   function fail(message: string, token: number) {
     if (token !== generation.current) return;
@@ -475,9 +445,6 @@ export default function PublishPanel({
                     </small>
                   </summary>
                   <p>{row.filename}</p>
-                  <label className="epubcheck-report-input">Attach EPUBCheck JSON report
-                    <input type="file" accept=".json,application/json" disabled={validationBusy} onChange={e=>{const file=e.target.files?.[0];if(file)void importEpubCheckReport(row,file);e.target.value="";}}/>
-                  </label>
                   {row.epubCheckMessages?.length?<ul className="epubcheck-findings">{row.epubCheckMessages.map((m,i)=><li key={i}><strong>{m.severity} {m.code}</strong> {m.location?<small>{m.location}</small>:null}<p>{m.message}</p>{m.suggestion?<p>Suggested fix: {m.suggestion}</p>:null}</li>)}</ul>:null}
                   <button type="button" onClick={()=>void db.artifacts.get(row.id).then(artifact=>{if(!artifact){setNotice("This older export has no saved file. Generate it again.");return;}const url=URL.createObjectURL(new Blob([new Uint8Array(artifact.bytes)],{type:"application/epub+zip"}));const a=document.createElement("a");a.href=url;a.download=row.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>Download saved EPUB</button>
                   <dl>
