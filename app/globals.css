@@ -2377,3 +2377,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 /* P1-2: word count status */
 .editor-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .editor-word-count{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;color:#42564a;letter-spacing:0}
+
+/* Persistent manuscript statistics, outside the scrolling editor */
+.workspace-content{display:flex;flex-direction:column;min-height:0}
+.workspace-content>.workspace-body{flex:1;min-height:0}
+.workspace-word-status{flex:0 0 auto;display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:10px 20px;border-top:1px solid #cad6cc;background:#e9f0e8;color:#234737;font-size:13px;font-variant-numeric:tabular-nums;position:relative;z-index:3}
+.workspace-word-status strong{font-weight:750}
+@media(max-width:700px){.workspace-word-status{gap:9px 16px;padding:9px 12px;font-size:12px}}
