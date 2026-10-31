@@ -622,17 +622,11 @@ export default function Workspace() {
                 >
                   Manuscript
                 </button>
-                <button aria-pressed={mode === "structure"} onClick={() => setMode("structure")}>
-                  Structure
-                </button>
                 <button
                   aria-pressed={mode === "design"}
                   onClick={() => setMode("design")}
                 >
                   Design
-                </button>
-                <button aria-pressed={mode === "details"} onClick={() => setMode("details")}>
-                  Details
                 </button>
                 <button
                   aria-pressed={mode === "publish"}
@@ -640,12 +634,11 @@ export default function Workspace() {
                 >
                   Publish
                 </button>
-                <button
-                  aria-pressed={mode === "print"}
-                  onClick={() => setMode("print")}
-                >
-                  Print
-                </button>
+              </div>
+              <div className="workspace-utilities">
+                <button type="button" aria-pressed={mode==="structure"} onClick={()=>setMode("structure")}>Organize</button>
+                <button type="button" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Book details</button>
+                <button type="button" aria-pressed={mode==="print"} onClick={()=>setMode("print")}>PDF proof</button>
               </div>
               <div className="workspace-save">
                 <span>{getEbookEdition(book).template.id.replace(/^./, (c) => c.toUpperCase())} · ebook edition</span>
