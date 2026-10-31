@@ -1,0 +1,28 @@
+import {test,expect} from "@playwright/test";
+test("finds, replaces and undoes matching text across book chapters",async({page})=>{
+ await page.goto("/");
+ await page.getByLabel("Book title",{exact:true}).fill("Search manuscript");
+ await page.getByLabel("Author name",{exact:true}).fill("Test Writer");
+ await page.getByRole("button",{name:"Create local book"}).click();
+ await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("The lantern shone. Another lantern glowed.");
+ await page.getByRole("button",{name:"+ Add chapter"}).click();
+ await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("A lantern at the gate.");
+ await expect(page.getByRole("status").filter({hasText:"Saved locally"})).toBeVisible();
+ await page.keyboard.press("Control+f");
+ const panel=page.getByRole("region",{name:"Find and replace"});
+ await expect(panel).toBeVisible();
+ await panel.getByLabel("Find text").fill("lantern");
+ await panel.getByLabel("Search scope").selectOption("book");
+ await expect(panel.getByRole("status")).toContainText("3");
+ await panel.getByLabel("Replace with").fill("beacon");
+ await panel.getByRole("button",{name:"Replace all"}).click();
+ await expect(panel.getByRole("status")).toContainText("0 matches");
+ await page.getByRole("button",{name:"← Bookshelf"}).click();
+ await page.getByRole("button",{name:/Search manuscript/}).click();
+ await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("Beacon in the first chapter.");
+ await page.getByRole("button",{name:"Find & Replace"}).click();
+ await panel.getByLabel("Find text").fill("beacon");
+ await expect(panel.getByRole("status")).toContainText("1");
+ await panel.getByRole("button",{name:"Close find and replace"}).click();
+ await expect(panel).not.toBeVisible();
+});
