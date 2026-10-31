@@ -352,3 +352,24 @@ describe("designed front matter in EPUB",()=>{
   expect(css).toContain(".section-layout.opening-epigraph p{font-style:italic}");
  });
 });
+
+describe("expanded conventional sections in EPUB",()=>{
+ it("exports all eight new sections with semantic types, headings, and navigation",()=>{
+   const b=createBook("Book","Author");
+   const types=["foreword","introduction","praise","afterword","bibliography","appendix","glossary","endnotes"] as const;
+   b.chapters=types.map((sectionType,index)=>({
+     ...b.chapters[0],id:"conventional-"+index,sectionType,title:"Section "+sectionType,
+     content:{type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Text for "+sectionType}]}]},
+   }));
+   const files=unzipSync(buildEpub(b,fonts,options).bytes);
+   const toc=strFromU8(files["EPUB/nav.xhtml"]);
+   types.forEach((sectionType,index)=>{
+     const xml=strFromU8(files[`EPUB/chapter-${String(index+1).padStart(4,"0")}.xhtml`]);
+     expect(xml).toContain(`epub:type="${sectionType==="praise"?"frontmatter":sectionType}"`);
+     expect(xml).toContain("Section "+sectionType);
+     expect(toc).toContain("Section "+sectionType);
+   });
+   const css=strFromU8(files["EPUB/style.css"]);
+   expect(css).toContain('type="bibliography"');
+ });
+});
