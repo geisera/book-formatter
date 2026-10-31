@@ -35,7 +35,10 @@ export type ExportRecord = {
   artifactChecksum: string;
   byteLength: number;
   localChecks: "passed";
-  epubCheck: "not-run";
+  epubCheck: "not-run" | "passed" | "failed";
+  epubCheckVersion?: string;
+  epubCheckMessages?: {severity:string;code:string;message:string;location:string;suggestion?:string}[];
+  epubCheckCheckedAt?: string;
   warningCount: number;
   filename: string;
 };
