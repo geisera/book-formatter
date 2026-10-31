@@ -16,6 +16,8 @@ export type PrintEdition = {
   paragraphSpacing?: number;
   firstLineIndent?: number;
   chapterOpeningSpace?: number;
+  chapterNumberStyle?: "none" | "arabic" | "roman";
+  frontMatterTitleScale?: number;
   layoutPriority?: "automatic" | "balanced" | "flow";
   hyphenate?: boolean;
   hyphenationLanguage?: "en-us" | "en-gb";
@@ -41,6 +43,8 @@ export const CLASSIC_PRINT: PrintEdition = Object.freeze({
   paragraphSpacing: 0,
   firstLineIndent: 14,
   chapterOpeningSpace: 0,
+  chapterNumberStyle: "none",
+  frontMatterTitleScale: 1,
   inside: 54,
   outside: 40.5,
   top: 54,
@@ -92,6 +96,8 @@ export function validatePrintEdition(value: unknown): PrintEdition {
       (p.firstLineIndent !== undefined && (!Number.isFinite(p.firstLineIndent) || p.firstLineIndent < 0 || p.firstLineIndent > 36)) ||
       (p.chapterOpeningSpace !== undefined && (!Number.isFinite(p.chapterOpeningSpace) || p.chapterOpeningSpace < 0 || p.chapterOpeningSpace > 120)))
     throw Error("Unsupported print profile: invalid paperback typography settings.");
+  if (p.chapterNumberStyle !== undefined && !["none","arabic","roman"].includes(p.chapterNumberStyle)) throw Error("Invalid chapter numbering style.");
+  if (p.frontMatterTitleScale !== undefined && (!Number.isFinite(p.frontMatterTitleScale)||p.frontMatterTitleScale<0.75||p.frontMatterTitleScale>1.5)) throw Error("Invalid front matter heading scale.");
   if (p.layoutPriority !== undefined && !["automatic","balanced","flow"].includes(p.layoutPriority))
     throw Error("Unsupported print layout priority.");
   if ((p.hyphenate!==undefined && typeof p.hyphenate!=="boolean") ||
@@ -120,6 +126,8 @@ export function getPrintEdition(book: {
     paragraphSpacing: prior.paragraphSpacing ?? preset.paragraphSpacing,
     firstLineIndent: prior.firstLineIndent ?? preset.firstLineIndent,
     chapterOpeningSpace: prior.chapterOpeningSpace ?? preset.chapterOpeningSpace,
+    chapterNumberStyle:prior.chapterNumberStyle ?? preset.chapterNumberStyle,
+    frontMatterTitleScale:prior.frontMatterTitleScale ?? preset.frontMatterTitleScale,
     layoutPriority: prior.layoutPriority ?? preset.layoutPriority,
     hyphenate:prior.hyphenate ?? preset.hyphenate,
     hyphenationLanguage:prior.hyphenationLanguage ?? preset.hyphenationLanguage,
