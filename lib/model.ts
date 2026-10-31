@@ -72,7 +72,9 @@ export const sectionMatter = (type: SectionType): "front" | "body" | "back" =>
   (["about-author", "also-by", "notes", "acknowledgments"] as string[]).includes(type) ? "back" : "body";
 export const defaultShowSectionTitle = (type: SectionType = "chapter"): boolean =>
   !["dedication", "epigraph", "copyright", "title"].includes(type);
+/** Chapter visibility is controlled by each edition; obsolete chapter showTitle flags are ignored. */
 export const showSectionTitle = (section: Chapter): boolean =>
+  (section.sectionType ?? "chapter") === "chapter" ? true :
   section.showTitle ?? defaultShowSectionTitle(section.sectionType);
 export type PageStart = "next" | "recto" | "verso";
 export type VerticalPlacement = "top" | "center" | "bottom";
