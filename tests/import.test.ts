@@ -1,3 +1,4 @@
+import { classifyImportedSection, splitImportedSection, mergeImportedSections } from "../lib/import-classify";
 import { recoverDocxImages } from "../lib/docx-images";
 import "fake-indexeddb/auto";
 import { afterEach, describe, it, expect } from "vitest";
@@ -255,4 +256,50 @@ it("does not generate a backup larger than the restore expansion limit", () => {
     ],
   };
   expect(() => backupBook(book)).toThrow("expanded backup limit");
+});
+
+describe("intelligent local manuscript classification",()=>{
+ it("recognizes conventional front, body, and back matter in Markdown without losing text",()=>{
+   const manuscript=[
+     "# Foreword","Guest introduction.",
+     "# Prologue","Rain began.",
+     "# Chapter 1: The Drawing","Elias arrived.",
+     "# Part II: The Warrens","A new division.",
+     "# Appendix A: Timeline","An appendix entry.",
+     "# Bibliography","A source reference.",
+     "# About the Author","Author biography.",
+   ].join("\n\n");
+   const draft=parseMarkdown(manuscript);
+   const imported=splitChapters(draft,"auto");
+   expect(imported.map(c=>c.sectionType??"chapter")).toEqual([
+     "foreword","prologue","chapter","part","appendix","bibliography","about-author"
+   ]);
+   const allText=imported.map(c=>schema.nodeFromJSON(c.content).textContent).join(" ");
+   for(const sentence of ["Guest introduction.","Rain began.","Elias arrived.","A new division.","An appendix entry.","A source reference.","Author biography."])
+     expect(allText).toContain(sentence);
+ });
+ it("recognizes conventional DOCX headings across levels in automatic mode",()=>{
+   const draft=parseConvertedHtml("<h1>Introduction</h1><p>Context.</p><h2>Chapter One</h2><p>Prose.</p><h2>Chapter Two</h2><p>More prose.</p><h1>Acknowledgments</h1><p>Thank you.</p>","book.docx");
+   const chapters=splitChapters(draft,"auto");
+   expect(chapters.map(c=>c.title)).toEqual(["Introduction","Chapter One","Chapter Two","Acknowledgments"]);
+   expect(chapters.map(c=>c.sectionType??"chapter")).toEqual(["introduction","chapter","chapter","acknowledgments"]);
+ });
+ it("flags uncertain headings for review without inventing special sections",()=>{
+   expect(classifyImportedSection("The Road",2,8)).toMatchObject({type:"chapter",confidence:"low"});
+   expect(classifyImportedSection("Chapter XIV: Home",2,8)).toMatchObject({type:"chapter",confidence:"high"});
+   expect(classifyImportedSection("Glossary",6,8)).toMatchObject({type:"glossary",confidence:"high"});
+   expect(classifyImportedSection("Murder Is Mandatory",0,5,"Murder Is Mandatory")).toMatchObject({type:"title",confidence:"medium"});
+ });
+ it("splits, merges and reclassifies while retaining all original ProseMirror blocks",()=>{
+   const draft=parseMarkdown("# Chapter One\n\n**First** paragraph.\n\nSecond paragraph.\n\nThird paragraph.");
+   const c=splitChapters(draft,"auto")[0];
+   const original=structuredClone(c.content);
+   const [first,second]=splitImportedSection(c,1);
+   expect(first.id).toBe(c.id);
+   expect(second.id).not.toBe(c.id);
+   expect(mergeImportedSections(first,second).content).toEqual(original);
+   const changed={...second,sectionType:"afterword" as const};
+   expect(changed.content).toEqual(second.content);
+   expect(()=>splitImportedSection(c,0)).toThrow("between content blocks");
+ });
 });
