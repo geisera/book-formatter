@@ -729,19 +729,43 @@ export default function Workspace() {
                   onPreviewPrint={() => setMode("print")}
                 />
               ) : null}
-              {mode==="design"?<div className="design-preview-switch" role="group" aria-label="Design preview format" style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",margin:"12px 0"}}>
-                <strong>Preview format</strong>
-                <button type="button" aria-pressed={designPreview==="ebook"} className={designPreview==="ebook"?"primary":"secondary"} onClick={()=>setDesignPreview("ebook")}>Ebook · Live</button>
-                <button type="button" aria-pressed={designPreview==="print"} className={designPreview==="print"?"primary":"secondary"} onClick={()=>setDesignPreview("print")}>Paperback · Proof</button>
-                <span className="control-note">{designPreview==="ebook"?"Live reflowable preview of selected chapter.":"Accurate pages update automatically after local saves."}</span>
+              {mode==="design"?<div className="design-studio">
+                <aside className="design-studio-controls" aria-label="Formatting controls">
+                  <DesignPanel
+                    hidden={false}
+                    cover={book.cover}
+                    onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
+                    edition={getEbookEdition(book)}
+                    onChange={changeEdition}
+                    format={designPreview}
+                    printProfile={getPrintEdition(book)}
+                    onPrintTrim={changePrintTrim}
+                    onPrintAlignment={changePrintAlignment}
+                  />
+                </aside>
+                <section className="design-studio-preview" aria-label="Book design preview">
+                  <div className="design-studio-preview-head">
+                    <div><strong>Preview</strong><span>{designPreview==="ebook"?"Ebook layout updates as you edit":"Paperback pages update after saving"}</span></div>
+                    <div className="design-studio-format" role="group" aria-label="Preview format">
+                      <button type="button" aria-pressed={designPreview==="ebook"} onClick={()=>setDesignPreview("ebook")}>Ebook</button>
+                      <button type="button" aria-pressed={designPreview==="print"} onClick={()=>setDesignPreview("print")}>Paperback</button>
+                    </div>
+                  </div>
+                  <div className="design-studio-preview-content">
+                    {designPreview==="print"
+                      ? <DesignPrintPreview book={book} getSnapshot={exportSnapshot}/>
+                      : <EbookPreview
+                          hidden={false}
+                          book={book}
+                          chapter={previewChapter}
+                          chapterId={chapterId}
+                          edition={getEbookEdition(book)}
+                          onNavigate={setChapterId}
+                          updating={previewChapter !== chapter}
+                        />}
+                  </div>
+                </section>
               </div>:null}
-              <DesignPanel
-                hidden={mode !== "design"}
-                cover={book.cover}
-                onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
-                edition={getEbookEdition(book)}
-                onChange={changeEdition}
-              />
               {mode === "details" ? <BookDetailsPanel book={book} onSave={updateMetadata}/> : null}
               {mode === "publish" ? (
                 <PublishPanel
@@ -759,9 +783,8 @@ export default function Workspace() {
                   onTrimChange={changePrintTrim}
                 />
               ) : null}
-              {mode==="design"&&designPreview==="print"?<DesignPrintPreview book={book} getSnapshot={exportSnapshot}/>:null}
               <EbookPreview
-                hidden={mode === "publish" || mode === "print" || mode === "structure" || mode === "details" || (mode==="design" && designPreview==="print")}
+                hidden={mode !== "manuscript"}
                 book={book}
                 chapter={previewChapter}
                 chapterId={chapterId}
