@@ -341,7 +341,7 @@ export function buildEpub(
     if (design.suppressHeading) return "";
     const showTitle=ordinal===null || (edition.showChapterTitle??true);
     if(!showTitle) return label ? `<h1 id="chapter-title" class="chapter-number number-only" aria-label="Chapter ${xml(label)}">${xml(label)}</h1>` : "";
-    return `${label ? `<span class="chapter-number" aria-label="Chapter ${xml(label)}">${xml(label)}</span>` : ""}<h1 id="chapter-title">${xml(c.title)}</h1>`;
+    return `${label ? `<span class="chapter-number" aria-label="Chapter ${xml(label)}">${xml(label)}</span>` : ""}<h1 id="chapter-title">${xml(c.sectionType==="half-title"?book.title:c.title)}</h1>`;
   };
   const openingExtras=(c:typeof book.chapters[number]):string=>{
     const style=openingDesign(c.sectionType??"chapter",edition.template.id).style;
