@@ -38,3 +38,19 @@ export function sectionIsEmpty(section: Chapter): boolean {
 export function sampleForSection(section: Chapter): readonly SampleBlock[] {
   return SECTION_SAMPLES[section.sectionType??"chapter"];
 }
+
+/** Explicit author action converts sample guidance to editable ProseMirror content. */
+export function sectionTemplateContent(section: Chapter): Record<string, unknown> {
+  const blocks = sampleForSection(section).map(block => {
+    const attrs = block.kind === "attribution" ? {align:"right"} :
+      block.kind === "quotation" || block.kind === "heading" ? {align:"center"} : {};
+    const node = block.kind === "heading" ? "heading" : "paragraph";
+    return {type:node, ...(node === "heading" ? {attrs:{...attrs,level:2}} :
+      Object.keys(attrs).length ? {attrs}:{}),
+      content:[{type:"text",text:block.text,
+        ...(block.kind === "quotation" ? {marks:[{type:"em"}]}:{})}]};
+  });
+  const content={type:"doc",content:blocks};
+  schema.nodeFromJSON(content).check();
+  return content;
+}
