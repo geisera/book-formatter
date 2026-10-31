@@ -128,7 +128,7 @@ describe("local EPUB generation", () => {
     b.chapters[0].pageLayout={start:"verso",vertical:"bottom",header:"hide",pageNumber:"hide",spaceBefore:24,spaceAfter:12};
     const files=unzipSync(buildEpub(b,fonts,options).bytes);
     const chapter=strFromU8(files["EPUB/chapter-0001.xhtml"]);
-    expect(chapter).toContain('class="section-layout"');
+    expect(chapter).toContain('class="section-layout opening-standard"');
     expect(chapter).toContain('break-before:page;page-break-before:always');
     expect(chapter).toContain('padding-top:2em;padding-bottom:1em');
     expect(strFromU8(files["EPUB/nav.xhtml"])).toContain(">Chapter One</a>");
@@ -251,7 +251,7 @@ describe("edition-specific chapter headings in exported EPUB",()=>{
   b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"roman",frontMatterTitleScale:1.3};
   const zipped=unzipSync(buildEpub(b,fonts,options).bytes);
   const read=(i:number)=>strFromU8(zipped[`EPUB/chapter-${String(i).padStart(4,"0")}.xhtml`]);
-  expect(read(1)).toContain('class="section-layout front-matter"');
+  expect(read(1)).toContain('class="section-layout opening-standard front-matter"');
   expect(read(1)).not.toContain('class="chapter-number"');
   expect(read(2)).toContain('>I</span><h1 id="chapter-title">The Road</h1>');
   expect(read(3)).not.toContain('class="chapter-number"');
@@ -345,7 +345,7 @@ describe("designed front matter in EPUB",()=>{
   for(const [i,type] of types.entries()){
     const html=strFromU8(zip[`EPUB/chapter-${String(i+1).padStart(4,"0")}.xhtml`]);
     expect(html).toContain("opening-"+type);
-    if(type==="half-title")expect(html).toContain(b.title);
+    if(type==="half-title")expect(html).toContain("A title &amp; &lt;escape&gt;");
     if(type==="copyright")expect(html).toContain("Publisher: Greywatch Press");
   }
   const css=strFromU8(zip["EPUB/style.css"]);
