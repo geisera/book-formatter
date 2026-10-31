@@ -29,11 +29,16 @@ sw = sw.replace(
   /book-formatter-v\d+/,
   `book-formatter-${hash.digest("hex").slice(0, 16)}`,
 );
-sw = sw.replace(
-  '["/","/icon.svg","/manifest.webmanifest"]',
-  JSON.stringify([
-    "/",
-    ...assets.filter((p) => !p.endsWith(".html")).map((p) => "/" + p.slice(4)),
-  ]),
-);
+const precache = [
+  "/", "/help/",
+  ...assets.filter((p) => !p.endsWith(".html")).map((p) => "/" + p.slice(4)),
+];
+for (const required of ["/print-worker.js","/epub-worker.js","/epub-fonts/regular.woff",
+  "/epub-fonts/italic.woff","/epub-fonts/bold.woff","/epub-fonts/bold-italic.woff",
+  "/pdfjs/pdf.worker.min.mjs"]) {
+  if (!precache.includes(required)) throw Error("Required offline asset missing from build: " + required);
+}
+const installPattern = /cache\\.addAll\\(\\[[^\\]]*\\]\\)/;
+if (!installPattern.test(sw)) throw Error("Service worker precache manifest anchor not found.");
+sw = sw.replace(installPattern, `cache.addAll(${JSON.stringify([...new Set(precache)])})`);
 await writeFile("out/sw.js", sw);
