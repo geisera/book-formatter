@@ -658,7 +658,7 @@ export default function Workspace() {
               </div>
             </nav>
             <div className={`workspace-body mode-${mode}${mode==="manuscript"&&!previewVisible?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
-              {mode==="manuscript" ? <div className="editor-shared-toolbar" role="group" aria-label="Editor workspace layout">
+              {mode==="manuscript" ? <div className="editor-shared-toolbar" role="group" aria-label="Manuscript and Design layout">
                 <button type="button" aria-pressed={inspectorTab==="preview"} onClick={()=>{setInspectorTab("preview");setPreviewVisible(true);}}>Write</button>
                 <button type="button" aria-pressed={inspectorTab==="formatting"} onClick={()=>{setInspectorTab("formatting");setPreviewVisible(true);}}>Format</button>
                 <span className="editor-shared-toolbar-context">{chapter?.title}</span>
@@ -718,7 +718,7 @@ export default function Workspace() {
                 </p>
               </section>
               {mode==="manuscript"&&previewVisible ? <div className="editor-work-panels">
-                {inspectorTab==="formatting"?<section className="editor-format-panel" aria-label="Formatting controls">
+                {inspectorTab==="formatting"?<section className="editor-format-panel" aria-label="Design controls">
                   <DesignPanel hidden={false} cover={book.cover} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
                     edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
                     printProfile={getPrintEdition(book)} onPrintTrim={changePrintTrim}
@@ -751,7 +751,7 @@ export default function Workspace() {
               {mode === "details" ? <BookDetailsPanel book={book} onSave={updateMetadata}/> : null}
               {mode === "publish" ? <section className="unified-publish">
                 <div className="publish-format-switch" role="group" aria-label="Publication format">
-                  <div><strong>Publish your book</strong><p>Validate, preview, and export an edition.</p></div>
+                  <div><strong>Export your book</strong><p>Validate, preview, and export an edition.</p></div>
                   <div className="design-studio-format">
                     <button type="button" aria-pressed={publishFormat==="ebook"} onClick={()=>setPublishFormat("ebook")}>EPUB ebook</button>
                     <button type="button" aria-pressed={publishFormat==="print"} onClick={()=>setPublishFormat("print")}>Paperback PDF</button>
