@@ -502,7 +502,7 @@ export async function buildPrintPdf(
         y-=10;
       }
       if (visibleOpeningTitle) {
-      const openingText=design.style==="title" ? book.title : chapter.title;
+      const openingText=design.style==="title" || design.style==="half-title" ? book.title : chapter.title;
       const headingText = template === "gothic" ? openingText.toLocaleUpperCase(book.language ?? "en") : openingText;
       const heading = textLines(headingText, headingSize, "bold");
       if (heading.length > 8)
