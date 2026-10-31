@@ -1,3 +1,5 @@
+import { chapterNumberLabel, chapterOrdinal } from "../lib/chapter-numbering";
+import { sectionMatter } from "../lib/model";
 "use client";
 import {
   memo,
@@ -114,6 +116,7 @@ export default function EbookPreview({
     "--paragraph-indent": `${edition.paragraphIndent}em`,
     "--paragraph-spacing": `${edition.paragraphSpacing}em`,
     "--chapter-space": `${edition.chapterSpacing}em`,
+    "--front-heading-scale": edition.frontMatterTitleScale??1,
     width: `${width}px`,
   } as CSSProperties;
   return (
@@ -204,7 +207,7 @@ export default function EbookPreview({
       </div>
       <div className={`reader-viewport theme-${theme}`} ref={viewport}>
         <article
-          className={`ebook-page heading-${edition.headingStyle} template-${edition.template.id}`}
+          className={`ebook-page heading-${edition.headingStyle} template-${edition.template.id}${chapter && sectionMatter(chapter.sectionType??"chapter")==="front"?" front-matter":""}`}
           style={style}
           aria-label="Formatted chapter"
           aria-busy={updating}
@@ -215,7 +218,12 @@ export default function EbookPreview({
           </div> : <><header className="ebook-chapter-header">
             <p className="ebook-book-title">{book.title}</p>
             <div className="ebook-opening-rule" aria-hidden="true" />
-            {chapter && showSectionTitle(chapter) ? <h2>{chapter.title}</h2> : null}
+            {chapter && showSectionTitle(chapter) ? <>
+              {chapterOrdinal(book.chapters,index)!==null && (edition.chapterNumberStyle??"none")!=="none"
+                ? <span className="ebook-chapter-number">{chapterNumberLabel(edition.chapterNumberStyle??"none",chapterOrdinal(book.chapters,index)!)}</span>
+                : null}
+              <h2>{chapter.title}</h2>
+            </> : null}
           </header>
           {chapter?.sectionType === "toc" ? (
             <nav aria-label="Generated table of contents" className="ebook-prose">
