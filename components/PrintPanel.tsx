@@ -7,6 +7,7 @@ import type { PrintFonts, PrintRecord, PrintResult } from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
 import { db } from "../lib/storage";
 import { getPrintEdition } from "../lib/print-profile";
+import {localAsset,localWorker} from "../lib/offline-assets";
 export default function PrintPanel({
   book,
   getSnapshot,
@@ -24,6 +25,7 @@ export default function PrintPanel({
     [notice, setNotice] = useState(""),
     [result, setResult] = useState<PrintResult | null>(null),
     [history, setHistory] = useState<PrintRecord[]>([]);
+  const releaseWorker=useRef<(()=>void)|null>(null);
   const worker = useRef<Worker | null>(null),
     abort = useRef<AbortController | null>(null),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
@@ -39,6 +41,7 @@ export default function PrintPanel({
     token.current++;
     worker.current?.terminate();
     worker.current = null;
+    releaseWorker.current?.();releaseWorker.current=null;
     abort.current?.abort();
     abort.current = null;
     if (timer.current) clearTimeout(timer.current);
@@ -102,9 +105,7 @@ export default function PrintPanel({
       ];
       const [regular, italic, bold, boldItalic] = await Promise.all(
         files.map(async (file) => {
-          const response = await fetch(`/epub-fonts/${file}`, {
-            signal: controller.signal,
-          });
+          const response = await localAsset(`/epub-fonts/${file}`,controller.signal);
           if (!response.ok)
             throw Error(
               "Print fonts are not cached. Open the app online once, then retry offline.",
@@ -115,8 +116,11 @@ export default function PrintPanel({
       if (n !== token.current) return;
       const fonts: PrintFonts = { regular, italic, bold, boldItalic };
       // A versioned URL prevents an older cached worker from silently omitting new PDF options.
-      const encoder = new Worker("/print-worker.js?renderer=print-proof-1.3.1");
-      worker.current = encoder;
+      const prepared=await localWorker("/print-worker.js?renderer=print-proof-1.3.1");
+      if(n!==token.current){prepared.worker.terminate();prepared.release();return;}
+      const encoder=prepared.worker;
+      releaseWorker.current=prepared.release;
+      worker.current=encoder;
       encoder.onerror = () =>
         fail(
           "The local PDF worker could not start. Open the app online once to update its offline files.",
@@ -147,6 +151,7 @@ export default function PrintPanel({
         const built = { bytes: event.data.bytes, record: event.data.record };
         worker.current?.terminate();
         worker.current = null;
+        releaseWorker.current?.();releaseWorker.current=null;
         if (timer.current) clearTimeout(timer.current);
         timer.current = null;
         try {
