@@ -2431,3 +2431,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .workspace-template-menu button[aria-pressed=true]{background:#e0ede3;font-weight:bold}
 .preview-simulator-toolbar{background:#eaf0ed;border:1px solid #c7d7cd;border-radius:6px;padding:9px}
 @media(max-width:600px){.design-template-first{grid-template-columns:1fr}.template-chapter-thumbnail{min-height:90px}}
+
+
+/* P1-6 contrast, accessibility and touch targets */
+:root{--muted:#536158;--text-secondary:#526057;--line:#bfc9c0}
+:where(button,a,input,select,textarea,summary,[role="tab"],[tabindex]):focus-visible{outline:3px solid #a56e30!important;outline-offset:3px}
+:where(button,select,input[type="button"],input[type="submit"],summary){min-height:40px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.toolbar button,.toolbar select{min-height:42px}
+.toolbar-block-label{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#344b3d}
+.toolbar-block-label select{max-width:150px;min-width:110px;border:1px solid #aebfaf;border-radius:5px;background:#fff;color:#213f30;padding:6px}
+.badge{letter-spacing:.04em}
+@media(pointer:coarse){button,a[role="button"],summary,select{min-height:44px}.sidebar-drag-handle,.sidebar-section-menu-trigger{min-width:44px;min-height:44px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
