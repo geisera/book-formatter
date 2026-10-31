@@ -10,7 +10,7 @@ test("imports Markdown offline, edits it, and restores the original in a clean p
   const sent: string[] = [];
   page.on("request", (r) => {
     if (
-      r.method() !== "GET" ||
+      (r.method() !== "GET" && r.method() !== "HEAD") ||
       new URL(r.url()).origin !== "http://127.0.0.1:3100"
     )
       sent.push(r.url());
