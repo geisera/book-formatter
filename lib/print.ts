@@ -757,7 +757,7 @@ export async function buildPrintPdf(
   for (const item of contentsPages) {
     proof = pages[item.index];
     page = pdf.getPage(item.index);
-    activeLayout = getSectionLayout(book.chapters.find(c => c.id === proof.chapterId)!);
+    activeLayout = getSectionLayout(book.chapters.find(c => c.id === proof.chapterId)!,book);
     y = HEIGHT - profile.top - 86 - activeLayout.spaceBefore;
     if (proof.kind === "chapter" && showSectionTitle(book.chapters.find(c => c.id === proof.chapterId)!)) {
       centered(textLines(proof.chapterTitle ?? "Contents", 18, "bold"), 18, 27);
@@ -788,7 +788,7 @@ export async function buildPrintPdf(
     page = pdf.getPage(i);
     if (proof.kind === "blank" || proof.kind === "title") continue;
     const section = book.chapters.find(c => c.id === proof.chapterId);
-    const settings = section ? getSectionLayout(section) : activeLayout;
+    const settings = section ? getSectionLayout(section,book) : activeLayout;
     const numbered = settings.pageNumber === "show" ||
       (settings.pageNumber === "auto" && !!section && sectionMatter(section.sectionType ?? "chapter") !== "front");
     if (numbered) {
@@ -805,7 +805,7 @@ export async function buildPrintPdf(
     proof.footer = number;
     }
     if (settings.header !== "hide" && (settings.header === "show" || proof.kind === "body") &&
-        (settings.header === "show" || !section || getSectionLayout(section).header === "auto")) {
+        (settings.header === "show" || !section || getSectionLayout(section,book).header === "auto")) {
       let header = profile.template.id === "modern"
         ? (proof.page % 2 ? book.title : "")
         : profile.template.id === "gothic"
