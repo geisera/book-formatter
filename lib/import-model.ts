@@ -73,8 +73,9 @@ export function splitChapters(draft: ImportDraft, mode: SplitMode): Chapter[] {
   flush();
   if (chapters.length === 1 && chapters[0].title === "Opening matter")
     chapters[0].title = "Manuscript";
+  const inferredBookTitle=draft.filename.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ");
   return chapters.map((chapter,index)=>{
-    const guess=classifyImportedSection(chapter.title,index,chapters.length);
+    const guess=classifyImportedSection(chapter.title,index,chapters.length,inferredBookTitle);
     return guess.type==="chapter" ? chapter : {...chapter,sectionType:guess.type};
   });
 }
