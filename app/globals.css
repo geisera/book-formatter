@@ -2211,3 +2211,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .design-tab-content .design-section-settings{margin-top:8px!important}
 .design-tab-content .template-options{margin-top:12px}
 .design-tab-content .reset-design{width:100%;margin-top:12px}
+
+
+/* Design studio: editing and proof remain visible together on wide screens. */
+@media(min-width:1680px){
+.design-studio-preview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"toolbar toolbar" "editor proof";align-items:stretch}
+.design-studio-preview-head{grid-area:toolbar}
+.design-studio-preview>.design-section-editor{grid-area:editor;margin:0!important;padding:22px!important;min-width:0;overflow:auto;border-bottom:0!important;border-right:1px solid var(--hairline);background:#fff}
+.design-studio-preview-content{grid-area:proof;min-width:0;overflow:auto}
+.design-studio-preview>.design-section-editor .ProseMirror{min-height:320px}
+}
