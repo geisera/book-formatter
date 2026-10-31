@@ -235,7 +235,7 @@ ${e.template.id === "modern" ? "h1{font-size:1.5em;letter-spacing:-.025em;font-w
 .section-layout.opening-epigraph p{font-style:italic}
 .section-layout.opening-part h1{font-size:2em;margin:22vh 0 2em;letter-spacing:.09em}
 .section-layout.opening-part p{text-indent:0}
-.section-layout[epub\\:type="bibliography"] p,.section-layout[epub\\:type="glossary"] p,.section-layout[epub\\:type="endnotes"] p{text-indent:0;margin-bottom:.7em}
+.section-layout[epub\\:type="bibliography"] p{text-indent:-1.25em;padding-left:1.25em;text-align:left;margin-bottom:.85em}.section-layout[epub\\:type="glossary"] p,.section-layout[epub\\:type="endnotes"] p{text-indent:0;margin-bottom:.7em}
 .section-layout[epub\\:type="frontmatter"] p{text-indent:0}
 
 ${e.template.id==="gothic" ? ".section-layout.opening-title h1,.section-layout.opening-part h1{letter-spacing:.13em;text-transform:uppercase}" : e.template.id==="modern" ? ".section-layout.opening-title h1,.section-layout.opening-part h1{letter-spacing:-.03em;font-weight:600}" : ""}
