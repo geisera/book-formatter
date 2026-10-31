@@ -61,11 +61,16 @@ export default function HelpPage() {
               <li>From the bookshelf, choose <strong>↑ Import a manuscript</strong>.</li>
               <li>Select a <strong>.docx</strong>, <strong>.md</strong>, <strong>.markdown</strong>, or <strong>.txt</strong> file, up to <strong>10 MB</strong>.</li>
               <li>After local processing, enter the imported book title and author.</li>
-              <li>Choose chapter boundaries: <strong>Automatic</strong>, <strong>Heading 1</strong>, <strong>Heading 2</strong>, or <strong>Keep as one section</strong>.</li>
-              <li>Review the detected sections and <strong>Conversion review</strong> notices. Rename section titles as needed.</li>
+              <li>Choose chapter boundaries: <strong>Automatic</strong>, <strong>Heading 1</strong>, <strong>Heading 2</strong>, or <strong>Keep as one section</strong>. Automatic uses document headings and recognizes conventional section headings across Heading 1 and Heading 2 where possible.</li>
+              <li>In <strong>Detected sections</strong>, review each proposed type and its classification explanation. Recognition is rule-based and runs locally, without an AI service or uploading the manuscript.</li>
+              <li>Correct section titles and use each <strong>Section type</strong> dropdown to choose from the supported section types. The author’s selection is saved with the imported book.</li>
+              <li>Use <strong>Up</strong> and <strong>Down</strong> to reorder sections. To correct a boundary, select a content block and choose <strong>Split</strong>, or choose <strong>Merge with next</strong>. These operations preserve the imported content blocks.</li>
+              <li>Review <strong>Conversion review</strong> warnings and compare the proposed structure with your original file before saving. Changing the chapter-boundary mode rebuilds the review and resets any unsaved corrections.</li>
               <li>Choose <strong>Import as new book</strong> to save it to the local bookshelf.</li>
             </ol>
             <p>Import retains the original file. Inside an imported book, use <strong>Download original</strong> to retrieve it and expand <strong>Import report</strong> to review conversion notes. An import creates a separate book and does not overwrite an existing project.</p>
+            <p><strong>Classification confidence:</strong> “High confidence” means a familiar heading matched a local rule, while “Review suggested” means the heading was ambiguous. These are heuristic labels, not measured probabilities. When a section does not match a conventional heading, the importer generally suggests Chapter; confirm ambiguous headings before saving. You can reclassify sections later in Structure without changing their text.</p>
+            <p><strong>Import boundaries:</strong> Heading 1 and Heading 2, including Word headings converted into HTML headings, are the primary boundary signals. Automatic mode can additionally recognize familiar labels such as Foreword, Part II, Chapter 3, Bibliography, and Afterword at either level. It cannot reliably infer all chapter breaks from typography alone. Split and merge operate between blocks rather than inside a paragraph; retain the original manuscript for comparison.</p>
             <p><strong>Important:</strong> Bold, italics, paragraphs, headings and scene breaks are supported. Tables, lists and other complex layouts may be simplified; supported embedded PNG/JPEG images are imported in reading order; unsupported or oversized images become placeholders. Compare the imported result with your original manuscript.</p>
           </section>
           <section id="editor">
@@ -158,7 +163,7 @@ export default function HelpPage() {
             <dl>
               <dt>My book is missing from the bookshelf.</dt><dd>Confirm you are using the same browser profile and site origin. If site data was cleared, restore a saved <code>.book.zip</code> backup.</dd>
               <dt>Saving locally fails.</dt><dd>Read the error and check browser storage availability or quota. Download a backup before closing, if possible, and avoid further edits until the issue is resolved.</dd>
-              <dt>The importer chose incorrect chapters.</dt><dd>In the import review, select Heading 1, Heading 2, or one section instead of Automatic; inspect and rename detected sections before saving.</dd>
+              <dt>The importer chose incorrect chapters.</dt><dd>In the import review, change Heading 1, Heading 2, or Keep as one section if Automatic finds the wrong boundaries; split or merge sections and correct the type dropdowns before saving.</dd>
               <dt>Import reports missing images or formatting.</dt><dd>The current importer supports a limited semantic set. Consult the import report and original file; images and complex Word layouts are not faithfully reproduced yet.</dd>
               <dt>EPUB export is blocked.</dt><dd>Use Publish → Before you export to fix missing metadata, invalid language tags, empty sections, and other errors. Warnings alone are not necessarily blockers.</dd>
               <dt>PDF looks too widely spaced.</dt><dd>In Print, turn <strong>Justify body text</strong> off for left alignment, or leave it on for capped spacing and occasional ragged-right lines. Rebuild the proof after changing the option.</dd>
