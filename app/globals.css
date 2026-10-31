@@ -2283,3 +2283,21 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
  .editor-live-proof{min-height:460px}
  .editor-live-proof .workspace-live-preview-head label{display:none}
 }
+
+
+/* Shared Write/Format toolbar spans both working panes. */
+.workspace-body.mode-manuscript:not(.preview-hidden){grid-template-rows:auto minmax(0,1fr)}
+.workspace-body.mode-manuscript .editor-shared-toolbar{grid-column:1/-1;grid-row:1;display:flex;align-items:center;gap:5px;padding:9px 16px;background:#fff;border-bottom:1px solid var(--hairline);min-height:54px}
+.editor-shared-toolbar button{border:0;padding:9px 17px;border-radius:6px;background:transparent;font-weight:650;font-size:13px}
+.editor-shared-toolbar button[aria-pressed=true]{background:#e9f0eb;color:#1e463a}
+.editor-shared-toolbar-context{margin-left:auto;font-size:12px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workspace-body.mode-manuscript .editor-area{grid-row:2;grid-column:1}
+.workspace-body.mode-manuscript .editor-work-panels{grid-row:2;grid-column:2;grid-template-rows:minmax(0,1fr)}
+.workspace-body.layout-format .editor-work-panels{grid-row:2;grid-column:1/-1;grid-template-columns:minmax(290px,36%) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+.workspace-body.layout-format .editor-format-panel{grid-row:1;grid-column:1;max-height:calc(100dvh - 185px)}
+.workspace-body.layout-format .editor-live-proof{grid-row:1;grid-column:2}
+.workspace-body.layout-write .editor-live-proof{grid-row:1;grid-column:1}
+.workspace-body.mode-manuscript.layout-format .editor-area{display:none!important}
+@media(min-width:1600px){.workspace-body.mode-manuscript.layout-format:not(.preview-hidden){grid-template-columns:minmax(0,1fr)}.workspace-body.mode-manuscript.layout-format .editor-area{display:none!important}}
+@media(max-width:1100px){.workspace-body.mode-manuscript.layout-write .editor-work-panels{grid-column:1;grid-row:3}.workspace-body.mode-manuscript.layout-write .editor-area{grid-row:2}}
+@media(max-width:680px){.workspace-body.layout-format .editor-work-panels{display:flex;flex-direction:column}.workspace-body.layout-format .editor-format-panel{max-height:440px}}
