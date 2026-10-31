@@ -168,6 +168,31 @@ functional. Open Design → Cover artwork and verify upload is available.
 Run `npm run typecheck && npm test && npm run build && npm run test:e2e`.
 CI checks are not a substitute for inspecting the final printed proof.
 
+### Advanced paperback page layout
+
+**Design → Paperback → Advanced page layout** offers **Automatic** (default),
+**Balanced pages**, and **Reading flow**. These controls are stored only in
+the local print edition; EPUB behavior is unchanged. The modes adjust the
+threshold for keeping short paragraphs together (Automatic: four lines;
+Balanced: six; Reading flow: two). All retain two-line widow/orphan protection.
+The renderer also reserves space after scene ornaments for two lines of a
+following paragraph and attempts to avoid plain, single-word final lines by
+moving a word from the preceding line when it fits.
+
+These are initial local pagination heuristics, **not** optical facing-spread
+balancing or automatic language-aware hyphenation. Balanced mode does not
+guarantee equal facing-page depth. The Design proof and exported PDF continue
+to use the same renderer; preview generation has different timestamps/record
+IDs, so compare page records and visible page breaks rather than PDF byte
+checksums. No external service or cloud manuscript processing is involved.
+
+**User testing:** In Design → Paperback, open Advanced page layout and switch
+through the three modes. Confirm the proof refreshes and settings survive
+reload/backup. Check a manuscript with a long chapter, several short paragraphs,
+a scene break near a page boundary, and a subheading. Compare pagination and
+ornament placement with the final downloaded PDF. Review the actual print proof;
+hyphenation and full optical balancing are not yet implemented.
+
 ## Book structure management (STR-001–STR-004)
 
 Open a book → **Structure** to manage front matter, body matter, and back matter.
