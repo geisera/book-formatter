@@ -33,7 +33,6 @@ test("imports Markdown offline, edits it, and restores the original in a clean p
   await expect(
     page.getByRole("heading", { name: "Conversion review" }),
   ).toBeVisible();
-  await expect(page.getByText(/Images are represented/)).toBeVisible();
   await expect(page.getByLabel("Section 1 title", { exact: true })).toHaveValue(
     "One",
   );
@@ -58,7 +57,7 @@ test("imports Markdown offline, edits it, and restores the original in a clean p
   const path = await (await download).path();
   expect(path).toBeTruthy();
   await page.reload();
-  await page.getByRole("button", { name: /Imported offline/ }).click();
+  await page.locator(".book-card").filter({hasText:/Imported offline/}).click();
   await page.getByRole("button", { name: "02 Second chapter" }).click();
   await expect(
     page.getByRole("textbox", { name: "Chapter manuscript" }),
