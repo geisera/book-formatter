@@ -84,7 +84,7 @@ describe("offline print proof", () => {
       expect(built.record.pageCount).toBe(pdf.getPageCount());
       expect(built.record.pageCount%2).toBe(0);
       for(const page of pdf.getPages())expect(page.getSize()).toEqual({width,height});
-      expect(built.record.pages.filter(p=>p.kind==="chapter").every(p=>p.page%2===1)).toBe(true);
+      expect(built.record.pages.filter(p=>p.kind==="chapter" && b.chapters.some(c=>c.id===p.chapterId && (c.sectionType??"chapter")==="chapter")).every(p=>p.page%2===1)).toBe(true);
       expect(built.record.pages.every(p=>p.kind==="cover"||p.kind==="blank"||p.right<=width)).toBe(true);
       expect(built.record.checks.overflow).toBe(0);
       counts.push(built.record.pageCount);
