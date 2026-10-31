@@ -2,6 +2,8 @@ import { blankChapter, newId, schema, sectionMatter, type Book, type Chapter, ty
 
 export type StructureAction =
   | { kind: "move"; id: string; to: number }
+  | { kind: "relocate"; id: string; before?: string; matter: "front" | "body" | "back" }
+  | { kind: "duplicate"; id: string }
   | { kind: "rename"; id: string; title: string }
   | { kind: "type"; id: string; sectionType: SectionType }
   | { kind: "visibility"; id: string; showTitle: boolean }
@@ -37,6 +39,26 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
       const [section] = chapters.splice(index, 1);
       chapters.splice(action.to, 0, section);
       selectedId = section.id;
+      break;
+    }
+    case "relocate": {
+      const moving=chapters[index];
+      const defaults={front:"preface",body:"chapter",back:"appendix"} as const;
+      const updated:Chapter={...moving,sectionType:sectionMatter(moving.sectionType??"chapter")===action.matter?moving.sectionType:defaults[action.matter]};
+      chapters.splice(index,1);
+      const destination=action.before?chapters.findIndex(c=>c.id===action.before):-1;
+      if(action.before&&destination<0)throw Error("Drop target was not found.");
+      if(destination>=0&&sectionMatter(chapters[destination].sectionType??"chapter")!==action.matter)throw Error("Drop target is in another group.");
+      const groupEnd=chapters.reduce((last,c,i)=>sectionMatter(c.sectionType??"chapter")===action.matter?i+1:last,0);
+      chapters.splice(destination>=0?destination:groupEnd,0,updated);
+      selectedId=updated.id;
+      break;
+    }
+    case "duplicate": {
+      const original=chapters[index];
+      const created={...original,id:newId(),title:original.title+" (copy)",content:structuredClone(original.content)};
+      chapters.splice(index+1,0,created);
+      selectedId=created.id;
       break;
     }
     case "rename":
