@@ -52,7 +52,13 @@ for path in sorted(root.glob('*.pdf')):
                 top=''.join(c['text'] for c in chars if c['bottom']<54)
                 foot=''.join(c['text'] for c in chars if c['top']>594)
                 if kind in ('title','chapter'): assert not top, f'{path}: unexpected running header {n}'
-                if kind in ('chapter','body'): assert str(n) in foot, f'{path}: missing page number {n}'
+                if kind in ('chapter','body'):
+                    # Folios may restart after front matter and need not equal the physical PDF page index.
+                    expected_folio=report['pages'][n-1].get('footer')
+                    if expected_folio is not None:
+                        assert foot.strip()==str(expected_folio), f'{path}: incorrect folio on page {n}; expected {expected_folio!r}, got {foot!r}'
+                    else:
+                        assert not foot.strip(), f'{path}: unexpected folio on page {n}'
                 if kind=='body': assert top, f'{path}: missing running header {n}'
             page.close()
     source_path=path.with_name(path.stem+'-source.json')
