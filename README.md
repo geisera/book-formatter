@@ -52,6 +52,25 @@ This is a feature-level implementation inventory, not a certification that all P
 
 No feature above is labeled **publication-ready** solely because it generates a file. Physical print proofs, standards checks on the exact artifact, and retailer acceptance are separate gates.
 
+## Reusable preflight validation (initial implementation)
+
+The `lib/preflight.ts` subsystem defines format-neutral validation rules, issue severities,
+locations, corrective actions and reports. `lib/print-preflight.ts` supplies print-specific
+rules and runs manuscript checks before PDF generation plus page-record checks afterward.
+The Print workspace displays the resulting errors, warnings and informational findings.
+
+Checks currently cover manuscript preflight, snapshot freshness, page-record consistency,
+reported font embedding/overflow/split violations, blank-page furniture, chapter opening
+parity, configured trim/margin bounds and renderer limitations. These are checks against
+the manuscript and the renderer's generated layout records—not independent parsing of
+every generated PDF byte. The independent PDF inspector remains in
+`scripts/inspect-print.py` for engineering/CI validation. User-facing results do not
+claim retailer certification or replace physical proofing.
+
+This shared rules/report contract is intended for future EPUB-specific validation.
+Further work includes independent browser PDF inspection, actionable preview navigation,
+image resolution checks, broader retailer profiles and artifact-bound report persistence.
+
 ## Foundation implemented
 
 - Local bookshelf; book creation and independent chapter documents.
