@@ -60,7 +60,9 @@ function PageCanvas({
       {error ? <p role="alert">{error}</p> : null}
       <figcaption>
         Page {pageNumber} ·{" "}
-        {kind === "blank"
+        {kind === "cover"
+          ? "Front cover"
+          : kind === "blank"
           ? "Intentional blank"
           : kind === "chapter"
             ? "Chapter opening"
