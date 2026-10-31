@@ -23,7 +23,7 @@ This is a feature-level implementation inventory, not a certification that all P
 - **Import:** Local DOCX, Markdown and plain-text import, chapter-boundary review, diagnostics, cancellable worker, retained source file, supported PNG/JPEG DOCX images and guarded archive parsing.
 - **Editor:** Direct ProseMirror, independent chapter documents, paragraphs, headings, bold, italic, scene breaks, undo/redo, keyboard shortcuts, autosave, and chapter/book-wide find-and-replace.
 - **Images:** PNG/JPEG insertion and DOCX extraction, local embedding, alternative text, caption, alignment, width and replace/remove controls; embedded images are carried into EPUB, PDF and backups.
-- **Design:** Classic ebook typography (font, size, leading, indents, paragraph spacing, chapter openings and scene ornaments); distinct ebook and print settings.
+- **Design:** Distinct ebook typography and paperback typography (body size, line spacing, paragraph spacing, first-line indentation, chapter opening space); shared templates, contextual preview, and independent edition settings.
 - **Metadata and covers:** Publication metadata and optional PNG/JPEG EPUB cover artwork.
 - **Previews:** Reflowable ebook preview with chapter navigation and device-width/theme/zoom controls; print PDF preview with single/facing pages, zoom and navigation.
 - **EPUB:** Offline/local EPUB generation with navigation, embedded supported images/fonts, metadata, build fingerprints and local export history; test fixtures and browser-produced samples run through EPUBCheck in CI.
@@ -91,7 +91,7 @@ changing settings. On narrow screens the panels stack.
 
 - **Ebook:** Editable ebook typography, paragraph spacing, chapter styling
   and scene ornaments. The existing reflowable preview responds immediately.
-- **Paperback:** Contextual trim size and paragraph-alignment controls with
+- **Paperback:** Independent body font size (9–14 pt), line spacing, paragraph spacing (0–24 pt), first-line indentation (0–36 pt), and chapter-opening spacing (0–120 pt); plus trim and alignment controls with
   an automatically refreshed PDF proof preview. The preview uses the same
   print renderer as export, with preparing/updating/error status. Section-specific
   start page, vertical placement, folios, headers and spacing remain in Structure.
@@ -103,6 +103,9 @@ changing settings. On narrow screens the panels stack.
 The print preview is an accurate full-book proof, not a fast approximate
 draft; regenerating large books can take longer. Ebook-only settings are hidden
 in Paperback mode to avoid presenting controls that do not affect the PDF.
+The paperback currently embeds Libre Baskerville; selecting additional print font families
+requires adding and testing properly licensed font files. Changing the shared template
+preserves custom paperback typography rather than overwriting it.
 
 ### User testing: Design studio
 
@@ -110,10 +113,13 @@ in Paperback mode to avoid presenting controls that do not affect the PDF.
    preview without horizontal overflow at desktop width.
 2. Select **Ebook**, change body size and scene ornament, and verify the preview
    responds without leaving Design.
-3. Select **Paperback**, change trim size and justification, and verify a local
-   updating state followed by the correctly sized PDF proof.
-4. Switch between modes repeatedly and confirm the manuscript and settings
-   persist. Check that ebook-only controls are not shown in Paperback mode.
+3. Select **Paperback**, change body size, line spacing, paragraph spacing, indent,
+   and chapter-opening space. Verify the PDF proof repaginates and reflects the new
+   typography. Change trim and justification and verify a fresh proof.
+4. Switch between modes repeatedly and confirm the manuscript and both edition
+   settings persist. Check that ebook typography remains unchanged when you edit
+   paperback settings, including after backup/restore. Use **Reset paperback typography**
+   to restore defaults without changing ebook typography.
 5. Try a narrow browser window: panels should stack while controls and preview
    remain reachable. Repeat offline after the app is cached.
 
