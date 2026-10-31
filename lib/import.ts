@@ -1,3 +1,4 @@
+import { recoverDocxImages } from "./docx-images";
 import { decodeImage, MAX_IMAGE_BYTES, MAX_PROJECT_IMAGES_BYTES } from "./images";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
@@ -484,7 +485,7 @@ export async function importBytes(
       );
     for (const message of result.messages)
       diagnostic(diagnostics, message.message);
-    const converted = parseConvertedHtml(result.value, filename, diagnostics);
+    const converted = recoverDocxImages(bytes, parseConvertedHtml(result.value, filename, diagnostics));
     const embedded = converted.blocks.filter(b => b.type === "image").length;
     const placeholders = converted.blocks.reduce((total,b) =>
       total + blockText(b).split("[Image: ").length - 1, 0);
