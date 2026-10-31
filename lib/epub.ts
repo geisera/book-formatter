@@ -1,3 +1,5 @@
+import { getPrintEdition } from "./print-profile";
+import { getEbookEdition } from "./edition";
 import { chapterNumberLabel, chapterOrdinal } from "./chapter-numbering";
 import { decodeImage, embeddedImages } from "./images";
 import { normalizedIsbn } from "./publication-metadata";
@@ -47,7 +49,16 @@ export function validLanguage(language: string): boolean {
     return false;
   }
 }
-export function preflight(book: Book): ExportIssue[] {
+/** A section may be intentionally title-only; verify that the selected edition
+ * actually renders a heading before treating an empty body as publishable. */
+export function hasVisibleSectionHeading(book: Book, chapter: Book["chapters"][number], format: "ebook" | "print"): boolean {
+  if (!chapter.title.trim()) return false;
+  if (!showSectionTitle(chapter)) return false;
+  if ((chapter.sectionType ?? "chapter") !== "chapter") return true;
+  const settings = format === "print" ? getPrintEdition(book) : getEbookEdition(book);
+  return (settings.showChapterTitle ?? true) || (settings.chapterNumberStyle ?? "none") !== "none";
+}
+export function preflight(book: Book, format: "ebook" | "print" = "ebook"): ExportIssue[] {
   const issues: ExportIssue[] = [];
   const add = (
     severity: ExportIssue["severity"],
@@ -99,12 +110,12 @@ export function preflight(book: Book): ExportIssue[] {
       );
     if (chapter.sectionType === "toc" && schema.nodeFromJSON(chapter.content).textContent.trim())
       add("warning", location, "The contents page is generated; manually typed text in this section is not exported.", "Move this text to a separate section if it should appear in the book.");
-    if (chapter.sectionType !== "toc" && !schema.nodeFromJSON(chapter.content).textContent.trim() && !embeddedImages(chapter.content).length)
+    if (chapter.sectionType !== "toc" && !schema.nodeFromJSON(chapter.content).textContent.trim() && !embeddedImages(chapter.content).length && !hasVisibleSectionHeading(book,chapter,format))
       add(
         "error",
         location,
-        "This section has no readable text.",
-        "Add text to the section before exporting.",
+        "This section has no visible text or image in the selected edition.",
+        "Add body content or enable a visible section heading in Design before exporting.",
       );
     const key = chapter.title.trim().toLocaleLowerCase();
     if (seen.has(key))
@@ -218,7 +229,7 @@ export function buildEpub(
   options: { id: string; createdAt: string },
 ): { bytes: Uint8Array; record: ExportRecord; issues: ExportIssue[] } {
   const book = structuredClone(validateBook(input));
-  const issues = preflight(book);
+  const issues = preflight(book, "ebook");
   if (issues.some((x) => x.severity === "error"))
     throw Error("Fix the preflight errors before exporting.");
   const edition = structuredClone(getEbookEdition(book));
