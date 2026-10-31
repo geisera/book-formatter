@@ -89,7 +89,7 @@ export default function PrintPanel({
       if(n!==token.current)return;
       cancelBuild.current=null;
       try{
-        await db.printExports.add(built.record);
+        await db.transaction("rw",db.printExports,db.artifacts,async()=>{await db.printExports.add(built.record);await db.artifacts.put({id:built.record.id,bookId:built.record.bookId,format:"pdf",createdAt:built.record.createdAt,bytes:new Uint8Array(built.bytes)});});
         if(n!==token.current)return;
         setHistory(items=>[built.record,...items].slice(0,20));
       }catch{
@@ -304,8 +304,7 @@ export default function PrintPanel({
       <details className="print-history">
         <summary>Local print history ({history.length})</summary>
         <p>
-          Recent 20 build records; PDF files are not stored here or in project
-          backups.
+          Recent 20 locally generated PDF proofs. Saved files remain in this browser when storage permits; keep independent backups.
         </p>
         {history.map((row) => (
           <div key={row.id}>
@@ -319,6 +318,7 @@ export default function PrintPanel({
               · {row.renderer} · revision {row.revision}
             </p>
             <code>{row.artifactChecksum}</code>
+            <button type="button" onClick={()=>void db.artifacts.get(row.id).then(artifact=>{if(!artifact){setNotice("This older proof has no saved PDF. Generate it again.");return;}const url=URL.createObjectURL(new Blob([new Uint8Array(artifact.bytes)],{type:"application/pdf"}));const a=document.createElement("a");a.href=url;a.download=row.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>Download saved PDF</button>
           </div>
         ))}
       </details>
