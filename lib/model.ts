@@ -1,3 +1,4 @@
+import { validatePublicationMetadata, type PublicationMetadata } from "./publication-metadata";
 import { decodeImage, validateImageAttrs, embeddedImages, MAX_PROJECT_IMAGES_BYTES } from "./images";
 import {
   CLASSIC_PRINT,
@@ -136,6 +137,7 @@ export type Book = {
   title: string;
   author: string;
   language?: string;
+  metadata?: PublicationMetadata;
   updatedAt: string;
   chapters: Chapter[];
   cover?: {src:string;alt:string};
@@ -180,6 +182,7 @@ export function validateBook(value: unknown): Book {
     throw Error("Unsupported or damaged project.");
   if (b.language !== undefined && typeof b.language !== "string")
     throw Error("Invalid publication language.");
+  if (b.metadata !== undefined) validatePublicationMetadata(b.metadata);
   if (b.importInfo) {
     const info = b.importInfo;
     if (
