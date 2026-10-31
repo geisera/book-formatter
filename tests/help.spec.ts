@@ -7,7 +7,7 @@ test("documentation is reachable from bookshelf and an open book, including offl
   await expect(page).toHaveURL(/\/help\/?$/);
   await expect(page.getByRole("heading", { name: "Help & documentation" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Import a manuscript" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Build and inspect a paperback PDF proof" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Export and inspect a paperback PDF proof" })).toBeVisible();
   await page.getByRole("link", { name: "Return to your bookshelf" }).click();
   await page.getByLabel("Book title", { exact: true }).fill("Help from workspace");
   await page.getByRole("button", { name: "Create local book" }).click();
