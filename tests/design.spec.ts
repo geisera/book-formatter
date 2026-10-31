@@ -62,6 +62,12 @@ test("formats an imported manuscript offline and restores text plus design in a 
   await expect(preview.locator(".ebook-chapter-number")).toHaveText("I");
   await page.getByLabel("Ebook chapter numbering").selectOption("arabic");
   await expect(preview.locator(".ebook-chapter-number")).toHaveText("1");
+  await page.getByLabel("Ebook chapter numbering").selectOption("roman");
+  await page.getByLabel("Show chapter title in ebook").uncheck();
+  await expect(preview.locator(".ebook-chapter-number.number-only")).toHaveText("I");
+  await expect(preview.getByRole("heading",{name:"The Last Light"})).toHaveCount(0);
+  await page.getByLabel("Show chapter title in ebook").check();
+  await expect(preview.getByRole("heading",{name:"The Last Light"})).toBeVisible();
   await page.getByLabel("Ebook chapter numbering").selectOption("none");
   await expect(preview.locator(".ebook-chapter-number")).toHaveCount(0);
   await page
