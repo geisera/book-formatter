@@ -38,7 +38,7 @@ for (const required of ["/print-worker.js","/epub-worker.js","/epub-fonts/regula
   "/pdfjs/pdf.worker.min.mjs"]) {
   if (!precache.includes(required)) throw Error("Required offline asset missing from build: " + required);
 }
-const installPattern = /cache\\.addAll\\(\\[[^\\]]*\\]\\)/;
+const installPattern = /cache\.addAll\(\[[^\]]*\]\)/;
 if (!installPattern.test(sw)) throw Error("Service worker precache manifest anchor not found.");
 sw = sw.replace(installPattern, `cache.addAll(${JSON.stringify([...new Set(precache)])})`);
 await writeFile("out/sw.js", sw);
