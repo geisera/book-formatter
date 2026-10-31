@@ -2353,3 +2353,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .sidebar-section-menu button:hover:not(:disabled){background:#eef3ef}
 .sidebar-section-menu button:disabled{opacity:.4}
 .sidebar-section-menu-trigger:focus-visible,.sidebar-section-menu button:focus-visible{outline:2px solid #285a4b;outline-offset:2px}
+
+
+/* P1-1 correction: visible drag affordance and persistent Add chapter action. */
+.sidebar-section-actions{flex:0 0 auto;position:relative;z-index:1;background:var(--panel-bg);border-bottom:1px solid var(--hairline)}
+.sidebar-section-actions .add{background:#e9f0eb;color:#1e463a;font-weight:700}
+.section-navigator .sidebar-section-row{display:flex;align-items:stretch;position:relative;gap:2px}
+.section-navigator .sidebar-drag-handle{flex:0 0 25px;display:flex;align-items:center;justify-content:center;cursor:grab;color:#68766e;font-size:20px;user-select:none;min-height:44px}
+.section-navigator .sidebar-drag-handle:active{cursor:grabbing}
+.section-navigator .sidebar-section-row>button:first-of-type{flex:1;min-width:0;width:auto}
+.section-navigator .sidebar-section-row>.sidebar-section-menu-trigger{width:34px;min-width:34px;flex:0 0 34px;align-items:center;justify-content:center;padding:0;margin:0}
+.section-navigator .sidebar-section-menu{display:flex;flex-direction:column}
+.section-navigator .sidebar-section-menu button{width:100%;margin:0;padding:9px 12px}
