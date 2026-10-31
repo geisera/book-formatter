@@ -208,7 +208,7 @@ export default function PrintPanel({
               </li>
             ))}
           </ul>
-          <button onClick={onPublish}>Review book details in Publish</button>
+          <button onClick={onPublish}>Review book details in Export</button>
         </div>
       ) : null}
       <div className="print-actions">
