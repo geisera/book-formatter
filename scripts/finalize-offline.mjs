@@ -33,7 +33,7 @@ const precache = [
   "/", "/help/",
   ...assets.filter((p) => !p.endsWith(".html")).map((p) => "/" + p.slice(4)),
 ];
-for (const required of ["/print-worker.js","/epub-worker.js","/epub-fonts/regular.woff",
+for (const required of ["/epubcheck-worker.js","/epubcheck-engine.js","/print-worker.js","/epub-worker.js","/epub-fonts/regular.woff",
   "/epub-fonts/italic.woff","/epub-fonts/bold.woff","/epub-fonts/bold-italic.woff",
   "/pdfjs/pdf.worker.min.mjs"]) {
   if (!precache.includes(required)) throw Error("Required offline asset missing from build: " + required);
