@@ -2388,3 +2388,23 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 /* Word counts adjacent to manuscript text controls, not at page bottom */
 .editor-inline-word-status{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;padding:9px 12px;margin:0 0 14px;border:1px solid #cbd9cf;border-top:0;border-radius:0 0 6px 6px;background:#edf3ed;color:#254a39;font-size:12px;font-variant-numeric:tabular-nums}
 .editor-inline-word-status strong{font-weight:750}
+
+
+/* P1-3 compact expandable Structure list */
+.structure-panel .structure-group ol{list-style:none;padding:0;margin:0}
+.structure-panel .structure-item{padding:0;margin:4px 0;border:1px solid #d7ddd5;border-radius:7px;background:#fffdf8;overflow:visible}
+.structure-panel .structure-compact-row{display:grid;grid-template-columns:26px 32px minmax(100px,1fr) auto 82px 36px;align-items:center;gap:8px;min-height:48px;padding:5px 10px}
+.structure-panel .structure-drag-handle{cursor:grab;color:#607d6b;font-size:20px}
+.structure-panel .structure-row-title{border:0;background:transparent;font-weight:650;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:10px 2px}
+.structure-panel .structure-type-badge,.print-only-badge{font-size:10px;color:#345b43;background:#e4efe5;padding:4px 7px;border-radius:12px;white-space:nowrap}
+.structure-panel .structure-row-words{font-size:11px;color:#58665b;text-align:right;white-space:nowrap}
+.structure-panel .structure-expanded-editor{padding:14px 18px;border-top:1px solid #d7ddd5}
+.structure-panel .structure-row-menu{display:flex;gap:5px;flex-wrap:wrap;padding:7px 12px;border-top:1px solid #e5e7e0}
+.structure-panel .structure-row-menu button{font-size:12px;min-height:34px}
+.structure-panel .structure-add-here{font-size:12px;color:#246048;background:transparent;border:1px dashed #9fb9a6;border-radius:5px;padding:7px 12px;margin:6px 0;min-height:36px}
+.structure-panel .structure-add-here.between{display:block;margin:5px auto;border:0}
+.structure-panel .structure-inline-add{display:flex;gap:10px;flex-wrap:wrap;align-items:end;padding:12px;background:#f0f4ed;border:1px solid #cbd8cc;border-radius:6px}
+.structure-panel .structure-inline-add label{display:flex;flex-direction:column;gap:4px;font-size:12px}
+.structure-panel .structure-inline-add input,.structure-panel .structure-inline-add select{min-height:38px}
+.structure-panel .structure-inline-add button{min-height:38px}
+@media(max-width:650px){.structure-panel .structure-compact-row{grid-template-columns:22px 22px minmax(70px,1fr) 35px;gap:4px;padding:6px}.structure-panel .structure-type-badge,.structure-panel .structure-row-words{display:none}}
