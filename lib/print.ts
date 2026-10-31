@@ -115,7 +115,10 @@ export async function buildPrintPdf(
     splitViolations = 0;
   let activeLayout: SectionPageLayout = getSectionLayout(book.chapters[0]);
   const contentsPages: { index: number; entries: typeof book.chapters }[] = [];
+  // Bounded width cache: large books contain many unique tokens, and keeping
+  // every string forever can grow worker memory without improving reuse.
   const widths = new Map<string, number>();
+  const WIDTH_CACHE_LIMIT = 12000;
   function measure(text: string, face: Face, fontSize: number): number {
     const key = `${face}/${fontSize}/${text}`;
     const cached = widths.get(key);
@@ -132,6 +135,7 @@ export async function buildPrintPdf(
         );
     }
     const w = fonts[face].widthOfTextAtSize(text, fontSize);
+    if (widths.size >= WIDTH_CACHE_LIMIT) widths.clear();
     widths.set(key, w);
     return w;
   }
@@ -272,7 +276,7 @@ export async function buildPrintPdf(
     flush();
     return out;
   }
-  const exceptionWords=new Set((profile.hyphenationExceptions??"").toLowerCase().split(/[\\s,]+/).filter(Boolean));
+  const exceptionWords=new Set((profile.hyphenationExceptions??"").toLowerCase().split(/[\s,]+/).filter(Boolean));
   const locale=profile.hyphenationLanguage??"en-us";
   function wrap(
     words: Word[],
