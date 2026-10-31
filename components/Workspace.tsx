@@ -393,7 +393,7 @@ export default function Workspace() {
   const chapter = book?.chapters.find((c) => c.id === chapterId);
   const previewChapter = useDeferredValue(chapter);
   const deferredChapters=useDeferredValue(book?.chapters);
-  const wordCounts=useMemo(()=>deferredChapters?.map(c=>schema.nodeFromJSON(c.content).textContent.trim().match(/\\S+/g)?.length??0)??[],[deferredChapters]);
+  const wordCounts=useMemo(()=>deferredChapters?.map(c=>schema.nodeFromJSON(c.content).textContent.trim().match(/\S+/g)?.length??0)??[],[deferredChapters]);
   const totalWordCount=wordCounts.reduce((sum,count)=>sum+count,0);
   const chapterWordCount=book?.chapters.findIndex(c=>c.id===chapterId)??-1;
   const selectedWordCount=wordCounts[chapterWordCount]??0;
