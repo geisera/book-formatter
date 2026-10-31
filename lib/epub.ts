@@ -1,5 +1,4 @@
 import { getPrintEdition } from "./print-profile";
-import { getEbookEdition } from "./edition";
 import { chapterNumberLabel, chapterOrdinal } from "./chapter-numbering";
 import { decodeImage, embeddedImages } from "./images";
 import { normalizedIsbn } from "./publication-metadata";
