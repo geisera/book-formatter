@@ -11,6 +11,8 @@ const topics = [
   ["projects", "Local projects"],
   ["import", "Import manuscripts"],
   ["editor", "Manuscript"],
+  ["structure", "Structure"],
+  ["details", "Book details"],
   ["design", "Design"],
   ["preview", "Ebook preview"],
   ["epub", "Export · EPUB"],
@@ -88,6 +90,11 @@ export default function HelpPage() {
               <dt>Chapter names</dt><dd>Edit the <strong>Chapter title</strong> field above the editor; it is separate from the body text.</dd>
             </dl>
             <p>The editor is for manuscript corrections and semantic formatting, not arbitrary visual page layout. The final ebook and PDF are produced by separate renderers.</p>
+          </section>
+          <section id="details">
+            <h2>Book details</h2>
+            <p>Open <strong>Details</strong> to edit the publication title, author, subtitle, language, series, publisher, ISBN, date, and description. Choose <strong>Save book details</strong> to keep these values locally with your manuscript.</p>
+            <p>The Language dropdown includes common choices; select <strong>Other / custom BCP-47 tag</strong> for another language. Cover artwork is also managed in Details. These settings do not replace the text in your manuscript.</p>
           </section>
           <section id="design">
             <h2>Design your book</h2>
