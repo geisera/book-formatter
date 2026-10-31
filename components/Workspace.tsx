@@ -646,6 +646,11 @@ export default function Workspace() {
               </div>
             </nav>
             <div className={`workspace-body mode-${mode}${mode==="manuscript"&&!previewVisible?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
+              {mode==="manuscript" ? <div className="editor-shared-toolbar" role="group" aria-label="Editor workspace layout">
+                <button type="button" aria-pressed={inspectorTab==="preview"} onClick={()=>{setInspectorTab("preview");setPreviewVisible(true);}}>Write</button>
+                <button type="button" aria-pressed={inspectorTab==="formatting"} onClick={()=>{setInspectorTab("formatting");setPreviewVisible(true);}}>Format</button>
+                <span className="editor-shared-toolbar-context">{chapter?.title}</span>
+              </div> : null}
               <section className="editor-area" hidden={mode !== "manuscript"}>
                 {findOpen?<FindReplacePanel book={book} chapterId={chapterId} config={findConfig} onConfig={setFindConfig} onClose={()=>setFindOpen(false)} onNavigate={navigateMatch}
                   onReplace={applyReplacements} onUndo={()=>swapReplacement(true)} onRedo={()=>swapReplacement(false)}
@@ -701,10 +706,6 @@ export default function Workspace() {
                 </p>
               </section>
               {mode==="manuscript"&&previewVisible ? <div className="editor-work-panels">
-                <div className="editor-layout-switch" role="group" aria-label="Editor layout">
-                  <button type="button" aria-pressed={inspectorTab==="preview"} onClick={()=>setInspectorTab("preview")}>Write</button>
-                  <button type="button" aria-pressed={inspectorTab==="formatting"} onClick={()=>setInspectorTab("formatting")}>Format</button>
-                </div>
                 {inspectorTab==="formatting"?<section className="editor-format-panel" aria-label="Formatting controls">
                   <DesignPanel hidden={false} cover={book.cover} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
                     edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
