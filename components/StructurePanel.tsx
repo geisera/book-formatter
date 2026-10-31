@@ -136,6 +136,7 @@ export default function StructurePanel({
                         onChange={e=>dispatch({kind:"layout",id:section.id,changes:{spaceAfter:Number(e.target.value)}})}/>
                     </label>
                   </div>
+                  <button type="button" onClick={() => dispatch({kind:"reset-layout",id:section.id})}>Restore section layout defaults</button>
                   <p>Exact page sides, vertical placement, headers and folios apply to PDF. EPUB uses compatible spacing and page breaks; reading devices control physical pages.</p>
                 </details>
                 <div className="structure-item-actions">
@@ -146,7 +147,7 @@ export default function StructurePanel({
                     const answer = window.prompt(`Split after which paragraph/block? (1–${blocks.length-1})`, String(Math.floor(blocks.length/2)));
                     if (answer !== null) dispatch({kind:"split",id:section.id,blockIndex:Number(answer),title:`${section.title} (continued)`});
                   }}>Split…</button>
-                  <button type="button" disabled={index === ordered.length-1} onClick={() => {
+                  <button type="button" disabled={index === ordered.length-1 || sectionMatter(ordered[index+1].sectionType ?? "chapter") !== matter} onClick={() => {
                     if (window.confirm("Merge this section with the next? The next section title will be removed.")) dispatch({kind:"merge",id:section.id});
                   }}>Merge next</button>
                   <button type="button" disabled={book.chapters.length === 1} onClick={() => {
@@ -159,7 +160,7 @@ export default function StructurePanel({
           </ol>
         </div>
       ))}
-      <p className="control-note">Sections are numbered continuously from Front Matter through Body Matter to Back Matter. Drag within a group or use Up/Down; to change groups, change the section type. Section IDs remain stable when renamed or reordered. Splitting occurs between text blocks, not within a paragraph. The EPUB navigation follows the book order. Hiding a title affects the rendered page in EPUB and PDF, not the section name in navigation.</p>
+      <p className="control-note">Sections are numbered continuously from Front Matter through Body Matter to Back Matter. Drag within a group or use Up/Down; to change groups, change the section type. Section IDs remain stable when renamed or reordered. Splitting occurs between text blocks, not within a paragraph. New sections are placed in their selected matter group. Merging is restricted to the same matter group. Use Restore section layout defaults to remove custom page settings. The EPUB navigation follows the book order. Hiding a title affects the rendered page in EPUB and PDF, not the section name in navigation.</p>
     </section>
   );
 }
