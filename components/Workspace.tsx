@@ -768,6 +768,10 @@ export default function Workspace() {
                   />
                   {chapter ? <div className="design-section-editor" style={{padding:"1rem",marginTop:"1rem",borderTop:"1px solid var(--border, #ddd)"}}>
                     <h3>Edit section text</h3>
+                    <label>Section title
+                      <input className="chapter-title" aria-label="Design section title" value={chapter.title}
+                        onChange={e=>{const b=current.current;if(!b)return;edit({...b,chapters:b.chapters.map(c=>c.id===chapter.id?{...c,title:e.target.value}:c)});}}/>
+                    </label>
                     <p className="control-note">Edit this section directly. Changes save locally and update previews.</p>
                     <button type="button" disabled={!sectionIsEmpty(chapter)}
                       onClick={()=>{
