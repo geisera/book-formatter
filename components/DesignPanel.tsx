@@ -4,6 +4,7 @@ import {getSectionLayout,sectionHeadingScale,defaultSectionLayout,getSectionTypo
 import type {StructureAction} from "../lib/structure";
 import {PRINT_TRIMS,PRINT_PRESETS,type PrintTrim,type PrintEdition} from "../lib/print-profile";
 import CoverEditor from "./CoverEditor";
+import { sectionTypography } from "../lib/front-matter";
 export default function DesignPanel({
   edition,
   cover,
@@ -41,6 +42,7 @@ export default function DesignPanel({
   const layout=section ? getSectionLayout(section,book) : null;
   const sectionType=section?.sectionType??"chapter";
   const typeStyle=book.sectionStyles?.[sectionType];
+  const baseTypography=sectionTypography(sectionType,edition.template.id);
   const typeLayout={...defaultSectionLayout(sectionType),...typeStyle?.layout};
   const headingScale=section?sectionHeadingScale(section,book):1;
   const typography=section?getSectionTypographyOverrides(section,book):{};
@@ -74,11 +76,11 @@ export default function DesignPanel({
           <label>Heading scale ({(typeStyle?.headingScale??1).toFixed(2)}×)
             <input aria-label="Section type heading scale" type="range" min="0.5" max="2" step="0.05" value={typeStyle?.headingScale??1}
               onChange={e=>typeHeadingChange(Number(e.target.value))}/></label>
-          <label>Default body scale ({(typeStyle?.bodyScale??1).toFixed(2)}×)<input type="range" min="0.5" max="2" step="0.05" value={typeStyle?.bodyScale??1} onChange={e=>onTypeStyle(sectionType,{...typeStyle,bodyScale:Number(e.target.value)})}/></label>
-          <label>Default heading alignment<select value={typeStyle?.headingAlign??"center"} onChange={e=>onTypeStyle(sectionType,{...typeStyle,headingAlign:e.target.value as "left"|"center"})}><option value="left">Left</option><option value="center">Center</option></select></label>
-          <label>Default body alignment<select value={typeStyle?.bodyAlign??"left"} onChange={e=>onTypeStyle(sectionType,{...typeStyle,bodyAlign:e.target.value as "left"|"center"})}><option value="left">Left</option><option value="center">Center</option></select></label>
-          <label className="design-toggle"><input type="checkbox" checked={typeStyle?.italicBody??false} onChange={e=>onTypeStyle(sectionType,{...typeStyle,italicBody:e.target.checked})}/>Italic body</label>
-          <label className="design-toggle"><input type="checkbox" checked={typeStyle?.unindentedBody??false} onChange={e=>onTypeStyle(sectionType,{...typeStyle,unindentedBody:e.target.checked})}/>No paragraph indents</label>
+          <label>Default body scale ({(typeStyle?.bodyScale??baseTypography.bodyFactor).toFixed(2)}×)<input type="range" min="0.5" max="2" step="0.05" value={typeStyle?.bodyScale??baseTypography.bodyFactor} onChange={e=>onTypeStyle(sectionType,{...typeStyle,bodyScale:Number(e.target.value)})}/></label>
+          <label>Default heading alignment<select value={typeStyle?.headingAlign??baseTypography.headingAlign} onChange={e=>onTypeStyle(sectionType,{...typeStyle,headingAlign:e.target.value as "left"|"center"})}><option value="left">Left</option><option value="center">Center</option></select></label>
+          <label>Default body alignment<select value={typeStyle?.bodyAlign??baseTypography.bodyAlign} onChange={e=>onTypeStyle(sectionType,{...typeStyle,bodyAlign:e.target.value as "left"|"center"})}><option value="left">Left</option><option value="center">Center</option></select></label>
+          <label className="design-toggle"><input type="checkbox" checked={typeStyle?.italicBody??baseTypography.italicBody} onChange={e=>onTypeStyle(sectionType,{...typeStyle,italicBody:e.target.checked})}/>Italic body</label>
+          <label className="design-toggle"><input type="checkbox" checked={typeStyle?.unindentedBody??baseTypography.unindentedBody} onChange={e=>onTypeStyle(sectionType,{...typeStyle,unindentedBody:e.target.checked})}/>No paragraph indents</label>
           {format==="print"?<>
             <label>Default start page<select aria-label="Section type start page" value={typeLayout.start} onChange={e=>typeLayoutChange({start:e.target.value as SectionPageLayout["start"]})}>
               <option value="next">Next page</option><option value="recto">Right-hand</option><option value="verso">Left-hand</option>
