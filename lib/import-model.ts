@@ -37,7 +37,11 @@ export function suggestedSplit(draft: ImportDraft): SplitMode {
   const h2 = draft.blocks.filter(
     (b) => b.type === "heading" && b.level === 2,
   ).length;
-  return h1 === 1 && h2 > 1 ? "h2" : h1 ? "h1" : h2 ? "h2" : "none";
+  const h1AreSectionWrappers=draft.blocks.filter(b=>b.type==="heading"&&b.level===1).every(b=>{
+    const guess=classifyImportedSection(blockText(b),0,1);
+    return guess.confidence==="high" && guess.type!=="chapter";
+  });
+  return h2>1 && (h1===1 || h1AreSectionWrappers) ? "h2" : h1 ? "h1" : h2 ? "h2" : "none";
 }
 export function splitChapters(draft: ImportDraft, mode: SplitMode): Chapter[] {
   const level = mode === "auto" ? suggestedSplit(draft) : mode;
