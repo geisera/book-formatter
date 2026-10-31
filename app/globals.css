@@ -2537,3 +2537,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .workspace-context-help{display:flex;justify-content:flex-end;padding:6px 18px;background:#f7f8f3;border-bottom:1px solid #dfe7dd;font-size:12px}
 .workspace-context-help a{display:inline-flex;min-height:32px;align-items:center}
 @media(max-width:900px){.workspace-coachmark{padding:9px 12px}.workspace-context-help{padding:4px 12px}}
+
+/* P3-3 recover deleted sections */
+.delete-undo-notice{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 16px;background:#f8f1dc;color:#49391d;border-bottom:1px solid #ddcb94;font-size:13px}
+.delete-undo-notice span{flex:1 1 190px}
+.delete-undo-notice button{min-height:36px;background:#fff9ed;border:1px solid #cdb985;border-radius:5px;padding:7px 12px}
