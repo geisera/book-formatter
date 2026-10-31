@@ -1,0 +1,26 @@
+import {test,expect} from "@playwright/test";
+test("bookshelf backup and confirmed permanent deletion",async ({page})=>{
+ await page.goto("/");
+ await page.getByLabel("Book title",{exact:true}).fill("Delete test manuscript");
+ await page.getByLabel("Author name",{exact:true}).fill("Test");
+ await page.getByRole("button",{name:"Create local book"}).click();
+ await page.getByRole("button",{name:"← Bookshelf"}).click();
+ const item=page.locator(".bookshelf-item").filter({hasText:"Delete test manuscript"});
+ await expect(item).toBeVisible();
+ await item.getByRole("button",{name:"Actions for Delete test manuscript"}).click();
+ const menu=page.getByRole("menu",{name:"Actions for Delete test manuscript"});
+ await expect(menu.getByRole("menuitem",{name:"Export backup"})).toBeVisible();
+ const downloaded=page.waitForEvent("download");
+ await menu.getByRole("menuitem",{name:"Export backup"}).click();
+ expect((await downloaded).suggestedFilename()).toBe("Delete-test-manuscript.book.zip");
+ await item.getByRole("button",{name:"Actions for Delete test manuscript"}).click();
+ page.once("dialog",d=>d.dismiss());
+ await page.getByRole("menuitem",{name:"Delete manuscript"}).click();
+ await expect(item).toBeVisible();
+ await item.getByRole("button",{name:"Actions for Delete test manuscript"}).click();
+ page.once("dialog",d=>d.accept());
+ await page.getByRole("menuitem",{name:"Delete manuscript"}).click();
+ await expect(item).toHaveCount(0);
+ await page.reload();
+ await expect(page.getByText("Delete test manuscript")).toHaveCount(0);
+});
