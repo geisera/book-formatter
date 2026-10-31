@@ -131,7 +131,8 @@ describe("semantic manuscript import", () => {
   it("attaches a labeled DOCX caption to the preceding image", () => {
     const src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
     const draft=parseConvertedHtml(`<p><img src="${src}" alt="An illustration"/></p><p>Figure 1: The watchtower.</p><p>Further prose.</p>`,"captions.docx");
-    expect(draft.blocks.map(b=>b.type)).toEqual(["image","paragraph"]);
+    expect(draft.blocks.map(b=>b.type)).toEqual(["image","paragraph","paragraph"]);
+    expect(draft.blocks[1].content?.[0].text).toBe("Further prose.");
     expect(draft.blocks[0].attrs?.caption).toBe("Figure 1: The watchtower.");
     expect(splitChapters(draft,"none")[0].content).toMatchObject({type:"doc"});
   });
