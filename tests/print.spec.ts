@@ -218,3 +218,35 @@ test("prints the selected front cover as the first page with fresh and offline w
   expect(pdf.getPageCount()).toBeGreaterThan(2);
   await expect(page.getByText("Page 1 · Front cover")).toBeVisible();
 });
+
+
+test("saves trim selection and exports a correctly sized 5.5 × 8.5 trade paperback", async ({page,context})=>{
+  await page.goto("/");
+  await expect(page.getByText("Offline app ready")).toBeVisible();
+  await page.getByLabel("Book title",{exact:true}).fill("Trade paperback");
+  await page.getByLabel("Author name",{exact:true}).fill("Test Writer");
+  await page.getByRole("button",{name:"Create local book"}).click();
+  await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("A chapter of text. ".repeat(120));
+  await page.getByRole("button",{name:"Print",exact:true}).click();
+  await expect(page.getByLabel("Trim size")).toHaveValue("6x9");
+  await page.getByLabel("Trim size").selectOption("5.5x8.5");
+  await expect(page.getByText(/For most novels, start with/)).toBeVisible();
+  await expect(page.getByRole("status").filter({hasText:"Saved locally"})).toBeVisible();
+  await page.getByRole("button",{name:"Design",exact:true}).click();
+  await page.getByRole("button",{name:"Print",exact:true}).click();
+  await expect(page.getByLabel("Trim size")).toHaveValue("5.5x8.5");
+  await context.setOffline(true);
+  await page.getByRole("button",{name:"Build 5.5 × 8.5 PDF proof"}).click();
+  await expect(page.getByRole("button",{name:"Download PDF proof"})).toBeVisible({timeout:60000});
+  await expect(page.locator('canvas[data-rendered="true"]')).toHaveCount(1);
+  const download=page.waitForEvent("download");
+  await page.getByRole("button",{name:"Download PDF proof"}).click();
+  const file=await download;
+  expect(file.suggestedFilename()).toContain("-5.5x8.5-proof.pdf");
+  const pdf=await PDFDocument.load(await readFile((await file.path())!));
+  expect(pdf.getPages().every(p=>p.getSize().width===396&&p.getSize().height===612)).toBe(true);
+  await page.reload();
+  await page.locator(".book-card").filter({hasText:"Trade paperback"}).click();
+  await page.getByRole("button",{name:"Print",exact:true}).click();
+  await expect(page.getByLabel("Trim size")).toHaveValue("5.5x8.5");
+});
