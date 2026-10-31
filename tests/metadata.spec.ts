@@ -20,7 +20,7 @@ test("edits publishing metadata without changing the manuscript",async({page})=>
  await page.getByRole("button",{name:"Manuscript",exact:true}).click();
  await expect(page.getByRole("textbox",{name:"Chapter manuscript"})).toContainText("Original manuscript prose.");
  await page.getByRole("button",{name:"← Bookshelf"}).click();
- await page.getByRole("button",{name:/Publishing test/}).click();
+ await page.locator(".book-card").filter({hasText:/Publishing test/}).click();
  await page.getByRole("button",{name:"Details",exact:true}).click();
  await expect(details.getByLabel("Subtitle")).toHaveValue("Beyond the Horizon");
  await expect(details.getByLabel("Series name")).toHaveValue("The Expedition");
