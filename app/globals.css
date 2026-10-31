@@ -2066,3 +2066,12 @@ aside h2 {
 .design-studio-preview-content .pdf-proof-viewer{max-width:100%}
 @media(max-width:1050px){.design-studio{grid-template-columns:minmax(240px,300px) minmax(0,1fr)}}
 @media(max-width:760px){.design-studio{display:flex;flex-direction:column}.design-studio-controls{max-height:none;border-right:0;border-bottom:1px solid var(--line)}.design-studio-preview-content{min-height:450px}.design-studio-preview-head{flex-wrap:wrap}}
+
+/* Section formatting is contextual inside Design, not another workspace. */
+.design-studio-controls .design-section-settings{margin:12px 0 16px!important;background:#f6f8f3;border-color:#d4decf}
+.design-section-settings label{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.design-section-settings select{width:100%;padding:8px;border:1px solid var(--line);border-radius:5px;background:#fff}
+.design-section-settings .design-toggle{flex-direction:row;align-items:center;gap:8px}
+.design-section-settings summary{font-weight:650;font-size:12px;cursor:pointer;margin:12px 0}
+.design-section-settings button{border:1px solid var(--line);padding:8px 10px;background:#fff;border-radius:5px;cursor:pointer}
+.design-section-settings button:hover{background:#edf1e9}
