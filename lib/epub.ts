@@ -225,9 +225,9 @@ ${e.template.id === "modern" ? "h1{font-size:1.5em;letter-spacing:-.025em;font-w
 .section-layout.opening-half-title,.section-layout.opening-title,.section-layout.opening-dedication,.section-layout.opening-epigraph,.section-layout.opening-part{text-align:center}
 .section-layout.opening-half-title h1{font-size:2.2em;margin:24vh 0 1em;letter-spacing:.06em}
 .section-layout.opening-title h1{font-size:2.4em;margin:18vh 0 1em}
-.section-layout .title-subtitle{font-size:1.16em;font-style:italic;text-indent:0;margin:0 0 2em}
-.section-layout .title-author{font-size:1.05em;text-indent:0;letter-spacing:.08em;margin:0 0 3em}
-.section-layout .title-publisher{font-size:.85em;text-indent:0;letter-spacing:.13em;text-transform:uppercase}
+.section-layout .title-subtitle,.titlepage .title-subtitle{font-size:1.16em;font-style:italic;text-indent:0;margin:0 0 2em}
+.section-layout .title-author,.titlepage .title-author{font-size:1.05em;text-indent:0;letter-spacing:.08em;margin:0 0 3em}
+.section-layout .title-publisher,.titlepage .title-publisher{font-size:.85em;text-indent:0;letter-spacing:.13em;text-transform:uppercase}
 .section-layout.opening-copyright{font-size:.82em;line-height:1.5}
 .section-layout.opening-copyright p{text-indent:0;margin:0 0 .65em}
 .section-layout.opening-dedication,.section-layout.opening-epigraph{padding-top:20vh!important}
