@@ -25,7 +25,7 @@ type Ast = {
 };
 const scene = /^(?:(?:\*\s*){3,}|(?:_\s*){3,}|(?:-\s*){3,}|(?:#\s*){3,})$/;
 const chapterName =
-  /^(?:(?:chapter|part|book)\s+(?:\d+|[ivxlcdm]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)(?:\s*[:.\-–—]\s*.+)?|prologue|epilogue|interlude|preface|foreword|dedication|acknowledg(?:e)?ments|about the author)$/i;
+  /^(?:(?:chapter|part|book)\s+(?:\d+|[ivxlcdm]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)(?:\s*[:.\-–—]\s*.+)?|prologue|epilogue|interlude|preface|foreword|introduction|afterword|dedication|acknowledg(?:e)?ments|about the author|bibliography|references|works cited|appendix(?:\s+[a-z\d]+)?|glossary|endnotes|end notes|notes|also by|praise|copyright|table of contents|contents|title page|half[ -]title)$/i;
 function paragraph(text: string): ImportBlock {
   return {
     type: "paragraph",
