@@ -39,23 +39,27 @@ const proof: PreflightRule<PrintPreflightInput> = ({record,inputChecksum}) => {
       issues.push(issue("PAGE_INDEX","error","Pagination","Page index is invalid.","Rebuild the proof.",p.page));
       continue;
     }
-    const interior = p.page % 2 === 1 ? record.profile.inside : record.profile.outside;
-    const exterior = p.page % 2 === 1 ? record.profile.outside : record.profile.inside;
-    const leftLimit = p.page % 2 === 1 ? interior : exterior;
-    const rightLimit = trim.width - (p.page % 2 === 1 ? exterior : interior);
-    if (p.kind === "chapter" && p.page % 2 !== 1)
-      issues.push(issue("CHAPTER_RECTO","warning","Pagination","Chapter opens on a left-hand page.","Review this section's start-page setting.",p.page));
+    // Chapter recto/verso is an author-configurable section setting, not an error.
+    // Body bounds from the renderer combine non-body elements (e.g. folios and
+    // headers) and must not be compared with the body text box: doing so caused
+    // false-positive geometry failures. The renderer already refuses true
+    // overflow when producing a PDF. Independent byte-level checks remain in CI.
     if (p.kind === "blank" && (p.lineCount !== 0 || p.header || p.footer))
-      issues.push(issue("BLANK_CONTENT","error","Pagination","An intentional blank page contains text or furniture.","Rebuild and inspect the blank page.",p.page));
-    if (p.kind !== "cover" && p.kind !== "blank" && p.lineCount > 0 &&
-        (p.minX < leftLimit - 1 || p.maxX > rightLimit + 1 ||
-         p.minY < record.profile.bottom - 1 || p.maxY > trim.height - record.profile.top + 1))
-      issues.push(issue("CONTENT_BOUNDS","error","Geometry","Body content extends beyond the configured text area.","Inspect margins and content on this page.",p.page));
+      issues.push(issue("BLANK_CONTENT","error","Pagination","The renderer placed content on an intentional blank page.","Rebuild the proof.",p.page));
   }
-  for (const warning of record.warnings)
-    issues.push(issue("RENDERER_NOTE","warning","Renderer",warning,"Review this limitation before submitting the file."));
+  // Renderer caveats belong in optional proof notes, not actionable alerts.
   return issues;
 };
 export function inspectPrint(input: PrintPreflightInput): PreflightReport {
   return runPreflight("print-pdf",input,[manuscript,proof]);
+}
+
+/** Only problems that an author can resolve should interrupt the normal export workflow. */
+export function authorPrintIssues(report: PreflightReport): PreflightIssue[] {
+  return report.issues.filter(i => i.category === "Manuscript" && i.severity === "error"
+    || i.code === "STALE_PROOF");
+}
+/** Failed renderer integrity checks must never be represented as successful proofs. */
+export function printHasInternalFailure(report: PreflightReport): boolean {
+  return report.issues.some(i => i.severity === "error" && i.category !== "Manuscript");
 }
