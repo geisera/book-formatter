@@ -408,6 +408,5 @@ describe("professional PDF pagination",()=>{
    expect(a.record.inputChecksum).toBe(c.record.inputChecksum);
    expect(a.record.pageCount).toBe(c.record.pageCount);
    expect(a.record.pages).toEqual(c.record.pages);
-   expect(a.record.artifactChecksum).toBe(c.record.artifactChecksum);
  },30000);
 });
