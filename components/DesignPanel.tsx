@@ -1,11 +1,17 @@
 "use client";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
+import type {Book} from "../lib/model";
+import CoverEditor from "./CoverEditor";
 export default function DesignPanel({
   edition,
+  cover,
+  onCoverChange,
   onChange,
   hidden,
 }: {
   edition: EbookEdition;
+  cover: Book["cover"];
+  onCoverChange: (cover:Book["cover"])=>void;
   onChange: (edition: EbookEdition) => void;
   hidden: boolean;
 }) {
@@ -28,6 +34,7 @@ export default function DesignPanel({
         customize the ebook edition; print uses its own page geometry and justification.
         Your manuscript is unchanged.
       </p>
+      <CoverEditor cover={cover} onChange={onCoverChange}/>
       <div className="template-options" role="group" aria-label="Book design template">
         {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
           <button type="button" key={id}
