@@ -1,6 +1,6 @@
+"use client";
 import { chapterNumberLabel, chapterOrdinal } from "../lib/chapter-numbering";
 import { sectionMatter } from "../lib/model";
-"use client";
 import {
   memo,
   useEffect,
