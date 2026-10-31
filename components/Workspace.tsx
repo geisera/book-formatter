@@ -22,6 +22,7 @@ import { romanNumeral } from "../lib/chapter-numbering";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 import { preflight } from "../lib/epub";
+import { schema } from "../lib/model";
 /** UI-only section labels; never modifies manuscript content. */
 function manuscriptSectionLabel(book: Book, section: Book["chapters"][number]): string {
   const type=section.sectionType??"chapter";
@@ -40,6 +41,20 @@ function manuscriptSectionLabel(book: Book, section: Book["chapters"][number]): 
   }
   return label;
 }
+type BackupMarker={at:number;words:number};
+function bookWords(book:Book):number {
+  return book.chapters.reduce((sum,c)=>sum+(schema.nodeFromJSON(c.content).textContent.match(/\S+/g)?.length??0),0);
+}
+function backupKey(id:string){return `book-formatter:backup:${id}`;}
+function backupMarker(id:string):BackupMarker|null{
+  try{const value=localStorage.getItem(backupKey(id));if(!value)return null;const parsed=JSON.parse(value) as BackupMarker;return typeof parsed.at==="number"&&typeof parsed.words==="number"?parsed:null;}catch{return null;}
+}
+function backupLabel(id:string):string{
+  const marker=backupMarker(id);
+  if(!marker)return "Never backed up";
+  const days=Math.floor((Date.now()-marker.at)/86400000);
+  return days<1?"Last backup: today":days===1?"Last backup: yesterday":`Last backup: ${days} days ago`;
+}
 export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
   const [inspectorTab,setInspectorTab]=useState<"preview"|"formatting">("preview");
@@ -47,6 +62,10 @@ export default function Workspace() {
   const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
   const [readinessOpen,setReadinessOpen]=useState(false);
+  const [backupRefresh,setBackupRefresh]=useState(0);
+  const [backupSnooze,setBackupSnooze]=useState<string|null>(null);
+  const [backupPrompt,setBackupPrompt]=useState(false);
+  const [dontAskBackup,setDontAskBackup]=useState(false);
   const [findOpen,setFindOpen]=useState(false);
   const [findConfig,setFindConfig]=useState<SearchConfig>({query:"",replacement:"",scope:"chapter",caseSensitive:false,wholeWord:false});
   const [findFocus,setFindFocus]=useState<{from:number;to:number;nonce:number}|undefined>();
@@ -299,6 +318,8 @@ export default function Workspace() {
         `${snapshot.title.replace(/[^a-z0-9]/gi, "-") || "book"}.book.zip`,
         "application/zip",
       );
+      localStorage.setItem(backupKey(snapshot.id),JSON.stringify({at:Date.now(),words:bookWords(snapshot)}));
+      setBackupRefresh(v=>v+1);setBackupSnooze(null);setBackupPrompt(false);
     } catch (e) {
       setError(
         e instanceof Error
@@ -317,6 +338,8 @@ export default function Workspace() {
       download(bytes,
         `${item.title.replace(/[^a-z0-9]/gi, "-") || "book"}.book.zip`,
         "application/zip");
+      localStorage.setItem(backupKey(item.id),JSON.stringify({at:Date.now(),words:bookWords(item)}));
+      setBackupRefresh(v=>v+1);
       setStatus("Project backup downloaded");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create project backup.");
@@ -366,6 +389,11 @@ export default function Workspace() {
   }
   const chapter = book?.chapters.find((c) => c.id === chapterId);
   const previewChapter = useDeferredValue(chapter);
+  const backupBaseline=book?backupMarker(book.id):null;
+  const backupWordDelta=book?bookWords(book)-(backupBaseline?.words??0):0;
+  const backupAgeDays=backupBaseline?(Date.now()-backupBaseline.at)/86400000:0;
+  const backupDue=!!book&&((backupBaseline&&backupAgeDays>=7)||backupWordDelta>=500);
+  const backupSnoozed=!!book&&backupSnooze===book.id;
   const readinessIssues=book?preflight(book,publishFormat):[];
   const blockingIssues=readinessIssues.filter(issue=>issue.severity==="error");
   function fixReadinessIssue(location:string,message:string){
@@ -389,6 +417,14 @@ export default function Workspace() {
     }
   }
 
+  function onExportSuccess(){
+    const b=current.current;
+    if(!b)return;
+    const key=`book-formatter:export-backup-asked:${b.id}`;
+    if(localStorage.getItem(key)||localStorage.getItem(`book-formatter:export-backup-dismiss:${b.id}`))return;
+    localStorage.setItem(key,"1");
+    setBackupPrompt(true);
+  }
   async function exportSnapshot(): Promise<Book> {
     await queue.current;
     if (failed.current || blocked.current)
@@ -570,6 +606,7 @@ export default function Workspace() {
                           {b.author || "Author not set"} · {b.chapters.length}{" "}
                           chapter{b.chapters.length !== 1 ? "s" : ""}
                         </small>
+                        <small className="backup-time">{backupLabel(b.id)}</small>
                       </span>
                       <span className="arrow">→</span>
                     </button>
@@ -627,6 +664,7 @@ export default function Workspace() {
               </details>)}
             </div>
             <button className="add" onClick={()=>setMode("structure")}>+ Add or organize sections</button>
+            <small className="backup-time sidebar-backup-time">{backupLabel(book.id)}</small>
             <div className="aside-bottom">
               <button onClick={() => {setPublishFormat("print");setMode("publish");}}>Print PDF proof</button>
               <button
@@ -690,6 +728,17 @@ export default function Workspace() {
                 </span>
               </div>
             </nav>
+            {backupDue&&!backupSnoozed?<div className="backup-nudge" role="status">
+              <span>Your changes exist only in this browser. Download a backup.</span>
+              <button type="button" onClick={()=>void backup()}>Download</button>
+              <button type="button" onClick={()=>setBackupSnooze(book.id)}>Remind me later</button>
+            </div>:null}
+            {backupPrompt?<div className="backup-nudge export-backup-prompt" role="status">
+              <span>Also download a project backup?</span>
+              <button type="button" onClick={()=>void backup()}>Download backup</button>
+              <label><input type="checkbox" checked={dontAskBackup} onChange={e=>setDontAskBackup(e.target.checked)}/> Don't ask again</label>
+              <button type="button" onClick={()=>{if(dontAskBackup)localStorage.setItem(`book-formatter:export-backup-dismiss:${book.id}`,"1");localStorage.setItem(`book-formatter:export-backup-asked:${book.id}`,"1");setBackupPrompt(false);}}>Not now</button>
+            </div>:null}
             {readinessOpen?<section id="export-readiness-list" className="workspace-readiness-panel" aria-label="Export validation issues">
               <div className="workspace-readiness-head"><strong>Export checks · {publishFormat==="ebook"?"EPUB":"Paperback PDF"}</strong>
                 <button type="button" onClick={()=>setReadinessOpen(false)} aria-label="Close export checks">Close</button></div>
@@ -801,9 +850,9 @@ export default function Workspace() {
                   </div>
                 </div>
                 {publishFormat==="ebook"
-                  ? <PublishPanel book={book} getSnapshot={exportSnapshot} onMetadata={updateMetadata}/>
+                  ? <PublishPanel book={book} getSnapshot={exportSnapshot} onMetadata={updateMetadata} onExportSuccess={onExportSuccess}/>
                   : <PrintPanel book={book} getSnapshot={exportSnapshot} onPublish={()=>setPublishFormat("ebook")}
-                      onAlignmentChange={changePrintAlignment} onTrimChange={changePrintTrim}/>}
+                      onAlignmentChange={changePrintAlignment} onTrimChange={changePrintTrim} onExportSuccess={onExportSuccess}/>}
               </section> : null}
               {mode === "print" ? (
                 <PrintPanel
