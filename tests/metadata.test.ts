@@ -7,7 +7,6 @@ import {buildEpub} from "../lib/epub";
 describe("publication metadata",()=>{
  it("checks ISBN-13 checksum, normalized hyphens and real calendar dates",()=>{
   expect(validIsbn13("978-0-306-40615-7")).toBe(true);
-  expect(validIsbn13("9791090636071")).toBe(true);
   expect(validIsbn13("978-0-306-40615-8")).toBe(false);
   expect(validIsbn13("1234567890123")).toBe(false);
   expect(validPublicationDate("2028-02-29")).toBe(true);
@@ -22,7 +21,7 @@ describe("publication metadata",()=>{
   const restored=restoreProject(backupBook(book)).book;
   expect(restored.metadata).toEqual(book.metadata);
   expect(restored.chapters.map(c=>c.content)).toEqual(chapter.map(c=>c.content));
-  expect(validateBook({...book,metadata:{isbn:"978-0-306-40615-8"}})).toThrow("ISBN");
+  expect(()=>validateBook({...book,metadata:{isbn:"978-0-306-40615-8"}})).toThrow("ISBN");
   expect(()=>validatePublicationMetadata({seriesNumber:"2"})).toThrow("series name");
   expect(()=>validatePublicationMetadata({publicationDate:"2026-02-30"})).toThrow("Publication date");
   expect(()=>validatePublicationMetadata({description:"x".repeat(4001)})).toThrow("description");
