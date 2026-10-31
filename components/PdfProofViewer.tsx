@@ -2,16 +2,21 @@
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import type { PrintRecord } from "../lib/print";
+import {PRINT_TRIMS} from "../lib/print-profile";
 function PageCanvas({
   document,
   pageNumber,
   scale,
   kind,
+  width,
+  height,
 }: {
   document: PDFDocumentProxy;
   pageNumber: number;
   scale: number;
   kind: string;
+  width: number;
+  height: number;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false),
@@ -49,13 +54,13 @@ function PageCanvas({
     };
   }, [document, pageNumber, scale]);
   return (
-    <figure className="pdf-leaf" style={{ width: 432 * scale }}>
+    <figure className="pdf-leaf" style={{ width: width * scale }}>
       <canvas
         ref={canvas}
         role="img"
         aria-label={`Print proof page ${pageNumber}`}
         data-rendered={ready ? "true" : "false"}
-        style={{ width: 432 * scale, height: 648 * scale }}
+        style={{ width: width * scale, height: height * scale }}
       />
       {error ? <p role="alert">{error}</p> : null}
       <figcaption>
@@ -120,6 +125,7 @@ export default function PdfProofViewer({
       destroy?.();
     };
   }, [bytes]);
+  const {width,height}=PRINT_TRIMS[record.profile.trim] ?? PRINT_TRIMS["6x9"];
   const first = facing ? (page % 2 ? page - 1 : page) : page;
   const visible = facing ? [first, first + 1] : [first];
   return (
@@ -199,12 +205,14 @@ export default function PdfProofViewer({
                   pageNumber={n}
                   scale={scale}
                   kind={record.pages[n - 1].kind}
+                  width={width}
+                  height={height}
                 />
               ) : (
                 <div
                   key={n}
                   className="pdf-outside"
-                  style={{ width: 432 * scale, height: 648 * scale }}
+                  style={{ width: width * scale, height: height * scale }}
                 >
                   Outside interior
                 </div>
