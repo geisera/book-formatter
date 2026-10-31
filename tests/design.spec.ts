@@ -179,6 +179,7 @@ test("Design Paperback renders the same local PDF proof with offline assets",asy
  await page.goto("/");
  await expect(page.getByText("Offline app ready")).toBeVisible();
  await page.getByLabel("Book title",{exact:true}).fill("Design PDF proof");
+ await page.getByLabel("Author name",{exact:true}).fill("Test Author");
  await page.getByRole("button",{name:"Create local book"}).click();
  await page.getByRole("textbox",{name:"Chapter manuscript"}).fill("An offline chapter begins. ".repeat(150));
  await expect(page.getByText("Saved locally",{exact:true})).toBeVisible();
