@@ -593,3 +593,28 @@ describe("heading-only PDF sections",()=>{
   await expect(buildPrintPdf(b,fonts,options)).rejects.toThrow("preflight");
  });
 });
+
+describe("designed PDF front matter",()=>{
+ it("builds explicit title, half title, copyright, dedication, epigraph and part pages without duplicate title leaf",async()=>{
+   const b=fixture();
+   b.metadata={subtitle:"A Fantasy Adventure",publisher:"Greywatch Press",publicationDate:"2026-10-31"};
+   const types=["half-title","title","copyright","dedication","epigraph","part"] as const;
+   b.chapters=types.map((sectionType,i)=>({
+     ...blankChapter("Front "+i),sectionType,
+     content:{type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Designed "+sectionType+" text."}]}]}
+   }));
+   const original=structuredClone(b.chapters);
+   const result=await buildPrintPdf(b,fonts,options);
+   expect(result.record.pages.some(p=>p.kind==="title")).toBe(false);
+   expect(result.record.pages.filter(p=>p.kind==="chapter").length).toBe(types.length);
+   expect(result.record.checks.overflow).toBe(0);
+   expect(result.record.checks.splitViolations).toBe(0);
+   expect(b.chapters).toEqual(original);
+ },30000);
+ it("generates an automatic metadata title leaf when none is supplied",async()=>{
+  const b=fixture();
+  b.metadata={subtitle:"A Fantasy Adventure",publisher:"Greywatch Press"};
+  const result=await buildPrintPdf(b,fonts,options);
+  expect(result.record.pages.some(p=>p.kind==="title")).toBe(true);
+ },30000);
+});
