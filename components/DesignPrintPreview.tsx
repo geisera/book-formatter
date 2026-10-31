@@ -9,7 +9,7 @@ import type {PrintFonts,PrintResult,PrintRecord} from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
 
 /** A disposable PDF proof; never persists a build or mutates the manuscript. */
-export default function DesignPrintPreview({book,getSnapshot}:{book:Book;getSnapshot:()=>Promise<Book>}) {
+export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:{book:Book;getSnapshot:()=>Promise<Book>;selectedSectionId?:string}) {
   const snapshotRef=useRef(getSnapshot);
   snapshotRef.current=getSnapshot;
   const fingerprint=useMemo(()=>snapshotChecksum(book),[book]);
@@ -70,7 +70,7 @@ export default function DesignPrintPreview({book,getSnapshot}:{book:Book;getSnap
       {!current&&result?" Previous pages are outdated and hidden until rebuilding finishes.":""}
     </p>
     {state==="error"?<div className="alert" role="alert">{error} Your manuscript remains saved; you can still use the Print workspace.</div>:null}
-    {current&&result?<PdfProofViewer bytes={result.bytes} record={result.record}/>:<div className="print-empty"><h3>Preparing pages</h3><p>Print layout refreshes after your changes are saved. Large books may take longer to paginate.</p></div>}
-    <p className="control-note">Adjust section starts, headers, folios, and placement in Structure. Change print trim and justification in Print. Book design templates affect both formats; ebook-only typography controls do not modify the print edition.</p>
+    {current&&result?<PdfProofViewer bytes={result.bytes} record={result.record} selectedSectionId={selectedSectionId}/>:<div className="print-empty"><h3>Preparing pages</h3><p>Print layout refreshes after your changes are saved. Large books may take longer to paginate.</p></div>}
+    <p className="control-note">Select a section and adjust its print formatting in the left panel. The proof opens at that section when it is ready. Final PDF export remains in Print.</p>
   </section>;
 }
