@@ -83,6 +83,18 @@ This is a feature-level implementation inventory, not a certification that all P
 
 No feature above is labeled **publication-ready** solely because it generates a file. Physical print proofs, standards checks on the exact artifact, and retailer acceptance are separate gates.
 
+## Conventional publishing sections
+
+Structure supports Foreword, Introduction, and Praise / Blurbs in front matter,
+plus Afterword, Bibliography, Appendix, Glossary, and Endnotes in back matter.
+All eight types can be added or assigned to existing sections without modifying
+their text. Each has an explanatory description and a "Use this when" hint.
+They appear in EPUB navigation and PDF export using the selected edition's
+typography and section page layout. Bibliography, Glossary, and Endnotes are
+manual reference-content sections: Book Formatter does not yet generate citations,
+glossary entries, or automatically linked note numbers. Parts remain decorative
+section boundaries rather than hierarchical chapter containers.
+
 ## Designed front matter
 
 Structure section types now drive coordinated EPUB/PDF opening layouts: **Half title**
