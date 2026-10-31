@@ -102,29 +102,34 @@ export default function PublishPanel({
       setMetadataBusy(false);
     }
   }
+  async function runEpubCheck(bytes:Uint8Array,id:string):Promise<{valid:boolean;messages:NonNullable<ExportRecord["epubCheckMessages"]>}>{
+    const validator=new Worker("/epubcheck-worker.js",{type:"module"});
+    try{
+      return await new Promise((resolve,reject)=>{
+        const timer=setTimeout(()=>reject(Error("EPUBCheck timed out.")),180000);
+        validator.onmessage=(event:MessageEvent<{ok:boolean;valid:boolean;messages:NonNullable<ExportRecord["epubCheckMessages"]>;error?:string}>)=>{
+          clearTimeout(timer);
+          if(event.data.ok)resolve({valid:event.data.valid,messages:event.data.messages});
+          else reject(Error(event.data.error||"EPUBCheck failed."));
+        };
+        validator.onerror=()=>{clearTimeout(timer);reject(Error("The local EPUBCheck worker failed to load."));};
+        validator.postMessage({id,bytes:new Uint8Array(bytes)});
+      });
+    }finally{validator.terminate();}
+  }
   async function validateInBrowser(row:ExportRecord){
     setValidationBusy(true);setError("");setNotice("");
-    let validator:Worker|undefined;
     try{
       const stored=await db.artifacts.get(row.id);
       if(!stored)throw Error("Saved EPUB not found. Generate the EPUB again.");
-      validator=new Worker("/epubcheck-worker.js",{type:"module"});
-      const worker=validator;
-      const result=await new Promise<{valid:boolean;messages:NonNullable<ExportRecord["epubCheckMessages"]>}>((resolve,reject)=>{
-        const timer=setTimeout(()=>{worker.terminate();reject(Error("EPUBCheck timed out. Try a smaller EPUB or validate with the external tool."));},180000);
-        worker.onmessage=(event:MessageEvent<{ok:boolean;valid:boolean;messages:NonNullable<ExportRecord["epubCheckMessages"]>;error?:string}>)=>{
-          clearTimeout(timer);if(event.data.ok)resolve(event.data);else reject(Error(event.data.error||"EPUBCheck failed."));
-        };
-        worker.onerror=()=>{clearTimeout(timer);reject(Error("Could not load the local EPUBCheck engine. Open Book Formatter online once and retry."));};
-        worker.postMessage({id:row.id,bytes:stored.bytes});
-      });
+      const result=await runEpubCheck(stored.bytes,row.id);
       const updated:ExportRecord={...row,epubCheck:result.valid?"passed":"failed",epubCheckVersion:"5.4.0",epubCheckCheckedAt:new Date().toISOString(),epubCheckMessages:result.messages.slice(0,250)};
       await db.exports.put(updated);
       setHistory(items=>items.map(item=>item.id===row.id?updated:item));
       setResult(current=>current?.id===row.id?updated:current);
       setNotice(result.valid?"EPUBCheck passed for this saved EPUB. Review reader appearance before publishing.":"EPUBCheck found errors. Review diagnostics below, correct the book, and generate a new EPUB.");
     }catch(e){setError(e instanceof Error?e.message:"EPUBCheck could not validate this EPUB.");}
-    finally{validator?.terminate();setValidationBusy(false);}
+    finally{setValidationBusy(false);}
   }
   async function importEpubCheckReport(row:ExportRecord,file:File) {
     setValidationBusy(true);setError("");setNotice("");
@@ -242,29 +247,37 @@ export default function PublishPanel({
         releaseWorker.current?.();releaseWorker.current=null;
         if (timer.current) clearTimeout(timer.current);
         timer.current = null;
-        try {
-          await db.transaction("rw",db.exports,db.artifacts,async()=>{await db.exports.add(record);await db.artifacts.put({id:record.id,bookId:record.bookId,format:"epub",createdAt:record.createdAt,bytes:new Uint8Array(bytes)});});
-          if (token !== generation.current) return;
-          setHistory((items) => [record, ...items].slice(0, 20));
-        } catch {
-          if (token !== generation.current) return;
-          setNotice(
-            "The EPUB was generated, but its history entry could not be saved. Keep your downloaded file.",
-          );
+        setPhase("Running EPUBCheck locally…");
+        let checked:ExportRecord=record;
+        let validationProblem="";
+        try{
+          const report=await runEpubCheck(bytes,record.id);
+          checked={...record,epubCheck:report.valid?"passed":"failed",epubCheckVersion:"5.4.0",epubCheckCheckedAt:new Date().toISOString(),epubCheckMessages:report.messages.slice(0,250)};
+        }catch(e){validationProblem=e instanceof Error?e.message:"EPUBCheck unavailable.";}
+        if(token!==generation.current)return;
+        try{
+          await db.transaction("rw",db.exports,db.artifacts,async()=>{
+            await db.exports.add(checked);
+            await db.artifacts.put({id:checked.id,bookId:checked.bookId,format:"epub",createdAt:checked.createdAt,bytes:new Uint8Array(bytes)});
+          });
+          if(token!==generation.current)return;
+          setHistory(items=>[checked,...items].slice(0,20));
+        }catch{
+          if(token!==generation.current)return;
+          validationProblem+=(validationProblem?" ":"")+"Unable to save export history. Download a troubleshooting copy before leaving.";
         }
-        if (token !== generation.current) return;
-        const url = URL.createObjectURL(
-          new Blob([new Uint8Array(bytes)], { type: "application/epub+zip" }),
-        );
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = record.filename;
-        link.click();
-        onExportSuccess?.();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setResult(record);
-        setBusy(false);
-        setPhase("");
+        if(token!==generation.current)return;
+        setResult(checked);setBusy(false);setPhase("");
+        if(checked.epubCheck==="passed"){
+          const url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:"application/epub+zip"}));
+          const link=document.createElement("a");link.href=url;link.download=record.filename;link.click();
+          onExportSuccess?.();setTimeout(()=>URL.revokeObjectURL(url),1000);
+          setNotice("EPUBCheck passed. EPUB downloaded automatically.");
+        }else if(checked.epubCheck==="failed"){
+          setNotice("EPUBCheck found errors. The EPUB has been saved locally but was not downloaded automatically. Inspect findings and use the troubleshooting download if needed.");
+        }else{
+          setNotice("EPUB generated but validation could not complete: "+validationProblem+" The file was not downloaded automatically.");
+        }
       };
       encoder.postMessage({
         book: snapshot,
@@ -402,7 +415,7 @@ export default function PublishPanel({
               disabled={!!errors.length || busy || metadataBusy}
               onClick={generate}
             >
-              {busy ? "Generating EPUB…" : "Generate & download EPUB"}
+              {busy ? "Generating EPUB…" : "Generate & validate EPUB"}
             </button>
             {busy ? (
               <div className="export-progress" aria-live="polite">
@@ -421,10 +434,12 @@ export default function PublishPanel({
             ) : null}
             {result ? (
               <div className="export-result" aria-live="polite">
-                <strong>EPUB generated. Download started.</strong>
+                <strong>{result.epubCheck==="passed"?"EPUB validated and downloaded.":result.epubCheck==="failed"?"EPUB generated — validation failed.":"EPUB generated — validation unavailable."}</strong>
                 <p>
                   {result.filename} · {(result.byteLength / 1024).toFixed(0)} KB
                 </p>
+                {result.epubCheck!=="passed"?<button type="button" onClick={()=>void db.artifacts.get(result.id).then(artifact=>{if(!artifact){setError("Saved EPUB unavailable. Generate another copy.");return;}const url=URL.createObjectURL(new Blob([new Uint8Array(artifact.bytes)],{type:"application/epub+zip"}));const a=document.createElement("a");a.href=url;a.download=result.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>Download unvalidated EPUB for troubleshooting</button>:null}
+                {result.epubCheckMessages?.length?<ul className="epubcheck-findings">{result.epubCheckMessages.map((m,i)=><li key={i}><strong>{m.severity} {m.code}</strong> {m.location}<p>{m.message}</p></li>)}</ul>:null}
                 <p>
                   Local package checks passed.
                   <br />
