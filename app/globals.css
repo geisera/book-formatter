@@ -2461,3 +2461,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .import-drop-last{padding:13px;border:2px dashed #367c59;color:#275b40;background:#eaf4ed;text-align:center;border-radius:6px}
 .import-progress progress{vertical-align:middle;max-width:125px}
 @media(max-width:680px){.import-side-by-side{grid-template-columns:1fr}}
+
+
+/* Import review: drag handle and ordinal occupy separate columns.
+   Keep review content in a genuinely flexible full-width third column. */
+.import-dialog .section-review{max-height:min(62vh,620px);overflow-y:auto;overflow-x:hidden}
+.import-dialog .section-row{grid-template-columns:28px 24px minmax(0,1fr);gap:0 9px;padding:16px 14px;align-items:start}
+.import-dialog .section-row>.import-drag-handle{grid-column:1;grid-row:1;padding-top:1px;font-size:21px}
+.import-dialog .section-row>span:not(.import-drag-handle){grid-column:2;grid-row:1;padding-top:14px}
+.import-dialog .section-row>.import-review-main{grid-column:3;grid-row:1;min-width:0;width:100%}
+.import-dialog .section-row .import-review-main>small{grid-column:auto;overflow-wrap:break-word;word-break:normal;max-width:100%}
+.import-dialog .section-row .import-review-fields{grid-template-columns:minmax(0,1.35fr) minmax(135px,1fr)}
+.import-dialog .section-row .import-preview-toggle{display:block;width:max-content;max-width:100%;white-space:normal;text-align:left}
+.import-dialog .section-row .import-review-actions{min-width:0}
+@media(max-width:650px){
+ .import-dialog .section-row{grid-template-columns:25px 20px minmax(0,1fr);gap:0 6px;padding:12px 8px}
+ .import-dialog .section-row .import-review-fields{grid-template-columns:minmax(0,1fr)}
+}
