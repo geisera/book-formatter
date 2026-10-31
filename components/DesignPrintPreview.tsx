@@ -1,27 +1,12 @@
 "use client";
 import {useEffect,useMemo,useRef,useState} from "react";
 import type {Book} from "../lib/model";
-import {newId} from "../lib/model";
 import {snapshotChecksum} from "../lib/epub";
-import {localAsset,localWorker} from "../lib/offline-assets";
+import {startPdfBuild} from "../lib/pdf-worker-controller";
 import {getPrintEdition,PRINT_TRIMS} from "../lib/print-profile";
-import type {PrintFonts,PrintResult,PrintRecord} from "../lib/print";
+import type {PrintResult} from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
 
-// Reuse local font buffers across consecutive preview regenerations. A failed
-// load is retried next time, including after restoring offline assets.
-let cachedPrintFonts:Promise<PrintFonts>|null=null;
-function previewFonts():Promise<PrintFonts>{
-  if(!cachedPrintFonts)cachedPrintFonts=Promise.all(["regular","italic","bold","bold-italic"].map(async face=>{
-    const response=await localAsset("/epub-fonts/"+face+".woff");
-    if(!response.ok)throw Error("Print fonts are not available offline. Open the application online once.");
-    return new Uint8Array(await response.arrayBuffer());
-  })).then(([regular,italic,bold,boldItalic])=>({regular,italic,bold,boldItalic})).catch(e=>{
-    cachedPrintFonts=null;
-    throw e;
-  });
-  return cachedPrintFonts;
-}
 /** A disposable PDF proof; never persists a build or mutates the manuscript. */
 export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:{book:Book;getSnapshot:()=>Promise<Book>;selectedSectionId?:string}) {
   const snapshotRef=useRef(getSnapshot);
@@ -33,47 +18,25 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
   const [progress,setProgress]=useState({percent:0,stage:"Preparing proof"});
   useEffect(()=>{
     let cancelled=false;
-    let worker:Worker|null=null;
-    let release:(()=>void)|null=null;
+    let stop:(()=>void)|null=null;
     const timeout=setTimeout(async()=>{
       if(cancelled)return;
       setState("building");setError("");setProgress({percent:0,stage:"Preparing manuscript"});
-      try {
+      try{
         const snapshot=await snapshotRef.current();
-        if(!cancelled)setProgress({percent:3,stage:"Loading assets"});
         if(cancelled)return;
-        // Never label an outdated asynchronous build current.
-        if(snapshotChecksum(snapshot)!==fingerprint) {setState("waiting");return;}
-        const fonts=await previewFonts();
+        if(snapshotChecksum(snapshot)!==fingerprint){setState("waiting");return;}
+        const build=startPdfBuild({book:snapshot,expectedChecksum:fingerprint,
+          onProgress:status=>{if(!cancelled)setProgress(status);}});
+        stop=build.cancel;
+        const built=await build.promise;
         if(cancelled)return;
-        const prepared=await localWorker("/print-worker.js?renderer=print-proof-1.5.0");
-        worker=prepared.worker;release=prepared.release;
-        if(cancelled){worker.terminate();release();return;}
-        worker.onerror=()=>{if(!cancelled){setState("error");setError("The PDF preview worker could not start. Try reloading online.");}};
-        worker.onmessage=(event:MessageEvent<{type?:"progress";percent?:number;stage?:string;ok?:boolean;error?:string;bytes?:Uint8Array;record?:PrintRecord}>)=>{
-          if(cancelled)return;
-          const payload=event.data;
-          if(payload.type==="progress"){
-            setProgress(p=>({percent:Math.max(p.percent,Math.min(99,Math.max(0,payload.percent??0))),stage:payload.stage??p.stage}));
-            return;
-          }
-          if(!payload.ok||!payload.bytes||!payload.record){
-            setError(payload.error??"Could not generate print preview.");setState("error");return;
-          }
-          if(payload.record.inputChecksum!==fingerprint){
-            setState("waiting");return;
-          }
-          setResult({bytes:payload.bytes,record:payload.record});
-          setProgress({percent:100,stage:"Proof ready"});
-          setState("ready");
-          worker?.terminate();release?.();worker=null;release=null;
-        };
-        worker.postMessage({book:snapshot,fonts:fonts satisfies PrintFonts,id:newId(),createdAt:new Date().toISOString()});
+        setResult(built);setProgress({percent:100,stage:"Proof ready"});setState("ready");
       }catch(e){
         if(!cancelled){setState("error");setError(e instanceof Error?e.message:"Could not build the print preview.");}
       }
     },900);
-    return ()=>{cancelled=true;clearTimeout(timeout);worker?.terminate();release?.();};
+    return ()=>{cancelled=true;clearTimeout(timeout);stop?.();};
   },[fingerprint]);
   const current=result?.record.inputChecksum===fingerprint&&state==="ready";
   const trim=getPrintEdition(book).trim;
