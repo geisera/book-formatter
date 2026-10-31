@@ -418,7 +418,7 @@ export async function buildPrintPdf(
       }
     }
     let opening = true;
-    doc.forEach((node) => {
+    doc.forEach((node, _offset, index) => {
       if (node.type.name === "image") {
         const asset = embedded.get(node.attrs.src);
         if (!asset) throw Error("Embedded print image could not be loaded.");
@@ -492,7 +492,14 @@ export async function buildPrintPdf(
           0,
           13,
         );
-        if (slots() < Math.ceil((lines.length * 19 + leading * 3) / leading))
+        // Keep a subheading together with at least the first two lines of text.
+        // If the following block is a non-text element, keep enough room for it to start.
+        const next = index + 1 < doc.childCount ? doc.child(index + 1) : null;
+        const nextLines = next?.type.name === "paragraph" && next.textContent.trim()
+          ? Math.min(2, wrap(units(next), 0).length) : 0;
+        const headingHeight = 10 + lines.length * 19 + 9;
+        const required = headingHeight + nextLines * leading + (nextLines ? leading : 0);
+        if (y - required < bottom + activeLayout.spaceAfter && proof.lineCount > 0)
           bodyPage();
         y -= 10;
         for (const l of lines) {
@@ -507,6 +514,10 @@ export async function buildPrintPdf(
       const blockAlignment = node.attrs.align as TextAlignment | null;
       const indent = blockAlignment ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
       const lines = wrap(units(node), indent);
+      // A short paragraph looks better on one page; do not force overly long
+      // paragraphs to stay together and leave an unnecessarily blank page.
+      if (lines.length <= 4 && slots() < lines.length && proof.lineCount > 0)
+        bodyPage();
       let offset = 0;
       while (offset < lines.length) {
         let capacity = slots();
