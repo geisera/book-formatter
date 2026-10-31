@@ -189,7 +189,7 @@ export default function PublishPanel({
         if (timer.current) clearTimeout(timer.current);
         timer.current = null;
         try {
-          await db.exports.add(record);
+          await db.transaction("rw",db.exports,db.artifacts,async()=>{await db.exports.add(record);await db.artifacts.put({id:record.id,bookId:record.bookId,format:"epub",createdAt:record.createdAt,bytes:new Uint8Array(bytes)});});
           if (token !== generation.current) return;
           setHistory((items) => [record, ...items].slice(0, 20));
         } catch {
@@ -397,8 +397,7 @@ export default function PublishPanel({
           <section className="publish-card export-history">
             <h3>Export history</h3>
             <p className="control-note">
-              Recent 20 locally generated exports. Keep the downloaded EPUB
-              files; history stores build details only.
+              Recent 20 locally generated exports. Generated EPUB files are retained in this browser when storage permits. Keep independent downloads and backups.
             </p>
             {history.length ? (
               history.map((row) => (
@@ -418,6 +417,7 @@ export default function PublishPanel({
                     </small>
                   </summary>
                   <p>{row.filename}</p>
+                  <button type="button" onClick={()=>void db.artifacts.get(row.id).then(artifact=>{if(!artifact){setNotice("This older export has no saved file. Generate it again.");return;}const url=URL.createObjectURL(new Blob([new Uint8Array(artifact.bytes)],{type:"application/epub+zip"}));const a=document.createElement("a");a.href=url;a.download=row.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>Download saved EPUB</button>
                   <dl>
                     <dt>Manuscript revision</dt>
                     <dd>{row.revision}</dd>
