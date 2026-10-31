@@ -7,7 +7,7 @@ import { zipSync, strToU8, unzipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, getSectionLayout, sectionHeadingScale, getSectionTypographyOverrides, sectionMatter, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
 export const EPUB_RENDERER = "epub-1.3.0";
 export type ExportIssue = {
@@ -326,7 +326,7 @@ export function buildEpub(
     add("EPUB/cover.xhtml", xhtml("Cover", language,
       `<section epub:type="cover" class="cover-page"><img src="${coverPath}" alt="${xml(book.cover.alt)}"/></section>`));
   }
-  add("EPUB/style.css", editionCss(edition));
+  add("EPUB/style.css", editionCss(edition) + "\n.section-layout p{font-size:var(--section-body-scale,1)em}\n");
   const explicitTitle=book.chapters.some(c=>c.sectionType==="title");
   if (!explicitTitle) add(
     "EPUB/title.xhtml",
@@ -353,10 +353,12 @@ export function buildEpub(
     const ordinal=chapterOrdinal(book.chapters,i);
     const label=ordinal===null?null:chapterNumberLabel(edition.chapterNumberStyle??"none",ordinal);
     const design=openingDesign(c.sectionType??"chapter",edition.template.id);
+    const overrides=getSectionTypographyOverrides(c,book);
+    const headingStyle=` style="font-size:${sectionHeadingScale(c,book)}em${overrides.headingAlign?`;text-align:${overrides.headingAlign}`:""}"`;
     if (design.suppressHeading) return "";
     const showTitle=ordinal===null || (edition.showChapterTitle??true);
     if(!showTitle) return label ? `<h1 id="chapter-title" class="chapter-number number-only" aria-label="Chapter ${xml(label)}">${xml(label)}</h1>` : "";
-    return `${label ? `<span class="chapter-number" aria-label="Chapter ${xml(label)}">${xml(label)}</span>` : ""}<h1 id="chapter-title">${xml(c.sectionType==="half-title"?book.title:c.title)}</h1>`;
+    return `${label ? `<span class="chapter-number" aria-label="Chapter ${xml(label)}">${xml(label)}</span>` : ""}<h1 id="chapter-title"${headingStyle}>${xml(c.sectionType==="half-title"?book.title:c.title)}</h1>`;
   };
   const openingExtras=(c:typeof book.chapters[number]):string=>{
     const style=openingDesign(c.sectionType??"chapter",edition.template.id).style;
@@ -373,7 +375,7 @@ export function buildEpub(
       xhtml(
         c.title,
         language,
-        `<section class="section-layout opening-${openingDesign(c.sectionType??"chapter",edition.template.id).style}${sectionMatter(c.sectionType??"chapter")==="front"?" front-matter":""}${chapterOrdinal(book.chapters,i)!==null && (edition.chapterNumberStyle??"none")!=="none" && showSectionTitle(c)?" has-number":""}" style="break-before:page;page-break-before:always;padding-top:${Math.round(getSectionLayout(c).spaceBefore / 12 * 100) / 100}em;padding-bottom:${Math.round(getSectionLayout(c).spaceAfter / 12 * 100) / 100}em" epub:type="${epubSectionType(c.sectionType)}" ${(c.sectionType==="title" || !!headingFor(c,i)) ? 'aria-labelledby="chapter-title"' : `aria-label="${xml(c.title)}"`}>${c.sectionType==="title"?openingExtras(c):headingFor(c,i)+openingExtras(c)}${c.sectionType === "toc" ? `<div class="generated-contents"><ol>${book.chapters.filter(entry => entry.id !== c.id && entry.sectionType !== "toc").map(entry => { const index = book.chapters.findIndex(x => x.id === entry.id); return `<li><a href="${paths[index]}">${xml(entry.title)}</a></li>`; }).join("")}</ol></div>` : chapterBody(c.content, edition, imagePaths)}</section>`,
+        `<section class="section-layout opening-${openingDesign(c.sectionType??"chapter",edition.template.id).style}${sectionMatter(c.sectionType??"chapter")==="front"?" front-matter":""}${chapterOrdinal(book.chapters,i)!==null && (edition.chapterNumberStyle??"none")!=="none" && showSectionTitle(c)?" has-number":""}" style="--section-body-scale:${getSectionTypographyOverrides(c,book).bodyScale??openingDesign(c.sectionType??"chapter",edition.template.id).bodyFactor};${getSectionTypographyOverrides(c,book).bodyAlign?`text-align:${getSectionTypographyOverrides(c,book).bodyAlign};`:""}${(getSectionTypographyOverrides(c,book).italicBody??openingDesign(c.sectionType??"chapter",edition.template.id).italicBody)?"font-style:italic;":""}break-before:page;page-break-before:always;padding-top:${Math.round(getSectionLayout(c,book).spaceBefore / 12 * 100) / 100}em;padding-bottom:${Math.round(getSectionLayout(c,book).spaceAfter / 12 * 100) / 100}em" epub:type="${epubSectionType(c.sectionType)}" ${(c.sectionType==="title" || !!headingFor(c,i)) ? 'aria-labelledby="chapter-title"' : `aria-label="${xml(c.title)}"`}>${c.sectionType==="title"?openingExtras(c):headingFor(c,i)+openingExtras(c)}${c.sectionType === "toc" ? `<div class="generated-contents"><ol>${book.chapters.filter(entry => entry.id !== c.id && entry.sectionType !== "toc").map(entry => { const index = book.chapters.findIndex(x => x.id === entry.id); return `<li><a href="${paths[index]}">${xml(entry.title)}</a></li>`; }).join("")}</ol></div>` : chapterBody(c.content, edition, imagePaths)}</section>`,
       ),
     ),
   );
