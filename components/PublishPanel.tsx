@@ -114,14 +114,15 @@ export default function PublishPanel({
       const digest=await crypto.subtle.digest("SHA-256",new Uint8Array(artifact.bytes));
       const actual=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
       if(actual!==report.sha256)throw Error("Stored EPUB content differs from the validated file.");
-      const messages=(report.messages as Record<string,unknown>[]).slice(0,250).map(m=>({
+      const allMessages=report.messages as Record<string,unknown>[];
+      const messages=allMessages.slice(0,250).map(m=>({
         severity:String(m.severity||"INFO").slice(0,24),
         code:String(m.code||"").slice(0,40),
         message:String(m.message||"").slice(0,900),
         location:String(m.location||"").slice(0,250),
         suggestion:typeof m.suggestion==="string"?m.suggestion.slice(0,900):undefined
       }));
-      const passed=report.passed===true&&!messages.some(m=>["ERROR","FATAL"].includes(m.severity.toUpperCase()));
+      const passed=report.passed===true&&!allMessages.some(m=>["ERROR","FATAL"].includes(String(m.severity||m.level||"").toUpperCase()));
       const updated:ExportRecord={...row,epubCheck:passed?"passed":"failed",epubCheckVersion:String(report.epubCheckVersion||"unknown"),epubCheckCheckedAt:String(report.checkedAt||new Date().toISOString()),epubCheckMessages:messages};
       await db.exports.put(updated);
       setHistory(items=>items.map(item=>item.id===row.id?updated:item));
