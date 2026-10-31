@@ -52,24 +52,34 @@ This is a feature-level implementation inventory, not a certification that all P
 
 No feature above is labeled **publication-ready** solely because it generates a file. Physical print proofs, standards checks on the exact artifact, and retailer acceptance are separate gates.
 
-## Reusable preflight validation (initial implementation)
+## Background print validation
 
-The `lib/preflight.ts` subsystem defines format-neutral validation rules, issue severities,
-locations, corrective actions and reports. `lib/print-preflight.ts` supplies print-specific
-rules and runs manuscript checks before PDF generation plus page-record checks afterward.
-The Print workspace displays the resulting errors, warnings and informational findings.
+The reusable `lib/preflight.ts` contract and `lib/print-preflight.ts` rules are retained
+for technical validation and future format-specific checks. Normal authors see a
+simple PDF-generated status and are asked to review their finished pages, rather
+than troubleshoot page geometry or routine renderer warnings. Stale PDF proofs
+show a rebuild reminder; failed renderer integrity checks disable PDF download
+and advise rebuilding/reporting a persistent problem. Missing required manuscript
+data continues to block builds.
 
-Checks currently cover manuscript preflight, snapshot freshness, page-record consistency,
-reported font embedding/overflow/split violations, blank-page furniture, chapter opening
-parity, configured trim/margin bounds and renderer limitations. These are checks against
-the manuscript and the renderer's generated layout records—not independent parsing of
-every generated PDF byte. The independent PDF inspector remains in
-`scripts/inspect-print.py` for engineering/CI validation. User-facing results do not
-claim retailer certification or replace physical proofing.
+The earlier body-content bounds check was removed because renderer page records
+also included page furniture (headers/folios/title elements), producing misleading
+errors. This does **not** establish that every exported PDF has been independently
+inspected. The separate `scripts/inspect-print.py` remains available for CI and
+engineering checks. Print previews, physical proofs and retailer validation
+remain important before publication.
 
-This shared rules/report contract is intended for future EPUB-specific validation.
-Further work includes independent browser PDF inspection, actionable preview navigation,
-image resolution checks, broader retailer profiles and artifact-bound report persistence.
+### User testing: print validation
+
+1. Open an existing book → **Print**, then build a PDF proof.
+2. Confirm the PDF preview and download are available and no technical page-margin
+   error list appears.
+3. Change the manuscript, return to Print and confirm the existing proof shows a
+   rebuild reminder; rebuild the proof.
+4. Remove required metadata (where permitted) and confirm the application blocks
+   PDF creation with a correction instruction.
+
+For automated checks run `npm run typecheck && npm test && npm run build`.
 
 ## Foundation implemented
 
