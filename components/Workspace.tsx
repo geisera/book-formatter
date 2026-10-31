@@ -677,6 +677,7 @@ export default function Workspace() {
                       focusMatch={findFocus}
                       content={chapter.content}
                       onChange={(content) => {
+                        setReplacementHistory(null);setReplacementUndone(false);
                         const b = current.current;
                         if (b)
                           edit({
