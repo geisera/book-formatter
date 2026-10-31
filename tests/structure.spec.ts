@@ -47,7 +47,7 @@ test("organizes and persists sections locally, including reordered export order"
   await row.getByLabel("Running header for Before the story").selectOption("hide");
   await row.getByLabel("Page number for Before the story").selectOption("hide");
   await row.getByLabel("Spacing before for Before the story").fill("24");
-  await expect(page.getByRole("status",{name:"Saved locally"})).toBeVisible();
+  await expect(page.getByText("Saved locally",{exact:true})).toBeVisible();
   await page.reload();
   await page.locator(".book-card").filter({hasText:/Structure test/}).click();
   await page.getByRole("button",{name:"Structure",exact:true}).click();
