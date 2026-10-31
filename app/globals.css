@@ -2120,3 +2120,49 @@ aside h2 {
 .ebook-page .ebook-title-details .title-publisher{font-size:.85em;letter-spacing:.13em;text-transform:uppercase}
 .ebook-page.template-gothic.opening-title .ebook-chapter-header h2,.ebook-page.template-gothic.opening-part .ebook-chapter-header h2{text-transform:uppercase;letter-spacing:.13em}
 .ebook-page.template-modern.opening-title .ebook-chapter-header h2,.ebook-page.template-modern.opening-part .ebook-chapter-header h2{font-weight:600;letter-spacing:-.03em}
+
+
+/* Workspace refresh: restrained professional authoring interface. */
+:root{--app-bg:#f3f4f2;--panel-bg:#fff;--subtle-bg:#f8f9f7;--text-primary:#242927;--text-secondary:#66706b;--hairline:#dfe3df;--brand-accent:#285a4b}
+body{background:var(--app-bg);color:var(--text-primary)}
+.topbar{height:64px;padding:0 24px;background:var(--panel-bg);border-color:var(--hairline)}
+.topbar .brand{font:600 18px/1.3 Georgia,serif}
+.topbar .brand-icon{font-size:22px}
+.workspace{grid-template-columns:256px minmax(0,1fr);background:var(--app-bg)}
+.workspace>aside{min-width:0;background:var(--panel-bg);border-right:1px solid var(--hairline);display:flex;flex-direction:column}
+.workspace-book-info{padding:14px 18px 16px;border-bottom:1px solid var(--hairline)}
+.workspace-book-kicker{font-size:10px;font-weight:700;letter-spacing:.11em;color:var(--text-secondary);margin-bottom:8px}
+.workspace-book-info h2{font:600 18px/1.25 Georgia,serif;overflow-wrap:anywhere;margin:0 0 5px}
+.workspace-book-info .muted{font-size:12px;margin:0}
+.section-navigator{padding:8px 0;flex:1;min-height:0;overflow:auto}
+.section-navigator-group{border:0;margin:0}
+.section-navigator-group summary{cursor:pointer;padding:12px 18px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--text-secondary)}
+.section-navigator .chapter-list{padding:0 8px;margin:0}
+.section-navigator .chapter-list button{width:100%;padding:9px 12px;border:0;border-radius:6px;margin:2px 0;display:flex;align-items:flex-start;flex-direction:column;gap:3px;text-align:left;line-height:1.3}
+.section-navigator .chapter-list button.selected{background:#e9f0eb;color:#1e463a}
+.section-navigator .chapter-list button:hover{background:#eef1ed}
+.section-navigator .chapter-list small{font-size:10px;text-transform:capitalize;color:var(--text-secondary);letter-spacing:.02em}
+.section-navigator .chapter-list span{font-size:13px;font-weight:550;overflow-wrap:anywhere}
+.workspace>aside>.add{margin:12px 15px}
+.workspace-modes{background:var(--panel-bg);padding:0 20px;gap:10px;flex-wrap:wrap}
+.workspace-modes>div:first-child{gap:2px}
+.workspace-modes button{padding:16px 12px;font-size:13px}
+.workspace-utilities{display:flex;gap:4px;align-items:center;margin-left:auto}
+.workspace-utilities button{padding:9px 10px;border:1px solid transparent;border-radius:6px;font-size:12px;color:var(--text-secondary)}
+.workspace-utilities button:hover,.workspace-utilities button[aria-pressed=true]{background:var(--subtle-bg);color:var(--text-primary)}
+.workspace-modes .workspace-save{margin-left:0}
+.workspace-body.mode-manuscript{display:grid;grid-template-columns:minmax(350px,1fr) minmax(310px,.85fr);align-items:start;gap:0}
+.workspace-body.mode-manuscript .editor-area{min-width:0}
+.workspace-live-preview{min-width:0;border-left:1px solid var(--hairline);background:#eef0ed;min-height:calc(100dvh - 133px);position:sticky;top:0}
+.workspace-live-preview-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--panel-bg);border-bottom:1px solid var(--hairline)}
+.workspace-live-preview-head strong{font-size:13px}
+.workspace-live-preview-head button{padding:7px 10px;font-size:12px}
+.workspace-live-preview .preview-panel{max-width:100%;margin:0;box-shadow:none;border:0;background:transparent}
+.workspace-live-preview .preview-heading{display:none}
+.workspace-live-preview .reader-viewport{max-width:100%;overflow:auto}
+.design-studio-preview .design-section-editor{background:#fff;border-bottom:1px solid var(--hairline)}
+.design-section-editor h3{font-size:16px;font-weight:650;margin-bottom:12px}
+.design-section-editor .chapter-title{font-size:22px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.ProseMirror:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+@media(max-width:1250px){.workspace-body.mode-manuscript{grid-template-columns:minmax(0,1fr)}.workspace-live-preview{position:static;min-height:0;border-left:0;border-top:1px solid var(--hairline)}.workspace-modes .workspace-save{width:100%;padding-bottom:7px}}
+@media(max-width:800px){.workspace{grid-template-columns:minmax(0,1fr)}.workspace>aside{max-height:280px;overflow:auto;border-right:0;border-bottom:1px solid var(--hairline)}.section-navigator{max-height:160px}.workspace-modes{padding:0 12px}.workspace-utilities{flex-wrap:wrap}.workspace-modes button{padding:10px 8px}.topbar{padding:0 12px}}
