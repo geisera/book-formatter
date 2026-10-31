@@ -104,7 +104,7 @@ export default function StructurePanel({
           <h3>{matter === "front" ? "Front matter" : matter === "body" ? "Body matter" : "Back matter"} <small>{groups[matter].length}</small></h3>
           {groups[matter].length === 0 ? <p className="muted">No sections yet.</p> : null}
           <button type="button" className="structure-add-here" onClick={()=>{setInsertion({matter});setType(matter==="front"?"preface":matter==="body"?"chapter":"appendix");}}>+ Add here</button>
-          {insertion?.matter===matter&&!insertion.after?<form className="structure-inline-add" onSubmit={e=>{e.preventDefault();if(!title.trim()){setError("Enter a title for the new section.");return;}dispatch({kind:"add",sectionType:type,title:title.trim()});setTitle("");setInsertion(null);}}>
+          {insertion?.matter===matter&&!insertion.after?<form className="structure-inline-add" onSubmit={e=>{e.preventDefault();if(!title.trim()){setError("Enter a title for the new section.");return;}dispatch({kind:"add",sectionType:type,title:title.trim(),before:groups[matter][0]?.id});setTitle("");setInsertion(null);}}>
             <label>Type<select aria-label="New section type" value={type} onChange={e=>setType(e.target.value as SectionType)}>{SECTION_TYPES.filter(t=>sectionMatter(t)===matter).map(t=><option key={t} value={t}>{labels[t]}</option>)}</select></label>
             <label>Title<input aria-label="New section title" value={title} onChange={e=>setTitle(e.target.value)} maxLength={200}/></label>
             <button type="submit">Add section</button><button type="button" onClick={()=>setInsertion(null)}>Cancel</button>
