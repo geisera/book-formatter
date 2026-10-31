@@ -71,7 +71,7 @@ test("builds, previews and downloads the same PDF offline and preserves profile 
   await page.getByRole("button", { name: "Download backup" }).click();
   expect(await (await backup).path()).toBeTruthy();
   await page.reload();
-  await page.getByRole("button", { name: /Offline print proof/ }).click();
+  await page.locator(".book-card").filter({hasText:/Offline print proof/}).click();
   await page.getByRole("button", { name: "Print", exact: true }).click();
   await page.getByText(/Local print history/).click();
   await expect(page.getByText(checksum(bytes), { exact: true })).toBeVisible();
@@ -181,7 +181,7 @@ test("inherits print templates from Design and preserves print justification off
   await page.getByRole("button", { name: "Build 6 × 9 PDF proof" }).click();
   await expect(page.getByRole("button", { name: "Download PDF proof" })).toBeVisible({ timeout: 30000 });
   await page.reload();
-  await page.getByRole("button", { name: /Template selection/ }).click();
+  await page.locator(".book-card").filter({hasText:/Template selection/}).click();
   await page.getByRole("button", { name: "Print", exact: true }).click();
   await expect(page.getByText("Print design: Gothic")).toBeVisible();
   await expect(page.getByLabel("Justify body text")).toBeChecked();
