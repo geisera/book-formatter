@@ -384,3 +384,30 @@ describe("independent paperback typography", () => {
     expect(custom.record.checks.overflow).toBe(0);
   },60000);
 });
+
+describe("professional PDF pagination",()=>{
+ it("keeps subheadings with text and preserves two-line widow/orphan protection",async()=>{
+   const b=fixture();
+   b.chapters=[{...blankChapter("Pagination"),content:{type:"doc",content:[
+     ...Array.from({length:6},()=>({type:"paragraph",content:[{type:"text",text:"A regular paragraph fills part of the page. ".repeat(25)}]})),
+     {type:"heading",attrs:{level:2},content:[{type:"text",text:"Critical subheading"}]},
+     {type:"paragraph",content:[{type:"text",text:"A new section opens with a meaningful explanation. ".repeat(19)}]},
+     ...Array.from({length:3},()=>({type:"paragraph",content:[{type:"text",text:"The following text continues the narrative. ".repeat(20)}]}))
+   ]}}];
+   const r=await buildPrintPdf(b,fonts,options);
+   expect(r.record.checks.splitViolations).toBe(0);
+   expect(r.record.checks.overflow).toBe(0);
+   const loaded=await PDFDocument.load(r.bytes);
+   expect(loaded.getPageCount()).toBe(r.record.pageCount);
+   expect(r.record.pages.some(p=>p.kind==="body")).toBe(true);
+ },30000);
+ it("uses identical PDF byte generation for preview and export with same inputs",async()=>{
+   const b=fixture();
+   const a=await buildPrintPdf(b,fonts,options);
+   const c=await buildPrintPdf(b,fonts,options);
+   expect(a.record.inputChecksum).toBe(c.record.inputChecksum);
+   expect(a.record.pageCount).toBe(c.record.pageCount);
+   expect(a.record.pages).toEqual(c.record.pages);
+   expect(a.record.artifactChecksum).toBe(c.record.artifactChecksum);
+ },30000);
+});
