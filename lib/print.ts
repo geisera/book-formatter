@@ -6,7 +6,7 @@ import {shouldBalanceParagraphTail} from "./facing-balance";
 import { normalizedIsbn } from "./publication-metadata";
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage, type PDFImage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import { schema, validateBook, showSectionTitle, getSectionLayout, sectionHeadingScale, sectionMatter, type SectionPageLayout, type TextAlignment, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, getSectionLayout, sectionHeadingScale, getSectionTypographyOverrides, sectionMatter, type SectionPageLayout, type TextAlignment, type Book } from "./model";
 import { getPrintEdition, PRINT_TRIMS, type PrintEdition } from "./print-profile";
 import { checksum, preflight, snapshotChecksum } from "./epub";
 import type { Node as ManuscriptNode } from "prosemirror-model";
@@ -471,7 +471,7 @@ export async function buildPrintPdf(
     }
     newPage("chapter");
     const template = profile.template.id;
-    const design=openingDesign(chapter.sectionType??"chapter",template);
+    const design={...openingDesign(chapter.sectionType??"chapter",template),...getSectionTypographyOverrides(chapter,book)};
     const frontHeading=sectionMatter(chapter.sectionType??"chapter")==="front";
     const headingSize = (template === "gothic" ? 19 : template === "modern" ? 17 : 18) * design.headingFactor * sectionHeadingScale(chapter,book) * (frontHeading?(profile.frontMatterTitleScale??1):1);
     const topBaseline = HEIGHT - profile.top - (template === "gothic" ? 107 : template === "modern" ? 51 : 75);
@@ -509,7 +509,7 @@ export async function buildPrintPdf(
         throw Error(
           "A chapter title is too long for the fixed print opening. Shorten it and retry.",
         );
-      if (template === "modern") {
+      if (design.headingAlign === "left") {
         for (const h of heading) {
           line(h.runs, 0, headingSize);
           y -= 25;
@@ -638,7 +638,7 @@ export async function buildPrintPdf(
         return;
       }
       if (!node.textContent.trim()) return;
-      const blockAlignment = (node.attrs.align as TextAlignment | null) ?? (design.centered ? "center" : null);
+      const blockAlignment = (node.attrs.align as TextAlignment | null) ?? (design.bodyAlign === "center" ? "center" : null);
       const indent = blockAlignment || design.unindentedBody ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
       const mainUnits=design.italicBody ? units(node).map(w=>({...w,runs:w.runs.map(r=>({...r,face:r.face==="regular"?"italic" as const:r.face}))})) : units(node);
       const lines = wrap(mainUnits, indent);
