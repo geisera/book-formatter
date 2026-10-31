@@ -16,6 +16,8 @@ The managed preview launcher serves the production build, so build before previe
 
 - Local bookshelf; book creation and independent chapter documents.
 - Paragraphs, headings, scene breaks, bold, italic, undo/redo and keyboard shortcuts.
+- Chapter-wide and book-wide find/replace with match navigation, case/whole-word options and replace undo/redo.
+- Embedded PNG/JPEG images with captions, alt text, alignment and width controls; images are included in EPUB, PDF and backups.
 - Classic ebook design: body font/size/leading, paragraph indents/spacing, headings and ornaments.
 - Live semantic ebook preview with chapter navigation, reading width, light/dark and reader zoom.
 - Edition settings stored independently from chapter text and carried through project backups.
@@ -51,7 +53,7 @@ copy. Foundation limit: 20 MB compressed, 50 MB expanded. Imported projects add 
 `source/original` (original bytes), referenced from `manifest.source`. Older backups
 without an import remain supported. Source bytes are stored separately from
 frequently saved manuscript content in IndexedDB version 2. Ebook edition settings live under `manuscript.json.editions.ebook`, with independent
-schema/template versions. Inline media and print editions are not implemented yet.
+schema/template versions. Print edition settings and embedded images are preserved in project backups.
 
 ## Scope
 
@@ -74,9 +76,9 @@ creates the book and original in one IndexedDB transaction.
 
 Mammoth converts DOCX to inert HTML, parsed through rehype into an explicit
 semantic allowlist. Markdown uses unified/remark. Neither parser injects HTML
-into the live page, activates links, or fetches remote images. Only text, emphasis,
-headings and scene breaks reach ProseMirror. Lists/quotes/tables lose layout and
-produce review warnings. Images become visible placeholders. DOCX headers,
+into the live page, activates links, or fetches remote images. Text, emphasis, headings, scene breaks and supported embedded PNG/JPEG images
+reach ProseMirror. Lists/quotes/tables lose layout and produce review warnings.
+DOCX image positioning and captions may require review after import. DOCX headers,
 footers, comments, tracked changes and unsupported embedded objects produce
 warnings; always review against the retained source. Raw Markdown HTML remains
 literal text. Original files and conversion reports are downloadable/viewable
@@ -109,7 +111,7 @@ content updates display an updating indicator. Only the selected chapter renders
 
 Phone/ereader/tablet width, light/dark theme, and reader text zoom are temporary
 preview controls, not saved design choices. Width is capped to available space;
-this is a reflowable simulation, not a specific device or print proof. Local EPUB export is available from Publish. The Print tab provides a fixed 6 × 9 PDF feasibility proof; advanced print production remains outstanding.
+this is a reflowable simulation, not a specific device or print proof. Local EPUB export is available from Publish. The Print tab supports offline PDF proofs in 5 × 8, 5.5 × 8.5 and 6 × 9 inch trim sizes; advanced print production remains outstanding.
 
 Fonts are self-hosted and precached for offline use; see [font records](docs/fonts.md).
 No remote font service or manuscript upload is used. New tests verify offline
@@ -130,8 +132,9 @@ container/OPF, title page, navigation, separate XHTML chapters, Classic CSS,
 licensed Libre Baskerville WOFF files (when selected) and the OFL notice.
 System Georgia is not bundled. Reader font preferences can override CSS. The
 EPUB package uses `version="3.0"`, as required for EPUB 3, not `3.3`.
-Cover art and inline image embedding are not supported yet; image placeholders
-remain ordinary text, with preflight warnings.
+Optional PNG/JPEG cover artwork and embedded manuscript images are included in EPUB
+exports. Images support alternative text, captions and layout settings; unsupported
+images still receive diagnostics.
 
 `META-INF/book-formatter-build.json` records manuscript schema, book ID, revision,
 renderer, template/design settings, timestamp and SHA-256 input fingerprint.
@@ -155,7 +158,8 @@ The source and dependencies remain pinned in the lockfile.
 
 ## Offline print proof
 
-Open a book → **Print** → **Build 6 × 9 PDF proof**. Inspect the actual PDF using
+Open a book → **Print**, choose a 5 × 8, 5.5 × 8.5 or 6 × 9 inch trim size,
+and build a PDF proof. Inspect the actual PDF using
 facing/single pages, page selection and zoom, then choose **Download PDF proof**.
 The preview and download share the exact same file bytes. Print uses independent
 Classic v1 typography and mirrored margins; ebook design controls do not change it.
