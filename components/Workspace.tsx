@@ -18,7 +18,7 @@ import StructurePanel from "./StructurePanel";
 import { changeStructure, type StructureAction } from "../lib/structure";
 import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { getPrintEdition, printPreset, type PrintTrim } from "../lib/print-profile";
-import { blankChapter, createBook, type Book } from "../lib/model";
+import { blankChapter, createBook, sectionMatter, type Book } from "../lib/model";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
 export default function Workspace() {
