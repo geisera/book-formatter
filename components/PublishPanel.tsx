@@ -108,7 +108,7 @@ export default function PublishPanel({
     try{
       const stored=await db.artifacts.get(row.id);
       if(!stored)throw Error("Saved EPUB not found. Generate the EPUB again.");
-      validator=new Worker(new URL("../workers/epubcheck-worker.ts",import.meta.url),{type:"module"});
+      validator=new Worker("/epubcheck-worker.js",{type:"module"});
       const worker=validator;
       const result=await new Promise<{valid:boolean;messages:NonNullable<ExportRecord["epubCheckMessages"]>}>((resolve,reject)=>{
         const timer=setTimeout(()=>{worker.terminate();reject(Error("EPUBCheck timed out. Try a smaller EPUB or validate with the external tool."));},180000);
