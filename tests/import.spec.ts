@@ -133,3 +133,38 @@ test("cancelling a review leaves the bookshelf unchanged; malformed input can be
   await page.getByRole("button", { name: "Close import" }).click();
   await expect(page.getByText("A shelf of possibilities.")).toBeVisible();
 });
+
+test("classifies imported headings, permits manual type edits and repairs boundaries offline",async({page,context})=>{
+ await page.goto("/");
+ await expect(page.getByText("Offline app ready")).toBeVisible();
+ await context.setOffline(true);
+ await page.getByRole("button",{name:"Import a manuscript"}).click();
+ const markdown=[
+   "# Foreword","A guest writes this.",
+   "# Chapter One","First paragraph.","Second paragraph.",
+   "# Bibliography","Reference text."
+ ].join("\n\n");
+ await page.getByLabel("Manuscript file").setInputFiles({name:"intelligent.md",mimeType:"text/markdown",buffer:Buffer.from(markdown)});
+ await expect(page.getByLabel("Section 1 title",{exact:true})).toHaveValue("Foreword");
+ await expect(page.getByLabel("Section 1 type")).toHaveValue("foreword");
+ await expect(page.getByLabel("Section 2 type")).toHaveValue("chapter");
+ await expect(page.getByLabel("Section 3 type")).toHaveValue("bibliography");
+ await expect(page.getByLabel("Section 1 classification")).toContainText("High confidence");
+ await page.getByLabel("Section 1 type").selectOption("introduction");
+ await expect(page.getByLabel("Section 1 classification")).toContainText("Author selected");
+ await page.getByLabel("Split section 2 before block").selectOption("1");
+ await page.getByRole("button",{name:"Split section 2",exact:true}).click();
+ await expect(page.getByLabel("Section 4 title",{exact:true})).toHaveValue("Bibliography");
+ await page.getByRole("button",{name:"Merge section 2 with next"}).click();
+ await expect(page.getByLabel("Section 3 title",{exact:true})).toHaveValue("Bibliography");
+ await page.getByRole("button",{name:"Move section 3 up"}).click();
+ await expect(page.getByLabel("Section 2 title",{exact:true})).toHaveValue("Bibliography");
+ await page.getByRole("button",{name:"Move section 2 down"}).click();
+ await page.getByLabel("Imported book title").fill("Intelligent Manuscript");
+ await page.getByRole("button",{name:"Import as new book"}).click();
+ await page.getByRole("button",{name:"Structure",exact:true}).click();
+ await expect(page.getByLabel("Type of Foreword")).toHaveValue("introduction");
+ await expect(page.getByLabel("Type of Bibliography")).toHaveValue("bibliography");
+ await page.getByRole("button",{name:"Manuscript",exact:true}).click();
+ await expect(page.getByRole("textbox",{name:"Chapter manuscript"})).toContainText("A guest writes this.");
+});
