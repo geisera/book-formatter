@@ -10,6 +10,13 @@ test("organizes and persists sections locally, including reordered export order"
   await page.getByRole("button", { name: "Structure", exact: true }).click();
   await expect(page.getByRole("region", { name: "Book structure editor" })).toBeVisible();
   const description=page.locator("#new-section-type-description");
+  await expect(description).toHaveCSS("grid-column-start","1");
+  await expect(description).toHaveCSS("grid-column-end","-1");
+  const controls=page.locator(".structure-add > label");
+  await expect.poll(async()=> {
+    const boxes=await Promise.all([controls.nth(0).boundingBox(),controls.nth(1).boundingBox(),description.boundingBox()]);
+    return !!boxes[0] && !!boxes[1] && !!boxes[2] && Math.abs(boxes[0].y-boxes[1].y)<2 && boxes[2].y>=Math.max(boxes[0].y+boxes[0].height,boxes[1].y+boxes[1].height);
+  }).toBe(true);
   await expect(description).toContainText("main story");
   await page.getByLabel("New section type").selectOption("epigraph");
   await expect(description).toContainText("quotation");
