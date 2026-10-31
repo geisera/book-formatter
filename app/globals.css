@@ -1934,3 +1934,20 @@ aside h2 {
 .bookshelf-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:11px 12px;border-radius:4px;cursor:pointer;font-size:13px;white-space:nowrap}
 .bookshelf-menu button:hover,.bookshelf-menu button:focus-visible{background:#edf1e9}
 .bookshelf-menu .bookshelf-delete{color:#982e2e}
+
+/* Dedicated EPUB cover controls and reader cover proof. */
+.cover-editor{padding:18px;margin:20px 0 24px;border:1px solid var(--line);border-radius:8px;background:#faf9f2}
+.cover-editor h3{font-size:18px;margin:0 0 8px}
+.cover-editor-preview{display:flex;align-items:center;gap:18px;margin:15px 0}
+.cover-editor-preview img{width:auto;max-width:180px;max-height:260px;object-fit:contain;box-shadow:0 3px 15px #0002}
+.cover-editor-preview span{font-size:12px;color:var(--muted)}
+.cover-alt-label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:600;margin:14px 0}
+.cover-alt-label input{max-width:500px;padding:9px;border:1px solid var(--line);border-radius:5px;background:white}
+.cover-editor-actions{display:flex;gap:10px;flex-wrap:wrap}
+.cover-editor-actions button{padding:9px 13px;border:1px solid var(--line);border-radius:5px;background:white;cursor:pointer}
+.cover-editor-actions button:disabled{opacity:.5}
+.cover-preview-toggle{display:flex;gap:8px;margin:12px 0}
+.cover-preview-toggle button{padding:7px 14px;border:1px solid var(--line);border-radius:5px;background:white}
+.cover-preview-toggle button[aria-pressed="true"]{background:var(--green);color:white}
+.ebook-cover-preview{display:flex;align-items:center;justify-content:center;min-height:300px}
+.ebook-cover-preview img{display:block;max-width:100%;max-height:80vh;width:auto;height:auto;object-fit:contain}
