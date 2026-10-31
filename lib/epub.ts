@@ -5,7 +5,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
 import { schema, validateBook, showSectionTitle, getSectionLayout, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
-export const EPUB_RENDERER = "epub-1.1.0";
+export const EPUB_RENDERER = "epub-1.2.0";
 export type ExportIssue = {
   severity: "error" | "warning";
   location: string;
@@ -121,11 +121,11 @@ export function preflight(book: Book): ExportIssue[] {
       "The import report contains conversion warnings; some DOCX images or layouts may require review.",
       "Review the import report and compare the manuscript with the original file.",
     );
-  add(
+  if (!book.cover) add(
     "warning",
-    "Publication proof",
-    "Cover art is not available in this export version.",
-    "Review the exported ebook in a reader before distribution.",
+    "Book cover",
+    "No cover image is assigned.",
+    "Add a cover in Book Design before publication.",
   );
   return issues;
 }
@@ -202,7 +202,7 @@ function xhtml(
 }
 export function editionCss(e: EbookEdition): string {
   return `${e.bodyFont === "baskerville" ? `@font-face{font-family:LibreBaskerville;src:url("fonts/regular.woff") format("woff");font-weight:400;font-style:normal}@font-face{font-family:LibreBaskerville;src:url("fonts/italic.woff") format("woff");font-weight:400;font-style:italic}@font-face{font-family:LibreBaskerville;src:url("fonts/bold.woff") format("woff");font-weight:700;font-style:normal}` : ""}
-body{font-family:${e.bodyFont === "baskerville" ? "LibreBaskerville,Georgia,serif" : "Georgia,serif"};font-size:${e.fontSize / 16}em;line-height:${e.lineHeight};margin:1em;color:inherit;background:transparent}h1{font-size:1.65em;font-weight:normal;line-height:1.4;text-align:${e.headingStyle === "left" ? "left" : "center"};margin:${e.chapterSpacing}em 0 2em}h2{font-size:1.15em;line-height:1.5;margin:1.8em 0 1em}p{margin:0 0 ${e.paragraphSpacing}em;text-indent:${e.paragraphIndent}em;orphans:2;widows:2}.opening{text-indent:0}.scene{font-family:serif;text-align:center;letter-spacing:.15em;margin:1.6em 0;font-size:.8em}.scene-rule{width:3em;border:0;border-top:1px solid currentColor;margin:1.6em auto}.titlepage{text-align:center}.titlepage p{text-indent:0}.titlepage h1{margin-top:3em}.author{margin-top:1.5em}nav ol{padding-left:1.5em}nav li{margin-bottom:.6em}a{color:inherit}.illustration{margin:1.5em 0;break-inside:avoid}.illustration img{max-width:100%;height:auto}.illustration figcaption{font-size:.82em;font-style:italic;margin:.5em auto 0;text-align:center;text-indent:0}.illustration.align-left{text-align:left}.illustration.align-center{text-align:center}.illustration.align-right{text-align:right}.align-left{text-align:left;text-indent:0}.align-center{text-align:center;text-indent:0}.align-right{text-align:right;text-indent:0}.align-justify{text-align:justify;text-indent:0}
+.cover-page{margin:0;text-align:center}.cover-page img{display:block;max-width:100%;max-height:95vh;width:auto;height:auto;margin:auto}body{font-family:${e.bodyFont === "baskerville" ? "LibreBaskerville,Georgia,serif" : "Georgia,serif"};font-size:${e.fontSize / 16}em;line-height:${e.lineHeight};margin:1em;color:inherit;background:transparent}h1{font-size:1.65em;font-weight:normal;line-height:1.4;text-align:${e.headingStyle === "left" ? "left" : "center"};margin:${e.chapterSpacing}em 0 2em}h2{font-size:1.15em;line-height:1.5;margin:1.8em 0 1em}p{margin:0 0 ${e.paragraphSpacing}em;text-indent:${e.paragraphIndent}em;orphans:2;widows:2}.opening{text-indent:0}.scene{font-family:serif;text-align:center;letter-spacing:.15em;margin:1.6em 0;font-size:.8em}.scene-rule{width:3em;border:0;border-top:1px solid currentColor;margin:1.6em auto}.titlepage{text-align:center}.titlepage p{text-indent:0}.titlepage h1{margin-top:3em}.author{margin-top:1.5em}nav ol{padding-left:1.5em}nav li{margin-bottom:.6em}a{color:inherit}.illustration{margin:1.5em 0;break-inside:avoid}.illustration img{max-width:100%;height:auto}.illustration figcaption{font-size:.82em;font-style:italic;margin:.5em auto 0;text-align:center;text-indent:0}.illustration.align-left{text-align:left}.illustration.align-center{text-align:center}.illustration.align-right{text-align:right}.align-left{text-align:left;text-indent:0}.align-center{text-align:center;text-indent:0}.align-right{text-align:right;text-indent:0}.align-justify{text-align:justify;text-indent:0}
 ${e.template.id === "modern" ? "h1{font-size:1.5em;letter-spacing:-.025em;font-weight:600}.scene-rule{width:4em}" : e.template.id === "gothic" ? "h1{font-size:1.9em;letter-spacing:.09em;text-transform:uppercase}.scene{letter-spacing:.28em;margin:2em 0}" : ""}
 `;
 }
@@ -278,6 +278,19 @@ export function buildEpub(
       imageManifest.push(`<item id="image-${imagePaths.size}" href="images/${name}" media-type="${decoded.mediaType}"/>`);
     }
   }
+  let coverManifest = "";
+  let coverSpine = "";
+  let coverNavigation = "";
+  if (book.cover) {
+    const decoded = decodeImage(book.cover.src);
+    const coverPath = `images/cover.${decoded.extension}`;
+    files[`EPUB/${coverPath}`] = decoded.bytes;
+    coverManifest = `<item id="cover-image" href="${coverPath}" media-type="${decoded.mediaType}" properties="cover-image"/><item id="cover-page" href="cover.xhtml" media-type="application/xhtml+xml"/>`;
+    coverSpine = '<itemref idref="cover-page"/>';
+    coverNavigation = '<li><a href="cover.xhtml">Cover</a></li>';
+    add("EPUB/cover.xhtml", xhtml("Cover", language,
+      `<section epub:type="cover" class="cover-page"><img src="${coverPath}" alt="${xml(book.cover.alt)}"/></section>`));
+  }
   add("EPUB/style.css", editionCss(edition));
   add(
     "EPUB/title.xhtml",
@@ -317,7 +330,7 @@ export function buildEpub(
   }
   add(
     "EPUB/package.opf",
-    `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang="${xml(language)}"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pub-id">urn:book-formatter:${xml(encodeURIComponent(book.id))}</dc:identifier><dc:title>${xml(book.title)}</dc:title><dc:creator>${xml(book.author)}</dc:creator><dc:language>${xml(language)}</dc:language><meta property="dcterms:modified">${modified}</meta><meta name="generator" content="Book Formatter ${EPUB_RENDERER}"/></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/><item id="style" href="style.css" media-type="text/css"/>${paths.map((p, i) => `<item id="chapter-${i + 1}" href="${p}" media-type="application/xhtml+xml"/>`).join("")}${fontManifest}${imageManifest.join("")}</manifest><spine><itemref idref="title"/><itemref idref="nav"/>${paths.map((_, i) => `<itemref idref="chapter-${i + 1}"/>`).join("")}</spine></package>`,
+    `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id" xml:lang="${xml(language)}"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pub-id">urn:book-formatter:${xml(encodeURIComponent(book.id))}</dc:identifier><dc:title>${xml(book.title)}</dc:title><dc:creator>${xml(book.author)}</dc:creator><dc:language>${xml(language)}</dc:language><meta property="dcterms:modified">${modified}</meta><meta name="generator" content="Book Formatter ${EPUB_RENDERER}"/></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/><item id="style" href="style.css" media-type="text/css"/>${paths.map((p, i) => `<item id="chapter-${i + 1}" href="${p}" media-type="application/xhtml+xml"/>`).join("")}${fontManifest}${imageManifest.join("")}${coverManifest}</manifest><spine>${coverSpine}<itemref idref="title"/><itemref idref="nav"/>${paths.map((_, i) => `<itemref idref="chapter-${i + 1}"/>`).join("")}</spine></package>`,
   );
   add(
     "META-INF/book-formatter-build.json",
@@ -353,7 +366,8 @@ export function buildEpub(
     new TextDecoder().decode(check.mimetype) !== "application/epub+zip" ||
     paths.some((p) => !check[`EPUB/${p}`]) ||
     !check["EPUB/nav.xhtml"] ||
-    !check["EPUB/package.opf"]
+    !check["EPUB/package.opf"] ||
+    (book.cover && (!check["EPUB/cover.xhtml"] || !check[`EPUB/images/cover.${decodeImage(book.cover.src).extension}`]))
   )
     throw Error("Local package integrity checks failed.");
   const filename = `${
