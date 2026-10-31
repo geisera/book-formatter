@@ -474,3 +474,7 @@ When Design → Paperback regenerates a proof, an accessible progress bar displa
 ### Print workspace progress compatibility
 
 Both **Design → Paperback** and **Print → Build PDF proof** accept progress notifications from the local PDF worker without interpreting them as failed builds. The Print workspace also shows its own percentage and stage indicator while generating the exportable proof. If an older application remains open after this change, reload it online once to refresh the worker and application assets, then retry the build.
+
+### Shared local PDF worker controller
+
+Both **Design → Paperback** and **Print → Build PDF proof** use `lib/pdf-worker-controller.ts` for font asset loading, worker creation (including offline cache fallback), progress messages, successful PDF results, explicit errors, timeouts and cancellation. The controller owns cleanup and ignores results after cancellation. The Print workspace continues to store only its local export history; the Design preview remains disposable. Neither workflow uses GitHub Actions, server generation or cloud storage. Run `npm test` for the simulated worker-protocol regression suite, including progress/success, cancellation, explicit failure and stale snapshot handling; run `npm run test:e2e` for browser integration.
