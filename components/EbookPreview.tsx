@@ -35,6 +35,7 @@ const ChapterContent = memo(function ChapterContent({
   chapter: Chapter;
   ornament: EbookEdition["sceneOrnament"];
 }) {
+  const bibliography = chapter.sectionType === "bibliography";
   const doc = useMemo(
     () => schema.nodeFromJSON(chapter.content),
     [chapter.content],
@@ -43,6 +44,7 @@ const ChapterContent = memo(function ChapterContent({
     {sampleForSection(chapter).map((block,index)=>block.kind==="heading"
       ? <h3 key={index} style={{textAlign:"center"}}>{block.text}</h3>
       : <p key={index} className={index===0?"opening-paragraph":undefined} style={{
+        ...(bibliography?{textIndent:"-1.25em",paddingLeft:"1.25em",marginBottom:".85em",textAlign:"left" as const}:{}),
         fontStyle:block.kind==="quotation"?"italic":undefined,
         fontSize:block.kind==="small"?"0.85em":undefined,
         textAlign:block.kind==="attribution"?"right":block.kind==="quotation"?"center":undefined
@@ -86,7 +88,7 @@ const ChapterContent = memo(function ChapterContent({
       opening = true;
     } else {
       blocks.push(
-        <p key={index} className={[opening ? "opening-paragraph" : "", node.attrs.align ? `align-${node.attrs.align}` : ""].filter(Boolean).join(" ") || undefined}>
+        <p key={index} className={[opening ? "opening-paragraph" : "", node.attrs.align ? `align-${node.attrs.align}` : ""].filter(Boolean).join(" ") || undefined} style={bibliography?{paddingLeft:"1.25em",textIndent:"-1.25em",textAlign:"left",marginBottom:".85em"}:undefined}>
           {inlineContent(node)}
         </p>,
       );
