@@ -339,6 +339,10 @@ export default function PrintPanel({
           </button>
         ) : null}
       </div>
+      {busy ? <div className="print-progress" role="group" aria-label="Print PDF build progress">
+        <label htmlFor="print-export-progress">{progress.stage} · {progress.percent}%</label>
+        <progress id="print-export-progress" aria-label="Print PDF build progress" value={progress.percent} max={100} style={{width:"100%",height:12}} />
+      </div> : null}
       {result && <div className="print-checks" role="status" aria-live="polite">
         {internalFailure
           ? <p><strong>PDF integrity check failed.</strong> The proof should not be used. Rebuild it; if the problem repeats, report it as an application issue.</p>
