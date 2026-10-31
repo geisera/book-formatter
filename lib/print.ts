@@ -520,6 +520,25 @@ export async function buildPrintPdf(
         y -= template === "gothic" ? 36 : 25;
       }
       } else if (numberedOpening) y -= 10;
+      if (design.style==="title"){
+        if(book.metadata?.subtitle){y-=12;centered(textLines(book.metadata.subtitle,13,"italic"),13,19);}
+        y-=27;centered(textLines(book.author,12,"regular"),12,19);
+        if(book.metadata?.publisher){y-=40;centered(textLines(book.metadata.publisher,10,"regular"),10,16);}
+      }
+    }
+    if (design.style==="copyright"){
+      const data=[
+        book.metadata?.publisher ? "Publisher: "+book.metadata.publisher : null,
+        book.metadata?.publicationDate ? "Publication date: "+book.metadata.publicationDate : null,
+        book.metadata?.isbn ? "ISBN: "+book.metadata.isbn : null,
+      ].filter((value):value is string=>!!value);
+      for(const value of data){
+        for(const textLine of textLines(value,9,"regular")){
+          line(textLine.runs,0,9,y,false,"left");
+          y-=14;
+        }
+      }
+      if(data.length) y-=12;
     }
     let opening = true;
     doc.forEach((node, _offset, index) => {
