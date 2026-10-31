@@ -1923,3 +1923,14 @@ aside h2 {
  white-space:normal;
 }
 .image-properties-popout .image-properties-actions .image-properties-remove{margin:0}
+
+/* Bookshelf item actions — independent of the card's open button. */
+.bookshelf-item{position:relative;display:flex;align-items:stretch;gap:8px;margin-bottom:12px}
+.bookshelf-item .book-card{flex:1;min-width:0;margin:0}
+.bookshelf-menu-wrap{position:relative;display:flex;align-items:center;flex:none}
+.bookshelf-menu-trigger{display:grid;place-items:center;width:40px;height:42px;border:1px solid var(--line);border-radius:6px;background:#fffef9;font-size:24px;line-height:1;cursor:pointer}
+.bookshelf-menu-trigger:hover,.bookshelf-menu-trigger:focus-visible{background:#e8eee2;outline-offset:2px}
+.bookshelf-menu{position:absolute;z-index:30;top:calc(50% + 24px);right:0;min-width:205px;padding:6px;background:#fffefb;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.16);border-radius:6px}
+.bookshelf-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:11px 12px;border-radius:4px;cursor:pointer;font-size:13px;white-space:nowrap}
+.bookshelf-menu button:hover,.bookshelf-menu button:focus-visible{background:#edf1e9}
+.bookshelf-menu .bookshelf-delete{color:#982e2e}
