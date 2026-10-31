@@ -76,6 +76,8 @@ export const defaultShowSectionTitle = (type: SectionType = "chapter"): boolean 
 export const showSectionTitle = (section: Chapter): boolean =>
   (section.sectionType ?? "chapter") === "chapter" ? true :
   section.showTitle ?? defaultShowSectionTitle(section.sectionType);
+export type SectionStyle = { layout?: Partial<SectionPageLayout>; headingScale?: number };
+export type SectionStyleOverrides = Partial<Record<SectionType, SectionStyle>>;
 export type PageStart = "next" | "recto" | "verso";
 export type VerticalPlacement = "top" | "center" | "bottom";
 export type PageDecoration = "auto" | "show" | "hide";
@@ -98,8 +100,16 @@ export function defaultSectionLayout(type: SectionType = "chapter"): SectionPage
     spaceAfter: 0,
   };
 }
-export function getSectionLayout(section: Chapter): SectionPageLayout {
-  return { ...defaultSectionLayout(section.sectionType), ...section.pageLayout };
+export function getSectionLayout(section: Chapter, book?: Pick<Book, "sectionStyles">): SectionPageLayout {
+  return { ...defaultSectionLayout(section.sectionType), ...book?.sectionStyles?.[section.sectionType ?? "chapter"]?.layout, ...section.pageLayout };
+}
+/** Template defaults are never copied into the manuscript; only overrides are saved. */
+export function sectionHeadingScale(section: Chapter, book?: Pick<Book, "sectionStyles">): number {
+  return section.headingScale ?? book?.sectionStyles?.[section.sectionType ?? "chapter"]?.headingScale ?? 1;
+}
+export function validateHeadingScale(value: unknown): void {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0.5 || value > 2)
+    throw Error("Section heading scale must be between 0.5 and 2.");
 }
 export function validateSectionLayout(value: unknown): void {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw Error("Invalid section page layout.");
@@ -116,6 +126,7 @@ export type Chapter = {
   sectionType?: SectionType;
   showTitle?: boolean;
   pageLayout?: Partial<SectionPageLayout>;
+  headingScale?: number;
   id: string;
   title: string;
   content: Record<string, unknown>;
@@ -142,6 +153,7 @@ export type Book = {
   metadata?: PublicationMetadata;
   updatedAt: string;
   chapters: Chapter[];
+  sectionStyles?: SectionStyleOverrides;
   cover?: {src:string;alt:string};
   importInfo?: ImportInfo;
   editions?: { ebook: EbookEdition; print?: PrintEdition };
@@ -219,6 +231,15 @@ export function validateBook(value: unknown): Book {
       throw Error("Invalid cover image or alternative text.");
     decodeImage(b.cover.src);
   }
+  if (b.sectionStyles !== undefined) {
+    if (!b.sectionStyles || typeof b.sectionStyles !== "object" || Array.isArray(b.sectionStyles)) throw Error("Invalid section styles.");
+    for (const [type, style] of Object.entries(b.sectionStyles)) {
+      if (!SECTION_TYPES.includes(type as SectionType) || !style || typeof style !== "object" || Array.isArray(style) ||
+          Object.keys(style).some(k => k !== "layout" && k !== "headingScale")) throw Error("Invalid section type style.");
+      if (style.layout !== undefined) validateSectionLayout(style.layout);
+      if (style.headingScale !== undefined) validateHeadingScale(style.headingScale);
+    }
+  }
   const ids = new Set<string>();
   let imageBytes = b.cover?.src.length ?? 0;
   if (imageBytes > MAX_PROJECT_IMAGES_BYTES) throw Error("Embedded images exceed the 12 MB project limit.");
@@ -233,6 +254,7 @@ export function validateBook(value: unknown): Book {
     )
       throw Error("Invalid chapter structure.");
     if (c.pageLayout !== undefined) validateSectionLayout(c.pageLayout);
+    if (c.headingScale !== undefined) validateHeadingScale(c.headingScale);
     ids.add(c.id);
     const manuscript = schema.nodeFromJSON(c.content);
     manuscript.check();
