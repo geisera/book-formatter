@@ -460,8 +460,13 @@ export async function importBytes(
       bytes.byteOffset + bytes.byteLength,
     ) as ArrayBuffer;
     // Browser bundle uses Mammoth's browser file adapter, which cannot open linked files.
+    // Mammoth selects different ZIP adapters in Node and browser workers.
+    // Node's adapter requires Buffer; browser workers require ArrayBuffer.
+    const source = typeof process !== "undefined" && process.versions?.node
+      ? { buffer: Buffer.from(bytes) }
+      : { arrayBuffer: input };
     const result = await mammoth.convertToHtml(
-      { arrayBuffer: input },
+      source,
       {
         externalFileAccess: false,
         includeEmbeddedStyleMap: false,
