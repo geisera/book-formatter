@@ -9,6 +9,8 @@ test("formats an imported manuscript offline and restores text plus design in a 
 }) => {
   await page.goto("/");
   await expect(page.getByText("Offline app ready")).toBeVisible();
+  // Load the CSS font faces once while online; subsequent design checks remain offline.
+  await page.evaluate(async()=>{await Promise.all([document.fonts.load('17px "Libre Baskerville"'),document.fonts.load('italic 17px "Libre Baskerville"')]);});
   await context.setOffline(true);
   await page.getByRole("button", { name: "Import a manuscript" }).click();
   await page.getByLabel("Manuscript file").setInputFiles({
