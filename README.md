@@ -29,11 +29,12 @@ This is a feature-level implementation inventory, not a certification that all P
 - **EPUB:** Offline/local EPUB generation with navigation, embedded supported images/fonts, metadata, build fingerprints and local export history; test fixtures and browser-produced samples run through EPUBCheck in CI.
 - **Paperback PDF:** Offline/local generation, 5 × 8, 5.5 × 8.5 and 6 × 9 inch trim settings, mirrored margins, embedded fonts, recto chapter openings, blank pages, running headers, page numbers, preview and download of the same PDF, local history, and independent fixture/CI inspection.
 - **Portability:** Versioned ZIP project backups and restoration, including source imports, edition settings and embedded images.
+- **Book structure:** Front/body/back matter groups, supported section types, chapter/section reorder, rename, add, delete, split/merge, stable IDs, per-section title visibility, start-page/vertical placement/header/folio/spacing controls, and layout-default restoration.
 - **Quality engineering:** Type checks, unit tests, browser/offline tests, EPUB validation fixtures, PDF geometry/text/font inspection and GitHub Actions checks.
 
 ### Partial / needs more validation
 
-- **Book structure (STR-001–004):** Chapter creation/renaming and stable IDs exist; comprehensive front/body/back matter management, rearrange/split/merge and chapter-numbering options need completion or verification.
+- **Book structure (STR-001–004):** Core front/body/back organization, reorder/split/merge and layout options exist. Further work includes more approachable split controls, numbering presentation options, and comprehensive multi-format publishing acceptance tests.
 - **PWA and local reliability (LOCAL, UX):** Cross-browser installation, full offline coverage, interrupted-save and quota-exhaustion recovery, and long-manuscript editing performance require broader acceptance testing.
 - **Imports and media (IMP-002–004):** Complex DOCX layouts, unsupported elements, image positioning, and captions may require correction; broaden round-trip/fidelity tests.
 - **Print typography and preflight (PDF-003–007; QA-003–005):** Existing automated PDF proof inspection is not a complete author-facing preflight report or retailer certification. Hyphenation, justification, page balance, longer edge cases and physical proofs remain.
@@ -43,7 +44,7 @@ This is a feature-level implementation inventory, not a certification that all P
 
 ### To be implemented / planned
 
-- **Complete author workspace (M2):** Full front/back matter and section organization; additional section operations; Modern and Gothic templates; expanded front-matter typography and recovery tools.
+- **Complete author workspace (M2):** Modern and Gothic templates, expanded front-matter typography, chapter-numbering presentation controls and recovery tools.
 - **Publication readiness (M1–M4):** Author-facing EPUB/PDF issue reports with severity/location/remediation; retailer-profile validation and actual paperback proofing; performance/reliability and cross-reader/browser test passes.
 - **Optional cloud sync (M3):** Account sign-in, private Supabase storage, per-project opt-in sync, offline change queue, divergent-revision conflict resolution, tenant authorization/RLS and cloud backup.
 - **Private beta (M4):** External author evaluations, retailer acceptance checks, physical print proofs, accessibility and security review.
@@ -80,6 +81,36 @@ remain important before publication.
    PDF creation with a correction instruction.
 
 For automated checks run `npm run typecheck && npm test && npm run build`.
+
+## Book structure management (STR-001–STR-004)
+
+Open a book → **Structure** to manage front matter, body matter, and back matter.
+Add section types (including dedication, copyright, title/half-title, contents,
+prologue, chapters, parts, interludes, epilogue, notes and acknowledgments),
+rename, reorder, split between blocks, merge within the same matter group,
+or delete with confirmation. Sections retain stable IDs when renamed/reordered.
+
+Each section offers **Page Layout** controls for its print starting side,
+vertical placement, running header, folio visibility and spacing. Choose
+**Restore section layout defaults** to revert those overrides without changing
+manuscript prose. New sections are inserted into the matching matter group;
+cross-group merges are prohibited to prevent accidental joining of front/body/back
+content. EPUB navigation follows the stored structure and PDF supports generated
+table-of-contents pages.
+
+### User testing: Structure
+
+1. Open a book → **Structure**. Add a Dedication, Chapter and About the Author.
+   Confirm they appear in Front, Body and Back matter respectively.
+2. Move a chapter Up/Down, rename it, and confirm the text stays unchanged.
+3. Under **Page Layout**, choose a left-hand start and hide the header. Select
+   **Restore section layout defaults** and confirm the original values return.
+4. Confirm **Merge next** is disabled at the boundary between matter groups.
+5. Export a project backup, restore it, and check section order and settings.
+
+Verification commands: `npm run typecheck && npm test && npm run build`.
+These commands and deployed browser acceptance checks must be run before treating
+the feature as fully verified.
 
 ## Foundation implemented
 
