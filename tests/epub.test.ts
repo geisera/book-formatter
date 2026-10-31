@@ -8,6 +8,7 @@ import {
   type FontAssets,
 } from "../lib/epub";
 import { validateBook, createBook } from "../lib/model";
+import {backupBook,restoreProject} from "../lib/backup";
 import { getEbookEdition } from "../lib/edition";
 function fixture() {
   const book = createBook("A title & <escape>", "Author");
@@ -170,6 +171,8 @@ describe("local EPUB generation", () => {
     expect(strFromU8(files["EPUB/nav.xhtml"])).toContain('href="cover.xhtml"');
     expect(files["EPUB/images/cover.png"].length).toBeGreaterThan(30);
     expect(preflight(b).some(i=>i.message.includes("No cover image"))).toBe(false);
+    const restored=restoreProject(backupBook(b));
+    expect(restored.book.cover).toEqual(b.cover);
     const without=fixture();
     const plain=unzipSync(buildEpub(without,fonts,options).bytes);
     expect(plain["EPUB/cover.xhtml"]).toBeUndefined();
