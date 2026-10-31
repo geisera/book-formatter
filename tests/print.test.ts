@@ -553,3 +553,20 @@ describe("paperback heading presentation",()=>{
   expect(()=>validatePrintEdition({...getPrintEdition(b),chapterNumberStyle:"words" as "roman"})).toThrow("chapter numbering");
  });
 });
+
+describe("standalone paperback chapter number settings",()=>{
+ it("builds valid number-only proofs without changing manuscripts or ebook settings",async()=>{
+  const b=fixture();
+  const source=structuredClone(b.chapters);
+  const ebook=structuredClone(b.editions!.ebook);
+  for(const chapterNumberStyle of ["arabic","roman"] as const){
+    b.editions!.print={...getPrintEdition(b),chapterNumberStyle,showChapterTitle:false};
+    const built=await buildPrintPdf(b,fonts,options);
+    expect(built.record.profile).toMatchObject({chapterNumberStyle,showChapterTitle:false});
+    expect(built.record.checks).toMatchObject({overflow:0,splitViolations:0});
+    expect(built.record.pages.some(p=>p.kind==="chapter"&&p.lineCount>0)).toBe(true);
+    expect(b.chapters).toEqual(source);
+    expect(b.editions!.ebook).toEqual(ebook);
+  }
+ },60000);
+});
