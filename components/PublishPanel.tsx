@@ -18,8 +18,10 @@ export default function PublishPanel({
   book,
   getSnapshot,
   onMetadata,
+  onExportSuccess,
 }: {
   book: Book;
+  onExportSuccess?: () => void;
   getSnapshot: () => Promise<Book>;
   onMetadata: (metadata: {
     title: string;
@@ -204,6 +206,7 @@ export default function PublishPanel({
         link.href = url;
         link.download = record.filename;
         link.click();
+        onExportSuccess?.();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         setResult(record);
         setBusy(false);
