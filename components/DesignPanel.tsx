@@ -30,9 +30,9 @@ export default function DesignPanel({
       <div className="eyebrow">BOOK DESIGN · EPUB + PDF</div>
       <h2>Make it yours.</h2>
       <p className="design-intro">
-        Choose one template for ebook and print. The typography controls below
-        customize the ebook edition; print uses its own page geometry and justification.
-        Your manuscript is unchanged.
+        Select a template for both editions. The controls below customize ebook typography;
+        choose Paperback · Proof to see the actual print layout. Print-specific page
+        geometry and justification remain in Print. Your manuscript is unchanged.
       </p>
       <CoverEditor cover={cover} onChange={onCoverChange}/>
       <div className="template-options" role="group" aria-label="Book design template">
