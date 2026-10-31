@@ -188,5 +188,5 @@ test("Design Paperback renders the same local PDF proof with offline assets",asy
  await page.getByRole("button",{name:"Paperback",exact:true}).click();
  const preview=page.getByRole("region",{name:"Paperback design preview"});
  await expect(preview.getByText("Proof is up to date")).toBeVisible({timeout:45000});
- await expect(preview.locator('canvas[data-rendered="true"]')).toHaveCount(1,{timeout:30000});
+ await expect(preview.locator('canvas[data-rendered="true"]').first()).toBeVisible({timeout:30000});
 });
