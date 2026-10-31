@@ -453,11 +453,9 @@ export default function Workspace() {
       />
       {!book ? (
         <main className="dashboard">
-          <div className="eyebrow">A PLACE FOR YOUR NEXT BOOK</div>
+          <div className="eyebrow">YOUR LOCAL BOOKSHELF</div>
           <h1>
-            Your words.
-            <br />
-            <em>Beautifully bound.</em>
+            Your bookshelf
           </h1>
           <p className="intro">
             Give your manuscript room to become a book.
@@ -551,7 +549,7 @@ export default function Workspace() {
                 <div className="empty">
                   <span>▤</span>
                   <h3>A shelf of possibilities.</h3>
-                  <p>Your local books will appear here.</p>
+                  <p>Create a new book or import a manuscript to get started.</p>
                 </div>
               )}
             </section>
