@@ -30,15 +30,17 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
   const [result,setResult]=useState<PrintResult|null>(null);
   const [state,setState]=useState<"waiting"|"building"|"ready"|"error">("waiting");
   const [error,setError]=useState("");
+  const [progress,setProgress]=useState({percent:0,stage:"Preparing proof"});
   useEffect(()=>{
     let cancelled=false;
     let worker:Worker|null=null;
     let release:(()=>void)|null=null;
     const timeout=setTimeout(async()=>{
       if(cancelled)return;
-      setState("building");setError("");
+      setState("building");setError("");setProgress({percent:0,stage:"Preparing manuscript"});
       try {
         const snapshot=await snapshotRef.current();
+        if(!cancelled)setProgress({percent:3,stage:"Loading assets"});
         if(cancelled)return;
         // Never label an outdated asynchronous build current.
         if(snapshotChecksum(snapshot)!==fingerprint) {setState("waiting");return;}
@@ -48,9 +50,13 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
         worker=prepared.worker;release=prepared.release;
         if(cancelled){worker.terminate();release();return;}
         worker.onerror=()=>{if(!cancelled){setState("error");setError("The PDF preview worker could not start. Try reloading online.");}};
-        worker.onmessage=(event:MessageEvent<{ok:boolean;error?:string;bytes?:Uint8Array;record?:PrintRecord}>)=>{
+        worker.onmessage=(event:MessageEvent<{type?:"progress";percent?:number;stage?:string;ok?:boolean;error?:string;bytes?:Uint8Array;record?:PrintRecord}>)=>{
           if(cancelled)return;
           const payload=event.data;
+          if(payload.type==="progress"){
+            setProgress(p=>({percent:Math.max(p.percent,Math.min(99,Math.max(0,payload.percent??0))),stage:payload.stage??p.stage}));
+            return;
+          }
           if(!payload.ok||!payload.bytes||!payload.record){
             setError(payload.error??"Could not generate print preview.");setState("error");return;
           }
@@ -58,6 +64,7 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
             setState("waiting");return;
           }
           setResult({bytes:payload.bytes,record:payload.record});
+          setProgress({percent:100,stage:"Proof ready"});
           setState("ready");
           worker?.terminate();release?.();worker=null;release=null;
         };
@@ -78,6 +85,10 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
       {state==="error"?"Preview unavailable":current?"Proof is up to date":state==="building"?"Updating print pagination locally…":"Preparing an updated print proof…"}
       {!current&&result?" Previous pages are outdated and hidden until rebuilding finishes.":""}
     </p>
+    {state==="building"?<div className="print-progress" role="group" aria-label="PDF proof build progress">
+      <label htmlFor="print-proof-progress">{progress.stage} · {progress.percent}%</label>
+      <progress id="print-proof-progress" aria-label="PDF proof build progress" value={progress.percent} max={100} style={{width:"100%",height:12}} />
+    </div>:null}
     {state==="error"?<div className="alert" role="alert">{error} Your manuscript remains saved; you can still use the Print workspace.</div>:null}
     {current&&result?<PdfProofViewer bytes={result.bytes} record={result.record} selectedSectionId={selectedSectionId}/>:<div className="print-empty"><h3>Preparing pages</h3><p>Print layout refreshes after your changes are saved. Large books may take longer to paginate.</p></div>}
     <p className="control-note">Select a section and adjust its print formatting in the left panel. The proof opens at that section when it is ready. Final PDF export remains in Print.</p>
