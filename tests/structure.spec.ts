@@ -80,3 +80,23 @@ test("organizes and persists sections locally, including reordered export order"
   await expect(page.getByLabel("Spacing before for Before the story")).toHaveValue("24");
   await expect(page.getByRole("checkbox", { name: "Show title on page for Before the story" })).not.toBeChecked();
 });
+
+test("adds new conventional sections with matching guidance and editable types",async({page})=>{
+ await page.goto("/");
+ await page.getByLabel("Book title",{exact:true}).fill("Conventional sections");
+ await page.getByLabel("Author name",{exact:true}).fill("Author");
+ await page.getByRole("button",{name:"Create local book"}).click();
+ await page.getByRole("button",{name:"Structure",exact:true}).click();
+ const field=page.getByLabel("New section type");
+ const helper=page.locator("#new-section-type-description");
+ for(const [type,label] of [["foreword","Foreword"],["introduction","Introduction"],["afterword","Afterword"],["bibliography","Bibliography"],["praise","Praise / Blurbs"],["appendix","Appendix"],["glossary","Glossary"],["endnotes","Endnotes"]] as const){
+   await field.selectOption(type);
+   await expect(helper.locator("p")).toHaveCount(2);
+   await expect(helper.locator(".structure-add-use-case")).toContainText("Use this when");
+   await page.getByLabel("Section title").fill(label);
+   await page.getByRole("button",{name:"+ Add section"}).click();
+   await expect(page.locator(".structure-item-heading strong").filter({hasText:label})).toBeVisible();
+ }
+ await page.getByLabel("Type of Foreword").selectOption("preface");
+ await expect(page.locator(".structure-item").filter({hasText:"Foreword"}).getByLabel("Type of Foreword")).toHaveValue("preface");
+});
