@@ -18,9 +18,16 @@ test("organizes and persists sections locally, including reordered export order"
     return !!boxes[0] && !!boxes[1] && !!boxes[2] && Math.abs(boxes[0].y-boxes[1].y)<2 && boxes[2].y>=Math.max(boxes[0].y+boxes[0].height,boxes[1].y+boxes[1].height);
   }).toBe(true);
   await expect(description).toContainText("main story");
+  const useCase=description.locator(".structure-add-use-case");
+  await expect(description.locator("p")).toHaveCount(2);
+  await expect(useCase).toContainText("Use this when");
+  await expect(useCase).toContainText("regular installment");
+
   await page.getByLabel("New section type").selectOption("epigraph");
+  await expect(useCase).toContainText("quotation, verse, or brief excerpt");
   await expect(description).toContainText("quotation");
   await page.getByLabel("New section type").selectOption("title");
+  await expect(useCase).toContainText("automatically generated one");
   await expect(description).toContainText("subtitle, author, and publisher");
   await page.getByLabel("New section type").selectOption("chapter");
   await expect(description).toContainText("heading appearance is set in Design");
