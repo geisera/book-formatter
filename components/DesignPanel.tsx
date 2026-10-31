@@ -33,7 +33,7 @@ export default function DesignPanel({
   printProfile: PrintEdition;
   onPrintTrim: (trim:PrintTrim)=>void;
   onPrintAlignment: (align:"left"|"justify")=>void;
-  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"layoutPriority">>)=>void;
+  onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
 }) {
   const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
   const layout=section ? getSectionLayout(section) : null;
@@ -142,6 +142,25 @@ export default function DesignPanel({
               value={printProfile.chapterOpeningSpace??0} onChange={e=>onPrintTypography({chapterOpeningSpace:Number(e.target.value)})}/>
           </label>
         </fieldset>
+        <details className="design-hyphenation"><summary>Hyphenation and justification</summary>
+          <label className="design-toggle"><input type="checkbox" checked={printProfile.hyphenate??true}
+            onChange={e=>onPrintTypography({hyphenate:e.target.checked})}/>Automatic hyphenation</label>
+          <label>Hyphenation language<select aria-label="Hyphenation language" value={printProfile.hyphenationLanguage??"en-us"}
+            onChange={e=>onPrintTypography({hyphenationLanguage:e.target.value as "en-us"|"en-gb"})}>
+            <option value="en-us">English (US)</option><option value="en-gb">English (UK)</option>
+          </select></label>
+          <label>Consecutive hyphenated lines ({printProfile.maxConsecutiveHyphens??2})
+            <input aria-label="Consecutive hyphenated lines" type="range" min="0" max="5" step="1"
+              value={printProfile.maxConsecutiveHyphens??2} onChange={e=>onPrintTypography({maxConsecutiveHyphens:Number(e.target.value)})}/>
+          </label>
+          <label>Words never to hyphenate
+            <textarea aria-label="Hyphenation exceptions" rows={3} maxLength={4000}
+              value={printProfile.hyphenationExceptions??""}
+              placeholder="Character names, invented words (comma-separated)"
+              onChange={e=>onPrintTypography({hyphenationExceptions:e.target.value})}/>
+          </label>
+          <p className="control-note">Hyphens appear only in the paperback proof and PDF; your manuscript and ebook remain unchanged. Unsupported words are not split arbitrarily.</p>
+        </details>
         <details className="design-advanced-layout"><summary>Advanced page layout</summary>
           <label>Layout priority
             <select aria-label="Paperback layout priority" value={printProfile.layoutPriority??"automatic"}
