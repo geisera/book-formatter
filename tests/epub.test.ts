@@ -223,3 +223,36 @@ describe("local EPUB generation", () => {
     expect(() => buildEpub(b, fonts, options)).toThrow("XML");
   });
 });
+
+describe("edition-specific chapter headings in exported EPUB",()=>{
+ it("numbers only manuscript chapters, scales front headings, preserves source and independent paperback settings",()=>{
+  const b=fixture();
+  b.chapters=[
+    {...b.chapters[0],id:"front",title:"Preface",sectionType:"preface"},
+    {...b.chapters[0],id:"one",title:"The Road",sectionType:"chapter"},
+    {...b.chapters[0],id:"part",title:"Part Two",sectionType:"part"},
+    {...b.chapters[0],id:"two",title:"The Return",sectionType:"chapter"},
+  ];
+  const original=structuredClone(b.chapters);
+  const printBefore=structuredClone(b.editions?.print);
+  b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"roman",frontMatterTitleScale:1.3};
+  const zipped=unzipSync(buildEpub(b,fonts,options).bytes);
+  const read=(i:number)=>strFromU8(zipped[`EPUB/chapter-${String(i).padStart(4,"0")}.xhtml`]);
+  expect(read(1)).toContain('class="section-layout front-matter"');
+  expect(read(1)).not.toContain('class="chapter-number"');
+  expect(read(2)).toContain('>I</span><h1 id="chapter-title">The Road</h1>');
+  expect(read(3)).not.toContain('class="chapter-number"');
+  expect(read(4)).toContain('>II</span><h1 id="chapter-title">The Return</h1>');
+  expect(strFromU8(zipped["EPUB/style.css"])).toContain(".section-layout.front-matter h1{font-size:2.145em}");
+  expect(b.chapters).toEqual(original);
+  expect(b.editions!.print).toEqual(printBefore);
+ });
+ it("retains legacy title-only output and independently supports Arabic ebook labels",()=>{
+  const b=fixture();
+  const plain=strFromU8(unzipSync(buildEpub(b,fonts,options).bytes)["EPUB/chapter-0001.xhtml"]);
+  expect(plain).not.toContain('class="chapter-number"');
+  b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"arabic"};
+  const numbered=strFromU8(unzipSync(buildEpub(b,fonts,options).bytes)["EPUB/chapter-0001.xhtml"]);
+  expect(numbered).toContain('>1</span><h1 id="chapter-title">Chapter One</h1>');
+ });
+});
