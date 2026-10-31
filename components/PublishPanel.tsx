@@ -453,17 +453,16 @@ export default function PublishPanel({
             <div className="validation-note">
               <strong>About validation</strong>
               <p>
-                Local checks cover metadata, chapter content and expected
-                package files. They do not replace EPUBCheck or a visual reader
-                proof. This browser does not label exports publication-ready.
+                Every time you select <strong>Generate &amp; validate EPUB</strong>, Book Formatter builds the EPUB and automatically runs EPUBCheck locally in your browser. Files that pass validation download automatically. If EPUBCheck finds errors or cannot complete, the EPUB is kept for troubleshooting and is not labeled as validated.
               </p>
-              <p>You can run EPUBCheck entirely locally with the <strong>Run EPUBCheck in browser</strong> button on the saved export below. Alternatively, run official EPUBCheck with Java outside the browser using <code>node scripts/validate-epub.mjs book.epub path/to/epubcheck.jar</code>, then attach the resulting <code>.epubcheck.json</code> report to the matching export-history entry. No book upload occurs. A report must match the saved EPUB SHA-256 before the result can be recorded.</p>
-              <a
-                href="https://www.w3.org/publishing/epubcheck/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                How to run EPUBCheck ↗
+              <p>
+                Results and detailed findings are saved in <strong>Export history</strong>. You can choose <strong>Run EPUBCheck in browser</strong> to recheck a saved EPUB without generating it again. No book content is uploaded.
+              </p>
+              <p>
+                EPUBCheck verifies technical conformance, not visual appearance or retailer approval. Review your EPUB in an ebook reader before publication.
+              </p>
+              <a href="https://www.w3.org/publishing/epubcheck/" target="_blank" rel="noreferrer">
+                About EPUBCheck ↗
               </a>
             </div>
           </section>
