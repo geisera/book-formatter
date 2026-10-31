@@ -83,6 +83,23 @@ export default function Workspace() {
       window.removeEventListener("beforeunload", leave);
     };
   }, []);
+  useEffect(() => {
+    if (!activeBookMenu) return;
+    const dismissOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && target.parentElement?.closest(".bookshelf-menu-wrap")) return;
+      setActiveBookMenu(null);
+    };
+    const dismissEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setActiveBookMenu(null);
+    };
+    document.addEventListener("pointerdown", dismissOutside);
+    document.addEventListener("keydown", dismissEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutside);
+      document.removeEventListener("keydown", dismissEscape);
+    };
+  }, [activeBookMenu]);
   function open(b: Book) {
     current.current = b;
     setBook(b);
