@@ -650,6 +650,20 @@ aside h2 {
   padding: 10px;
   margin: 5px 0;
 }
+
+.section-row .import-review-main { min-width:0; }
+.import-review-fields { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(160px,1fr); gap:12px; }
+.import-review-fields label { min-width:0; }
+.import-review-fields select { width:100%; min-width:0; padding:10px; margin:5px 0; }
+.section-row .import-classification { font:12px/1.5 system-ui,sans-serif; color:var(--muted); margin:4px 0 9px; }
+.import-classification strong { color:var(--ink); }
+.section-row .import-review-main > small { display:block; font:12px/1.6 Georgia,serif; color:#78816f; overflow-wrap:anywhere; }
+.import-review-actions { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:12px; }
+.import-review-actions button { font-size:11px; padding:7px 9px; border:1px solid var(--line); border-radius:4px; }
+.import-review-actions button:disabled { opacity:.45; cursor:not-allowed; }
+.import-review-actions label { font-size:11px; max-width:210px; }
+.import-review-actions select { min-width:120px; width:100%; padding:6px; margin-top:4px; }
+@media(max-width:650px) { .import-review-fields { grid-template-columns:1fr; } }
 .section-row small {
   grid-column: 2;
   font: 12px/1.6 Georgia;
