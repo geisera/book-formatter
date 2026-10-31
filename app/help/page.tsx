@@ -10,11 +10,11 @@ const topics = [
   ["start", "Getting started"],
   ["projects", "Local projects"],
   ["import", "Import manuscripts"],
-  ["editor", "Edit chapters"],
-  ["design", "Book designs"],
+  ["editor", "Manuscript"],
+  ["design", "Design"],
   ["preview", "Ebook preview"],
-  ["epub", "Export EPUB"],
-  ["pdf", "Print PDF proofs"],
+  ["epub", "Export · EPUB"],
+  ["pdf", "Export · Paperback PDF"],
   ["backup", "Backup and restore"],
   ["offline", "Offline use and privacy"],
   ["troubleshooting", "Troubleshooting"],
@@ -43,7 +43,7 @@ export default function HelpPage() {
             <ol>
               <li>Open Book Formatter in your browser. No account is needed for local projects.</li>
               <li>Choose <strong>Create local book</strong> to start with an empty chapter, or <strong>Import a manuscript</strong> to bring in an existing file.</li>
-              <li>Use <strong>Manuscript</strong> to edit, <strong>Design</strong> to style your ebook, <strong>Publish</strong> to make an EPUB, and <strong>Print</strong> for a paperback PDF proof.</li>
+              <li>Use <strong>Manuscript</strong> to edit, <strong>Structure</strong> to organize sections, <strong>Design</strong> to control appearance, <strong>Details</strong> for publication metadata, and <strong>Export</strong> to generate EPUB or paperback PDF.</li>
               <li>Download a <strong>project backup</strong> regularly. Browser storage can be cleared.</li>
             </ol>
             <p>Once the offline application files have been cached, you can open existing projects and use the supported local features without an internet connection.</p>
@@ -51,7 +51,7 @@ export default function HelpPage() {
           <section id="projects">
             <h2>Local projects and the bookshelf</h2>
             <p>On the bookshelf, enter a <strong>Book title</strong> and optionally an <strong>Author name</strong>, then select <strong>Create local book</strong>. The new book contains an initial chapter. Select a book card on <strong>Your bookshelf</strong> to reopen it.</p>
-            <p>Inside a book, the left sidebar lists chapters. Select a chapter to edit it, or choose <strong>+ Add chapter</strong>. Edit a chapter's title using the <strong>Chapter title</strong> field above its text. Use <strong>← Bookshelf</strong> to return to your projects.</p>
+            <p>Inside a book, the left sidebar lists chapters. Select a chapter to edit it, or choose <strong>+ Add or organize sections</strong> to open Structure. Edit a chapter's title using the <strong>Chapter title</strong> field above its text. Use <strong>← Bookshelf</strong> to return to your projects.</p>
             <p>Edits are autosaved locally. Check the header for <strong>Saving locally…</strong>, <strong>Saved locally</strong>, or <strong>Save failed</strong>. Do not close the page during an unresolved save failure; download a backup and review the error.</p>
             <p>Cloud account synchronization is not provided; project data and embedded images remain in this browser unless exported in a backup.</p>
           </section>
@@ -74,14 +74,14 @@ export default function HelpPage() {
             <p><strong>Important:</strong> Bold, italics, paragraphs, headings and scene breaks are supported. Tables, lists and other complex layouts may be simplified; supported embedded PNG/JPEG images are imported in reading order; unsupported or oversized images become placeholders. Compare the imported result with your original manuscript.</p>
           </section>
           <section id="editor">
-            <h2>Edit your manuscript</h2>
+            <h2>Manuscript</h2>
             <p>Open a book and select <strong>Manuscript</strong>. The ProseMirror editor is chapter-based, so edits affect the selected chapter.</p>
             <dl>
               <dt>Bold / Italic</dt><dd>Select text and choose <strong>B</strong> or <strong>I</strong>. Keyboard shortcuts: <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>B</kbd> and <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>I</kbd>.</dd>
               <dt>Heading / Paragraph</dt><dd>Place the caret in a block and choose <strong>Heading</strong> or <strong>Paragraph</strong>.</dd>
               <dt>Scene break</dt><dd>Choose <strong>Scene break</strong> where you want a scene separator inserted. Its final appearance depends on ebook design settings.</dd>
               <dt>Book publishing metadata</dt><dd>Open <strong>Details</strong> in the workspace to set the publication title, author, language, subtitle, series name and number, publisher/imprint, optional ISBN-13, description, and publication date. Choose <strong>Save book details</strong>. ISBN checksums, valid calendar dates, and field lengths are validated. Details are stored locally with the project and preserved in project backups. EPUB exports include standard descriptive metadata and series details; PDF exports include relevant document properties. Editing publication metadata does not rewrite manuscript title pages or chapter text.</dd>
-              <dt>EPUB cover artwork</dt><dd>Open <strong>Design</strong> and use <strong>Upload cover</strong> in the EPUB cover section to choose a PNG or JPEG up to 3 MB. You can replace or remove it, edit alternative text, and inspect it through the <strong>Cover</strong> option in the live ebook preview. A selected cover is included at the front of the EPUB and preserved in project backups. Books without covers remain exportable.</dd>
+              <dt>EPUB cover artwork</dt><dd>Open <strong>Design</strong>, select Templates, then use <strong>Upload cover</strong> in the Cover artwork section to choose a PNG or JPEG up to 3 MB. You can replace or remove it, edit alternative text, and inspect it through the <strong>Cover</strong> option in the live ebook preview. A selected cover is included at the front of the EPUB and preserved in project backups. Books without covers remain exportable.</dd>
               <dt>Find and replace</dt><dd>In Manuscript mode, choose <strong>Find &amp; Replace</strong> or press <strong>Ctrl+F</strong> / <strong>Cmd+F</strong>. Search in the current chapter or across the entire book, with optional case-sensitive and whole-word matching. Matching text is highlighted and navigable by chapter. Replace one match or all matches; changes autosave locally. The panel provides dedicated <strong>Undo replace</strong> and <strong>Redo replace</strong> controls for the most recent replacement operation. Close the panel with Escape. Replacement affects manuscript text, not image metadata or chapter titles.</dd>
               <dt>Images and illustrations</dt><dd>Choose <strong>Insert image</strong> from the manuscript toolbar, select a PNG or JPEG (up to 3 MB), and enter descriptive alternative text. Click the inserted image to open the floating <strong>Image properties</strong> control. It stays visible while you inspect the manuscript; close it with <strong>Close</strong> or Escape. Set image width (25%, 50%, 75%, 100%), alignment, alternative text, and caption together, then choose <strong>Save properties</strong>. Select <strong>Replace image</strong> to substitute a PNG or JPEG without changing its position or caption, or <strong>Remove image</strong> to delete it. Images are embedded locally in the manuscript and included in EPUB, PDF and project backups. The combined embedded-image limit is 12 MB per project. SVG, GIF, WebP, and external image URLs are not supported. DOCX import extracts supported PNG/JPEG images but may not preserve complex image positioning or captions; review imported figures. Keep a separate copy of high-resolution originals for print production.</dd>
               <dt>Undo / Redo</dt><dd>Use the toolbar buttons, or the usual keyboard shortcuts (<kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Z</kbd> to undo).</dd>
@@ -90,22 +90,22 @@ export default function HelpPage() {
             <p>The editor is for manuscript corrections and semantic formatting, not arbitrary visual page layout. The final ebook and PDF are produced by separate renderers.</p>
           </section>
           <section id="design">
-            <h2>Choose an ebook design</h2>
+            <h2>Design your book</h2>
             <p>Open <strong>Design</strong> and select one of the version 1 presets: <strong>Classic</strong> (traditional literary serif), <strong>Modern</strong> (clean contemporary), or <strong>Gothic</strong> (ornamental). Selecting a preset sets the design for <strong>both EPUB and PDF</strong>, with format-specific typography applied independently. The template choice <strong>does not change your manuscript</strong>.</p>
             <p>Customize <strong>Body font</strong> (included Libre Baskerville or system Georgia), <strong>Body size</strong>, <strong>Line spacing</strong>, <strong>First-line indent</strong>, <strong>Paragraph spacing</strong>, <strong>Chapter heading</strong> alignment, <strong>Chapter opening space</strong>, and <strong>Scene ornament</strong> (asterisks, diamonds, fine rule).</p>
             <p>Choose <strong>Reset selected template settings</strong> to restore the current preset's defaults. Settings autosave locally with the book and are included in project backups. The selected design also determines the print template. PDF-specific font sizing, page layout and justification remain separate from ebook typography.</p>
           </section>
           <section id="preview">
-            <h2>Preview the ebook</h2>
-            <p>The live ebook preview appears beside the manuscript or design settings. It shows the selected chapter with the active ebook design.</p>
+            <h2>Design preview</h2>
+            <p>The live ebook preview remains visible beside Manuscript editing or Design controls. It shows the selected chapter with the active ebook design.</p>
             <p>Use <strong>Reading width</strong> to simulate phone (320 px), ereader (420 px), or tablet (600 px); <strong>Preview theme</strong> for light or dark; the <strong>A− / percentage / A+</strong> controls for preview-only text size; and chapter navigation to move through the book.</p>
             <p>Reader controls do not change the saved edition. This is a reflowable reading simulation, not a pixel-perfect representation of every ebook device or a print PDF preview. Reading apps may override font preferences.</p>
           </section>
           <section id="epub">
-            <h2>Generate and download EPUB</h2>
+            <h2>Export EPUB</h2>
             <ol>
-              <li>Choose <strong>Publish</strong> or <strong>Export EPUB</strong> in the sidebar.</li>
-              <li>Under <strong>Book details</strong>, enter the publication title, author and language tag (for example <code>en</code> or <code>en-US</code>), then select <strong>Save book details</strong>.</li>
+              <li>Choose <strong>Export</strong> → <strong>EPUB ebook</strong>, or select <strong>Export EPUB</strong> in the sidebar.</li>
+              <li>Under <strong>Details</strong> or the Export metadata form, enter the publication title, author and language tag (for example <code>en</code> or <code>en-US</code>), then select <strong>Save book details</strong>.</li>
               <li>Review <strong>Before you export</strong>. Fix blocking errors such as missing information or empty sections; examine warnings separately.</li>
               <li>Choose <strong>Generate & download EPUB</strong>. The file is generated locally and downloaded by the browser.</li>
               <li>Inspect the result using an ebook reader before publication.</li>
@@ -114,7 +114,7 @@ export default function HelpPage() {
             <p><strong>Validation limitation:</strong> The browser performs local package checks, but <strong>EPUBCheck is not run on each user export</strong>. Do not regard a local-check pass as formal retailer approval. For distribution, validate the actual downloaded EPUB with EPUBCheck and visually inspect it in a reader.</p>
           </section>
           <section id="structure">
-            <h2>Organize your book in Structure</h2>
+            <h2>Structure</h2>
             <p>Open a local book and select <strong>Structure</strong> to organize sections independently of their manuscript text. Existing chapters are treated as regular chapters unless you assign another type.</p>
             <ol>
               <li><strong>Reorder:</strong> drag a section row onto another row, or use <strong>Up</strong> and <strong>Down</strong>. Sections are numbered continuously: Front Matter begins at 1, Body Matter continues that sequence, then Back Matter. The saved section order determines EPUB navigation and the order of PDF pages.</li>
@@ -130,12 +130,12 @@ export default function HelpPage() {
             <p>Print PDF respects requested recto/verso page starts, optional running headers, folios, spacing, and conservative short-section vertical positioning. Longer sections continue onto body pages and may remain top-aligned. EPUB supports page breaks and spacing but the reading device controls physical pages; running headers, folios, and precise page sides are PDF-only. The EPUB export creates navigation entries in section order and assigns appropriate EPUB semantics where supported. Add a section of type <strong>Table of contents</strong> in Structure to generate its entries automatically from the current book order. EPUB contains linked entries; PDF displays section starting pages calculated after pagination. Text manually entered in a generated contents section is not printed; move it to another section if needed. Front-matter folios use lowercase Roman numerals when shown, with visible numbering on contents and preface pages by default. Main-text numbering restarts at Arabic 1 and continues into back matter; individual section controls can hide or show folios.</p>
           </section>
           <section id="pdf">
-            <h2>Build and inspect a paperback PDF proof</h2>
+            <h2>Export and inspect a paperback PDF proof</h2>
             <ol>
-              <li>Open <strong>Print</strong> or choose <strong>Print PDF proof</strong> in the sidebar.</li>
-              <li>Choose <strong>Classic, Modern, or Gothic</strong> in the <strong>Design</strong> tab. The Print panel displays the inherited design; there is no second template selector.</li>
+              <li>Choose <strong>Export</strong> → <strong>Paperback PDF</strong>, or select <strong>Print PDF proof</strong> in the sidebar.</li>
+              <li>Choose <strong>Classic, Modern, or Gothic</strong> in the <strong>Design</strong> tab. The Paperback PDF export panel displays the inherited design; there is no second template selector.</li>
               <li>Choose whether to check <strong>Justify body text</strong>. Unchecked gives a ragged right edge; checked enables controlled justification.</li>
-              <li>Choose a <strong>Trim size</strong> in Print. For most novels, start with <strong>5.5 × 8.5</strong> (balanced trade paperback). Choose <strong>5 × 8</strong> for a compact reading experience or <strong>6 × 9</strong> for roomier pages and generally fewer pages. Selection is saved with the book and preserved in backups.</li>
+              <li>Choose a <strong>Trim size</strong> in Export → Paperback PDF. For most novels, start with <strong>5.5 × 8.5</strong> (balanced trade paperback). Choose <strong>5 × 8</strong> for a compact reading experience or <strong>6 × 9</strong> for roomier pages and generally fewer pages. Selection is saved with the book and preserved in backups.</li>
               <li>Optionally enable <strong>Include front cover</strong> if a cover image has been uploaded in Design. This is off by default for print-ready interiors; when selected, the PDF begins with the cover and a blank reverse page while retaining the original interior folios and right-hand chapter starts. Select <strong>Build PDF proof</strong> for the currently selected trim size to generate the PDF locally.</li>
               <li>Inspect the resulting pages: use the <strong>Page</strong> number, <strong>Facing pages / Single page</strong> view, <strong>Zoom</strong>, and previous/next controls.</li>
               <li>Choose <strong>Download PDF proof</strong> to save the same PDF bytes shown in the preview. Rebuild after changing the book, Design template, or justification setting.</li>
@@ -143,7 +143,7 @@ export default function HelpPage() {
             <p>The available versioned print profiles are <strong>Classic</strong> (centered chapter titles, asterisk scene breaks, traditional headers), <strong>Modern</strong> (left-aligned chapter headings, fine scene rules, minimal headers), and <strong>Gothic</strong> (dramatic centered chapter openings, diamond ornaments, chapter running headers). Each supports <strong>5 × 8, 5.5 × 8.5, and 6 × 9-inch</strong> no-bleed interiors (6 × 9 is the legacy default), embedded Libre Baskerville fonts, mirrored gutters, page numbers, and right-hand chapter openings. The same Design template is used for EPUB and PDF, while print-specific line spacing and justification remain independent.</p>
             <p>When justification is on, expanded spaces are capped at 165% of natural word-space width. Lines requiring bigger gaps remain ragged-right; the last paragraph line is not stretched. This reduces conspicuous gaps but does not implement automatic hyphenation.</p>
             <p><strong>This is a feasibility proof, not a certified retailer-ready interior.</strong> Automatic hyphenation, complex-script shaping, full-wrap paperback covers, and PDF/X are not supported. An optional front cover is for digital proofs, not a retailer-ready paperback cover wrap. Inspect the final PDF and physical print proofs before submitting to a retailer.</p>
-            <p>The local <strong>Print history</strong> stores recent build metadata and checksums, not the PDF files themselves.</p>
+            <p>The local <strong>PDF export history</strong> stores recent build metadata and checksums, not the PDF files themselves.</p>
           </section>
           <section id="backup">
             <h2>Backup, original files and restore</h2>
@@ -165,8 +165,8 @@ export default function HelpPage() {
               <dt>Saving locally fails.</dt><dd>Read the error and check browser storage availability or quota. Download a backup before closing, if possible, and avoid further edits until the issue is resolved.</dd>
               <dt>The importer chose incorrect chapters.</dt><dd>In the import review, change Heading 1, Heading 2, or Keep as one section if Automatic finds the wrong boundaries; split or merge sections and correct the type dropdowns before saving.</dd>
               <dt>Import reports missing images or formatting.</dt><dd>The current importer supports a limited semantic set. Consult the import report and original file; images and complex Word layouts are not faithfully reproduced yet.</dd>
-              <dt>EPUB export is blocked.</dt><dd>Use Publish → Before you export to fix missing metadata, invalid language tags, empty sections, and other errors. Warnings alone are not necessarily blockers.</dd>
-              <dt>PDF looks too widely spaced.</dt><dd>In Print, turn <strong>Justify body text</strong> off for left alignment, or leave it on for capped spacing and occasional ragged-right lines. Rebuild the proof after changing the option.</dd>
+              <dt>EPUB export is blocked.</dt><dd>Use Export → EPUB ebook → Before you export to fix missing metadata, invalid language tags, empty sections, and other errors. Warnings alone are not necessarily blockers.</dd>
+              <dt>PDF looks too widely spaced.</dt><dd>In Export → Paperback PDF, turn <strong>Justify body text</strong> off for left alignment, or leave it on for capped spacing and occasional ragged-right lines. Rebuild the proof after changing the option.</dd>
               <dt>Offline export says fonts or worker files are unavailable.</dt><dd>Reconnect, open the application online to refresh cached assets, then retry offline. Do not clear site data without a backup.</dd>
               <dt>Export history shows Earlier snapshot.</dt><dd>The manuscript or settings changed since that export. Generate a new EPUB or PDF to incorporate the current revision.</dd>
               <dt>A proof viewer page cannot load.</dt><dd>You can still download the generated PDF. Open that file in a separate PDF reader to inspect it.</dd>
