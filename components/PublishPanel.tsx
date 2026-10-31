@@ -39,6 +39,7 @@ export default function PublishPanel({
     [result, setResult] = useState<ExportRecord | null>(null),
     [metadataBusy, setMetadataBusy] = useState(false),
     [validationBusy,setValidationBusy]=useState(false);
+  const unsavedExport=useRef<{id:string;bytes:Uint8Array}|null>(null);
   const releaseWorker=useRef<(()=>void)|null>(null);
   const worker = useRef<Worker | null>(null),
     abort = useRef<AbortController | null>(null),
@@ -174,6 +175,7 @@ export default function PublishPanel({
     setError("");
     setNotice("");
     setResult(null);
+    unsavedExport.current=null;
     setPhase("Preparing a saved snapshot…");
     try {
       const snapshot = await getSnapshot();
@@ -267,6 +269,7 @@ export default function PublishPanel({
           validationProblem+=(validationProblem?" ":"")+"Unable to save export history. Download a troubleshooting copy before leaving.";
         }
         if(token!==generation.current)return;
+        unsavedExport.current={id:checked.id,bytes:new Uint8Array(bytes)};
         setResult(checked);setBusy(false);setPhase("");
         if(checked.epubCheck==="passed"){
           const url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:"application/epub+zip"}));
@@ -438,7 +441,7 @@ export default function PublishPanel({
                 <p>
                   {result.filename} · {(result.byteLength / 1024).toFixed(0)} KB
                 </p>
-                {result.epubCheck!=="passed"?<button type="button" onClick={()=>void db.artifacts.get(result.id).then(artifact=>{if(!artifact){setError("Saved EPUB unavailable. Generate another copy.");return;}const url=URL.createObjectURL(new Blob([new Uint8Array(artifact.bytes)],{type:"application/epub+zip"}));const a=document.createElement("a");a.href=url;a.download=result.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>Download unvalidated EPUB for troubleshooting</button>:null}
+                {result.epubCheck!=="passed"?<button type="button" onClick={()=>void db.artifacts.get(result.id).then(artifact=>{const bytes=artifact?.bytes??(unsavedExport.current?.id===result.id?unsavedExport.current.bytes:null);if(!bytes){setError("Saved EPUB unavailable. Generate another copy.");return;}const url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:"application/epub+zip"}));const a=document.createElement("a");a.href=url;a.download=result.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);})}>Download unvalidated EPUB for troubleshooting</button>:null}
                 {result.epubCheckMessages?.length?<ul className="epubcheck-findings">{result.epubCheckMessages.map((m,i)=><li key={i}><strong>{m.severity} {m.code}</strong> {m.location}<p>{m.message}</p></li>)}</ul>:null}
                 <p>
                   Local package checks passed.
