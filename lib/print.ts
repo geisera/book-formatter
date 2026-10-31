@@ -392,13 +392,13 @@ export async function buildPrintPdf(
         estimated += Math.min(350, contentWidth * node.attrs.width / 100 * asset.height / asset.width) + 22 + (node.attrs.caption ? 40 : 0);
       } else if (node.type.name === "scene_break") estimated += leading * 4;
       else if (node.type.name === "heading") estimated += wrap(units(node), 0, 13).length * 19 + 30;
-      else if (node.textContent.trim()) estimated += Math.max(1, wrap(units(node), 14).length + 1) * leading;
+      else if (node.textContent.trim()) estimated += Math.max(1, wrap(units(node), profile.firstLineIndent ?? 14).length + 1) * leading + (profile.paragraphSpacing ?? 0);
     });
     const room = Math.max(0, topBaseline - bottom - activeLayout.spaceBefore - activeLayout.spaceAfter - estimated - 28);
     const offset = estimated < topBaseline - bottom - 28
       ? activeLayout.vertical === "center" ? room / 2 : activeLayout.vertical === "bottom" ? room : 0
       : 0;
-    y = topBaseline - activeLayout.spaceBefore - offset;
+    y = topBaseline - activeLayout.spaceBefore - offset - (profile.chapterOpeningSpace ?? 0);
     if (showSectionTitle(chapter)) {
       const headingText = template === "gothic" ? chapter.title.toLocaleUpperCase(book.language ?? "en") : chapter.title;
       const heading = textLines(headingText, headingSize, "bold");
@@ -505,7 +505,7 @@ export async function buildPrintPdf(
       }
       if (!node.textContent.trim()) return;
       const blockAlignment = node.attrs.align as TextAlignment | null;
-      const indent = blockAlignment ? 0 : opening ? 0 : 14;
+      const indent = blockAlignment ? 0 : opening ? 0 : (profile.firstLineIndent ?? 14);
       const lines = wrap(units(node), indent);
       let offset = 0;
       while (offset < lines.length) {
@@ -533,6 +533,7 @@ export async function buildPrintPdf(
         offset += count;
         if (offset < lines.length) bodyPage();
       }
+      y -= profile.paragraphSpacing ?? 0;
       opening = false;
     });
   }
