@@ -90,6 +90,8 @@ prologue, chapters, parts, interludes, epilogue, notes and acknowledgments),
 rename, reorder, split between blocks, merge within the same matter group,
 or delete with confirmation. Sections retain stable IDs when renamed/reordered.
 
+Section layout changes save locally but do not alter the manuscript editor or an already generated PDF. After changing a control, select **Go to Print**, build a new PDF, and inspect the affected pages. A saved-layout notice makes this distinction explicit.
+
 Each section offers **Page Layout** controls for its print starting side,
 vertical placement, running header, folio visibility and spacing. Choose
 **Restore section layout defaults** to revert those overrides without changing
