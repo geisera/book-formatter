@@ -1,9 +1,15 @@
+export type PrintTrim = "5x8" | "5.5x8.5" | "6x9";
+export const PRINT_TRIMS: Record<PrintTrim,{width:number;height:number;label:string;description:string}> = {
+  "5x8": {width:360,height:576,label:"5 × 8",description:"Compact, traditional paperback; more pages"},
+  "5.5x8.5": {width:396,height:612,label:"5.5 × 8.5",description:"Balanced fiction trade paperback · recommended"},
+  "6x9": {width:432,height:648,label:"6 × 9",description:"Roomier pages; fewer pages · current default"},
+};
 export type PrintTemplateId = "classic" | "modern" | "gothic";
 export type PrintEdition = {
   schemaVersion: 1;
   kind: "paperback";
   template: { id: PrintTemplateId; version: 1 };
-  trim: "6x9";
+  trim: PrintTrim;
   font: "baskerville";
   fontSize: number;
   leading: number;
@@ -48,8 +54,8 @@ export const PRINT_PRESETS = Object.freeze({
   modern: MODERN_PRINT,
   gothic: GOTHIC_PRINT,
 });
-export function printPreset(id: PrintTemplateId, alignment: "left" | "justify" = "left"): PrintEdition {
-  return { ...PRINT_PRESETS[id], template: { ...PRINT_PRESETS[id].template }, alignment };
+export function printPreset(id: PrintTemplateId, alignment: "left" | "justify" = "left", trim: PrintTrim = "6x9"): PrintEdition {
+  return { ...PRINT_PRESETS[id], template: { ...PRINT_PRESETS[id].template }, alignment, trim };
 }
 export function validatePrintEdition(value: unknown): PrintEdition {
   if (!value || typeof value !== "object")
@@ -59,11 +65,12 @@ export function validatePrintEdition(value: unknown): PrintEdition {
     throw Error("Unsupported print template.");
   const base = PRINT_PRESETS[p.template.id];
   for (const key of [
-    "schemaVersion", "kind", "trim", "font", "fontSize", "leading",
+    "schemaVersion", "kind", "font", "fontSize", "leading",
     "inside", "outside", "top", "bottom", "rectoChapters",
   ] as const)
     if (p[key] !== base[key])
-      throw Error("Unsupported print profile. Choose a versioned 6 × 9 preset.");
+      throw Error("Unsupported print profile. Choose a supported print preset.");
+  if (!Object.hasOwn(PRINT_TRIMS, p.trim)) throw Error("Unsupported print trim size.");
   if (p.alignment !== undefined && p.alignment !== "left" && p.alignment !== "justify")
     throw Error("Unsupported print alignment.");
   return p;
@@ -75,5 +82,7 @@ export function getPrintEdition(book: {
 }): PrintEdition {
   const id = book.editions?.ebook?.template.id ?? "classic";
   const alignment = book.editions?.print?.alignment ?? "left";
-  return printPreset(id, alignment);
+  const saved = book.editions?.print?.trim;
+  const trim = saved && Object.hasOwn(PRINT_TRIMS, saved) ? saved : "6x9";
+  return printPreset(id, alignment, trim);
 }
