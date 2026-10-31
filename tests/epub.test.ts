@@ -256,3 +256,23 @@ describe("edition-specific chapter headings in exported EPUB",()=>{
   expect(numbered).toContain('>1</span><h1 id="chapter-title">Chapter One</h1>');
  });
 });
+
+describe("chapter number without visible chapter title",()=>{
+ it("exports Arabic and Roman chapter numbers as headings without removing titles from EPUB navigation",()=>{
+  const b=fixture();
+  const original=structuredClone(b.chapters);
+  for(const [style,label] of [["arabic","1"],["roman","I"]] as const){
+    b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:style,showChapterTitle:false};
+    const files=unzipSync(buildEpub(b,fonts,options).bytes);
+    const section=strFromU8(files["EPUB/chapter-0001.xhtml"]);
+    expect(section).toContain(`<h1 id="chapter-title" class="chapter-number number-only" aria-label="Chapter ${label}">${label}</h1>`);
+    expect(section).not.toContain("<h1 id=\"chapter-title\">Chapter One</h1>");
+    expect(strFromU8(files["EPUB/nav.xhtml"])).toContain(">Chapter One</a>");
+    expect(b.chapters).toEqual(original);
+  }
+  b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"none",showChapterTitle:false};
+  const without=strFromU8(unzipSync(buildEpub(b,fonts,options).bytes)["EPUB/chapter-0001.xhtml"]);
+  expect(without).not.toContain('id="chapter-title"');
+  expect(without).toContain('aria-label="Chapter One"');
+ });
+});
