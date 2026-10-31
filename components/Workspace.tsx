@@ -569,31 +569,16 @@ export default function Workspace() {
             <button className="text-button" onClick={dashboard}>
               ← Bookshelf
             </button>
-            <div className="eyebrow">MANUSCRIPT</div>
-            <h2>{book.title}</h2>
-            <p className="muted">{book.author || "Author not set"}</p>
-            <div className="chapter-list">
-              {book.chapters.map((c, i) => (
-                <button
-                  className={c.id === chapterId ? "selected" : ""}
-                  key={c.id}
-                  onClick={() => setChapterId(c.id)}
-                >
-                  <small>{String(i + 1).padStart(2, "0")}</small>
-                  {c.title}
-                </button>
-              ))}
+            <div className="workspace-book-info"><div className="workspace-book-kicker">CURRENT BOOK</div><h2>{book.title}</h2><p className="muted">{book.author||"Author not set"}</p></div>
+            <div className="section-navigator" aria-label="Book sections">
+              {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
+                <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
+                <div className="chapter-list">{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><button key={c.id} type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
+                  <small>{(c.sectionType??"chapter").replaceAll("-"," ")}</small><span>{c.title}</span>
+                </button>)}</div>
+              </details>)}
             </div>
-            <button
-              className="add"
-              onClick={() => {
-                const c = blankChapter(`Chapter ${book.chapters.length + 1}`);
-                edit({ ...book, chapters: [...book.chapters, c] });
-                setChapterId(c.id);
-              }}
-            >
-              + Add chapter
-            </button>
+            <button className="add" onClick={()=>setMode("structure")}>+ Add or organize sections</button>
             <div className="aside-bottom">
               <button onClick={() => setMode("print")}>Print PDF proof</button>
               <button
