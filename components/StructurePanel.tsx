@@ -30,6 +30,25 @@ const sectionDescriptions: Record<SectionType, string> = {
   acknowledgments: "Thanks and recognition for people who contributed to the work.",
   custom: "A section for material that does not fit a standard book section type.",
 };
+const sectionUseCases: Record<SectionType, string> = {
+  chapter: "Use this when you are adding a regular installment of the main narrative.",
+  prologue: "Use this when readers need a scene or event before Chapter One to establish context, tension, or backstory.",
+  epilogue: "Use this when you want to show the aftermath of the ending or offer a final glimpse of the characters.",
+  interlude: "Use this when you want to briefly interrupt the chapter sequence with a different perspective, place, or time.",
+  part: "Use this when your book has major acts or divisions containing multiple chapters.",
+  "half-title": "Use this when you want a minimalist book-title page before the formal title page, especially in print.",
+  title: "Use this when you want a dedicated, fully formatted title page instead of the automatically generated one.",
+  copyright: "Use this when you need to present copyright notices, publication details, rights information, or edition identifiers.",
+  dedication: "Use this when you want to dedicate the book to a person or group in a short, separate section.",
+  epigraph: "Use this when a quotation, verse, or brief excerpt helps establish the themes or mood of the book.",
+  toc: "Use this when readers would benefit from navigating chapters and other sections through an automatically generated contents list.",
+  preface: "Use this when you, as the author, want to explain why or how the book was written before the main text.",
+  "about-author": "Use this when you want readers to learn about the author after finishing the book.",
+  "also-by": "Use this when you want to direct readers to your other published books or series.",
+  notes: "Use this when readers may need source references, explanations, or supplementary details outside the main narrative.",
+  acknowledgments: "Use this when you want to thank people or organizations who helped create the book.",
+  custom: "Use this when the material has a specific purpose that none of the standard section types describes.",
+};
 export default function StructurePanel({
   book, selectedId, onAction, onEdit, onPreviewPrint,
 }: {
@@ -73,7 +92,10 @@ export default function StructurePanel({
           <input value={title} maxLength={200} placeholder="e.g. Prologue" onChange={e => setTitle(e.target.value)} />
         </label>
         <button className="primary" type="submit">+ Add section</button>
-        <div id="new-section-type-description" className="structure-add-description" aria-live="polite">{sectionDescriptions[type]}</div>
+        <div id="new-section-type-description" className="structure-add-description" aria-live="polite">
+          <p>{sectionDescriptions[type]}</p>
+          <p className="structure-add-use-case">{sectionUseCases[type]}</p>
+        </div>
       </form>
       {(["front", "body", "back"] as const).map(matter => (
         <div className="structure-group" key={matter}>
