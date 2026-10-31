@@ -40,7 +40,7 @@ test("imports Markdown offline, edits it, and restores the original in a clean p
   await page
     .getByLabel("Section 2 title", { exact: true })
     .fill("Second chapter");
-  await page.getByRole("button", { name: "Import as new book" }).click();
+  await page.getByRole("button", { name: /Import as new book/ }).click();
   await expect(
     page.getByRole("textbox", { name: "Chapter manuscript" }),
   ).toContainText("The bold opening");
@@ -99,7 +99,7 @@ test("DOCX conversion runs locally in the worker and preserves inline formatting
   await expect(page.getByLabel("Section 2 title", { exact: true })).toHaveValue(
     "Chapter Two",
   );
-  await page.getByRole("button", { name: "Import as new book" }).click();
+  await page.getByRole("button", { name: /Import as new book/ }).click();
   await expect(page.locator(".ProseMirror strong")).toHaveText("bold words");
   await expect(page.locator(".ProseMirror em")).toHaveText("italic words");
   await expect(page.locator(".ProseMirror hr")).toHaveCount(1);
@@ -167,4 +167,18 @@ test("classifies imported headings, permits manual type edits and repairs bounda
  await expect(page.getByLabel("Type of Bibliography")).toHaveValue("bibliography");
  await page.getByRole("button",{name:"Manuscript",exact:true}).click();
  await expect(page.getByRole("textbox",{name:"Chapter manuscript"})).toContainText("A guest writes this.");
+});
+
+test("import review exposes draggable sections and side-by-side comparison",async({page})=>{
+  await page.goto("/");
+  await page.getByRole("button",{name:"Import a manuscript"}).click();
+  await page.getByLabel("Manuscript file").setInputFiles({
+    name:"review.md",mimeType:"text/markdown",
+    buffer:Buffer.from("# Chapter One\n\nOpening text.\n\n# Chapter Two\n\nSecond section.")
+  });
+  await expect(page.getByRole("heading",{name:"Conversion review"})).toBeVisible();
+  await expect(page.locator(".import-drag-handle")).toHaveCount(2);
+  await page.getByRole("button",{name:"Compare source and imported text"}).first().click();
+  await expect(page.locator(".import-side-by-side")).toBeVisible();
+  await expect(page.getByText("Review step 2 of 3",{exact:false})).toBeVisible();
 });
