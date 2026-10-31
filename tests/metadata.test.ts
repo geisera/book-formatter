@@ -44,6 +44,7 @@ describe("publication metadata",()=>{
   expect(opf).toContain('property="group-position">2</meta>');
   const title=strFromU8(files["EPUB/title.xhtml"]);
   expect(title).toContain("<h1>Main book</h1>");
-  expect(title).not.toContain("A &amp; B");
+  expect(title).toContain('class="title-subtitle">A &amp; B</p>');
+   expect(title).toContain('class="title-publisher">East &amp; West</p>');
  });
 });
