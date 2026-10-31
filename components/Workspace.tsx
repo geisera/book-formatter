@@ -4,6 +4,8 @@ import Link from "next/link";
 import Editor from "./Editor";
 import ImportPanel from "./ImportPanel";
 import DesignPanel from "./DesignPanel";
+import BookDetailsPanel from "./BookDetailsPanel";
+import type {PublicationMetadata} from "../lib/publication-metadata";
 import EbookPreview from "./EbookPreview";
 import PublishPanel from "./PublishPanel";
 import PrintPanel from "./PrintPanel";
@@ -19,7 +21,7 @@ export default function Workspace() {
   const [activeBookMenu, setActiveBookMenu] = useState<string | null>(null);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
   const [mode, setMode] = useState<
-    "manuscript" | "structure" | "design" | "publish" | "print"
+    "manuscript" | "structure" | "design" | "details" | "publish" | "print"
   >("manuscript");
   const [books, setBooks] = useState<Book[]>([]),
     [book, setBook] = useState<Book | null>(null),
@@ -288,6 +290,7 @@ export default function Workspace() {
     title: string;
     author: string;
     language: string;
+    metadata?: PublicationMetadata;
   }) {
     const b = current.current;
     if (!b) throw Error("Open a book first.");
@@ -568,6 +571,9 @@ export default function Workspace() {
                 >
                   Design
                 </button>
+                <button aria-pressed={mode === "details"} onClick={() => setMode("details")}>
+                  Details
+                </button>
                 <button
                   aria-pressed={mode === "publish"}
                   onClick={() => setMode("publish")}
@@ -653,6 +659,7 @@ export default function Workspace() {
                 edition={getEbookEdition(book)}
                 onChange={changeEdition}
               />
+              {mode === "details" ? <BookDetailsPanel book={book} onSave={updateMetadata}/> : null}
               {mode === "publish" ? (
                 <PublishPanel
                   book={book}
@@ -669,7 +676,7 @@ export default function Workspace() {
                 />
               ) : null}
               <EbookPreview
-                hidden={mode === "publish" || mode === "print" || mode === "structure"}
+                hidden={mode === "publish" || mode === "print" || mode === "structure" || mode === "details"}
                 book={book}
                 chapter={previewChapter}
                 chapterId={chapterId}
