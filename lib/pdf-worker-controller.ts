@@ -23,6 +23,8 @@ export function startPdfBuild(request:PdfBuildRequest):{promise:Promise<PrintRes
  let release:(()=>void)|null=null;
  let timer:ReturnType<typeof setTimeout>|null=null;
  let settled=false;
+ let attempts=0;
+ let highestProgress=0;
  let rejectPromise:(reason:Error)=>void=()=>{};
  const cleanup=()=>{if(timer){clearTimeout(timer);timer=null;}worker?.terminate();worker=null;release?.();release=null;controller.abort();};
  const cancel=()=>{if(settled)return;settled=true;cleanup();rejectPromise(new DOMException("PDF build cancelled","AbortError"));};
@@ -33,7 +35,7 @@ export function startPdfBuild(request:PdfBuildRequest):{promise:Promise<PrintRes
    settled=true;cleanup();reject(reason instanceof Error?reason:new Error(String(reason)));
   };
   const progress=(percent:number,stage:string)=>{
-   if(!settled)request.onProgress?.({percent:Math.max(0,Math.min(99,percent)),stage});
+   if(!settled){highestProgress=Math.max(highestProgress,Math.max(0,Math.min(99,percent)));request.onProgress?.({percent:highestProgress,stage});}
   };
   void (async()=>{
    try{
@@ -42,10 +44,21 @@ export function startPdfBuild(request:PdfBuildRequest):{promise:Promise<PrintRes
     const fonts=await loadFonts(controller.signal);
     if(settled)return;
     progress(3,"Starting PDF worker");
-    const prepared=await localWorker("/print-worker.js?renderer=print-proof-1.5.0");
+    const startAttempt=async():Promise<void>=>{
+    attempts++;
+    let prepared:{worker:Worker;release:()=>void};
+    try{prepared=await localWorker("/print-worker.js?renderer=print-proof-1.5.0");}
+    catch(error){if(attempts<2&&!settled){progress(highestProgress,"Retrying PDF worker startup");void startAttempt();}else fail(error);return;}
     if(settled){prepared.worker.terminate();prepared.release();return;}
     worker=prepared.worker;release=prepared.release;
-    worker.onerror=()=>fail(new Error("The local PDF worker could not start. Reload online to refresh its offline files."));
+    const failedWorker=()=>{
+      if(settled)return;
+      worker?.terminate();worker=null;release?.();release=null;
+      if(attempts<2){progress(highestProgress,"Restarting PDF worker after a crash");void startAttempt();}
+      else fail(new Error("The PDF worker failed twice. Reload online to refresh its offline files, then retry."));
+    };
+    worker.onerror=failedWorker;
+    worker.onmessageerror=failedWorker;
     worker.onmessage=(event:MessageEvent<WorkerMessage>)=>{
      if(settled)return;
      const data=event.data;
@@ -62,7 +75,10 @@ export function startPdfBuild(request:PdfBuildRequest):{promise:Promise<PrintRes
      cleanup();
      resolve(result);
     };
-    worker.postMessage({book:request.book,fonts,id:newId(),createdAt:new Date().toISOString(),includeFrontCover:request.includeFrontCover});
+    try{worker.postMessage({book:request.book,fonts,id:newId(),createdAt:new Date().toISOString(),includeFrontCover:request.includeFrontCover});}
+    catch(error){fail(error);}
+    };
+    await startAttempt();
    }catch(error){fail(error);}
   })();
  });
