@@ -11,7 +11,7 @@ export type StructureAction =
   | { kind: "reset-layout"; id: string }
   | { kind: "heading-scale"; id: string; value: number }
   | { kind: "reset-style"; id: string }
-  | { kind: "add"; title: string; sectionType: SectionType; after?: string }
+  | { kind: "add"; title: string; sectionType: SectionType; after?: string; before?: string }
   | { kind: "delete"; id: string }
   | { kind: "split"; id: string; blockIndex: number; title: string }
   | { kind: "merge"; id: string };
@@ -99,7 +99,9 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
       const afterIndex = action.after ? chapters.findIndex(c => c.id === action.after) : -1;
       const sameGroup = afterIndex >= 0 && sectionMatter(chapters[afterIndex].sectionType ?? "chapter") === desiredMatter;
       const lastInGroup = chapters.reduce((last, c, i) => sectionMatter(c.sectionType ?? "chapter") === desiredMatter ? i : last, -1);
-      const position = sameGroup ? afterIndex + 1 : lastInGroup + 1;
+      const beforeIndex = action.before ? chapters.findIndex(c => c.id === action.before) : -1;
+      if (action.before && (beforeIndex < 0 || sectionMatter(chapters[beforeIndex].sectionType ?? "chapter") !== desiredMatter)) throw Error("Insertion point was not found in that matter group.");
+      const position = beforeIndex >= 0 ? beforeIndex : sameGroup ? afterIndex + 1 : lastInGroup + 1;
       if (action.after && afterIndex === -1) throw Error("Insertion point was not found.");
       chapters.splice(position, 0, chapter);
       selectedId = chapter.id;
