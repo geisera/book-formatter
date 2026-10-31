@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { PDFDocument } from "pdf-lib";
 import { createBook, blankChapter, validateBook } from "../lib/model";
-import { CLASSIC_PRINT, PRINT_PRESETS, getPrintEdition, printPreset, validatePrintEdition } from "../lib/print-profile";
+import { CLASSIC_PRINT, PRINT_PRESETS, PRINT_TRIMS, getPrintEdition, printPreset, validatePrintEdition } from "../lib/print-profile";
 import { buildPrintPdf, type PrintFonts } from "../lib/print";
 import { backupBook, restoreBook } from "../lib/backup";
 import { presetFor } from "../lib/edition";
@@ -68,6 +68,35 @@ describe("offline print proof", () => {
     });
     expect(b).toEqual(before);
   }, 20000);
+  it("renders and preserves all supported paperback trim sizes", async () => {
+    const book=fixture(), original=structuredClone(book.chapters);
+    const counts:number[]=[];
+    for(const trim of ["5x8","5.5x8.5","6x9"] as const){
+      book.editions!.print=printPreset("classic","left",trim);
+      expect(validatePrintEdition(book.editions!.print)).toEqual(book.editions!.print);
+      const restored=restoreBook(backupBook(book));
+      expect(getPrintEdition(restored).trim).toBe(trim);
+      const built=await buildPrintPdf(restored,fonts,options);
+      const pdf=await PDFDocument.load(built.bytes);
+      const {width,height}=PRINT_TRIMS[trim];
+      expect(built.record.profile.trim).toBe(trim);
+      expect(built.record.filename).toContain(`-${trim}-proof.pdf`);
+      expect(built.record.pageCount).toBe(pdf.getPageCount());
+      expect(built.record.pageCount%2).toBe(0);
+      for(const page of pdf.getPages())expect(page.getSize()).toEqual({width,height});
+      expect(built.record.pages.filter(p=>p.kind==="chapter").every(p=>p.page%2===1)).toBe(true);
+      expect(built.record.pages.every(p=>p.kind==="cover"||p.kind==="blank"||p.right<=width)).toBe(true);
+      expect(built.record.checks.overflow).toBe(0);
+      counts.push(built.record.pageCount);
+    }
+    expect(counts[0]).toBeGreaterThanOrEqual(counts[1]);
+    expect(counts[1]).toBeGreaterThanOrEqual(counts[2]);
+    expect(book.chapters).toEqual(original);
+    const older=createBook("Old paperback","Writer");
+    expect(getPrintEdition(older).trim).toBe("6x9");
+    expect(getPrintEdition({...older,editions:{...older.editions!,print:printPreset("modern","left","5x8")}}).trim).toBe("5x8");
+    expect(()=>validatePrintEdition({...CLASSIC_PRINT,trim:"7x10" as "6x9"})).toThrow("trim");
+  },90000);
   it("keeps front cover off by default and adds it as an unnumbered PDF first page when selected", async () => {
     const b=fixture();
     b.cover={src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=",alt:"A picture of a tower"};
