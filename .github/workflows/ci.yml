@@ -15,6 +15,12 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: pagination-quality-report
+          path: artifacts/print-quality/report.json
+          if-no-files-found: warn
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
