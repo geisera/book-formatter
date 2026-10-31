@@ -384,7 +384,7 @@ export default function Workspace() {
       print: { ...getPrintEdition(b), alignment },
     } });
   }
-  function changePrintTypography(changes: Partial<Pick<ReturnType<typeof getPrintEdition>, "fontSize" | "leading" | "paragraphSpacing" | "firstLineIndent" | "chapterOpeningSpace" | "layoutPriority">>) {
+  function changePrintTypography(changes: Partial<Pick<ReturnType<typeof getPrintEdition>, "fontSize" | "leading" | "paragraphSpacing" | "firstLineIndent" | "chapterOpeningSpace" | "layoutPriority" | "hyphenate" | "hyphenationLanguage" | "maxConsecutiveHyphens" | "hyphenationExceptions">>) {
     const b=current.current;if(!b)return;
     const existing=getPrintEdition(b);
     edit({...b,editions:{...b.editions,ebook:getEbookEdition(b),print:{...existing,...changes}}});
@@ -400,7 +400,7 @@ export default function Workspace() {
     const printAlignment = priorPrint.alignment ?? "left";
     edit({ ...b, editions: {
       ...b.editions, ebook: edition,
-      print: { ...printPreset(edition.template.id, printAlignment, priorPrint.trim), fontSize:priorPrint.fontSize,leading:priorPrint.leading,paragraphSpacing:priorPrint.paragraphSpacing,firstLineIndent:priorPrint.firstLineIndent,chapterOpeningSpace:priorPrint.chapterOpeningSpace,layoutPriority:priorPrint.layoutPriority },
+      print: { ...printPreset(edition.template.id, printAlignment, priorPrint.trim), fontSize:priorPrint.fontSize,leading:priorPrint.leading,paragraphSpacing:priorPrint.paragraphSpacing,firstLineIndent:priorPrint.firstLineIndent,chapterOpeningSpace:priorPrint.chapterOpeningSpace,layoutPriority:priorPrint.layoutPriority,hyphenate:priorPrint.hyphenate,hyphenationLanguage:priorPrint.hyphenationLanguage,maxConsecutiveHyphens:priorPrint.maxConsecutiveHyphens,hyphenationExceptions:priorPrint.hyphenationExceptions },
     } });
   }
   return (
