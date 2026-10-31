@@ -2329,3 +2329,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .book-details-fields .field-error{display:block;color:#a12d29;font-size:12px;margin-top:5px}
 .book-details-fields input[aria-invalid=true]{border-color:#b84b42}
 @media(max-width:750px){.workspace-readiness-panel{padding:12px}.readiness-pill{margin:6px 0}}
+
+
+/* P0-5: nonblocking local-only backup reminders */
+.backup-nudge{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:11px 20px;background:#fff1d6;border-bottom:1px solid #dfc28b;color:#68470f;font-size:13px}
+.backup-nudge span{flex:1;min-width:220px;font-weight:600}
+.backup-nudge button{border:1px solid #d7b675;border-radius:6px;background:#fffaf0;padding:7px 12px;font-size:12px;cursor:pointer}
+.backup-nudge button:focus-visible{outline:3px solid #285a4b;outline-offset:2px}
+.backup-nudge label{display:flex;align-items:center;gap:5px;font-size:12px}
+.backup-time{display:block;color:#686e67;font-size:11px;margin-top:5px}
+.sidebar-backup-time{padding:7px 14px}
