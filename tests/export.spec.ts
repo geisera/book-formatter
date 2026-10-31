@@ -90,20 +90,15 @@ test("preflight explains blockers and publication details can be corrected local
   await expect(
     page.getByText("The author name is missing.", { exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByText("This section has no readable text.", { exact: true }),
-  ).toBeVisible();
+  // A visible chapter heading now qualifies as readable page content,
+  // so an empty chapter body is not an export blocker.
+  await expect(page.getByText("This section has no visible text or image in the selected edition.")).toHaveCount(0);
   await page
     .getByLabel("Publication author", { exact: true })
     .fill("A. Writer");
   await page.getByLabel("Language tag", { exact: true }).fill("en-US");
   await page.getByRole("button", { name: "Save book details" }).click();
   await expect(page.getByRole("status")).toHaveText("Saved locally");
-  await page.getByRole("button", { name: "Manuscript", exact: true }).click();
-  await page
-    .getByRole("textbox", { name: "Chapter manuscript" })
-    .fill("A complete opening.");
-  await page.getByRole("button", { name: "Publish", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Generate & download EPUB" }),
   ).toBeEnabled();
