@@ -7,7 +7,7 @@ import { zipSync, strToU8, unzipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Node as ManuscriptNode } from "prosemirror-model";
-import { schema, validateBook, showSectionTitle, getSectionLayout, sectionMatter, type Book } from "./model";
+import { schema, validateBook, showSectionTitle, getSectionLayout, sectionHeadingScale, sectionMatter, type Book } from "./model";
 import { getEbookEdition, type EbookEdition } from "./edition";
 export const EPUB_RENDERER = "epub-1.3.0";
 export type ExportIssue = {
@@ -353,6 +353,7 @@ export function buildEpub(
     const ordinal=chapterOrdinal(book.chapters,i);
     const label=ordinal===null?null:chapterNumberLabel(edition.chapterNumberStyle??"none",ordinal);
     const design=openingDesign(c.sectionType??"chapter",edition.template.id);
+    const headingStyle=` style="font-size:${sectionHeadingScale(c,book)}em"`;
     if (design.suppressHeading) return "";
     const showTitle=ordinal===null || (edition.showChapterTitle??true);
     if(!showTitle) return label ? `<h1 id="chapter-title" class="chapter-number number-only" aria-label="Chapter ${xml(label)}">${xml(label)}</h1>` : "";
