@@ -63,9 +63,9 @@ export async function buildPrintPdf(
   options.onProgress?.(5,"Preparing manuscript");
   const book = structuredClone(validateBook(input)),
     profile = structuredClone(getPrintEdition(book));
-  if (preflight(book).some((i) => i.severity === "error"))
+  if (preflight(book, "print").some((i) => i.severity === "error"))
     throw Error(
-      "Fix missing metadata or empty sections in Publish before building a print proof.",
+      "Fix the print preflight errors before building a PDF proof.",
     );
   for (const bytes of Object.values(assets))
     if (
