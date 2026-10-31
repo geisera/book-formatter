@@ -2365,3 +2365,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .section-navigator .sidebar-section-row>.sidebar-section-menu-trigger{width:34px;min-width:34px;flex:0 0 34px;align-items:center;justify-content:center;padding:0;margin:0}
 .section-navigator .sidebar-section-menu{display:flex;flex-direction:column}
 .section-navigator .sidebar-section-menu button{width:100%;margin:0;padding:9px 12px}
+
+
+/* Clear insertion position while dragging sidebar sections */
+.section-navigator .sidebar-section-row.drop-before::before{content:"";position:absolute;left:1px;right:1px;top:-3px;height:4px;background:#287653;border-radius:6px;z-index:4;pointer-events:none;box-shadow:0 0 0 1px #fff}
+.section-navigator .sidebar-section-row.drop-before::after{content:"";position:absolute;top:-7px;left:0;width:12px;height:12px;border-radius:50%;background:#287653;z-index:5;pointer-events:none}
+.section-navigator .sidebar-section-row.is-dragging{opacity:.38;background:#dfe9e2;border:1px dashed #458067;border-radius:6px}
+.section-navigator .sidebar-drop-end{margin:7px 4px;padding:11px;border:2px dashed #287653;border-radius:6px;background:#e6f3e9;color:#1f5e42;font-size:12px;font-weight:700;text-align:center;min-height:42px}
+.sidebar-section-actions .add{display:flex;justify-content:center;align-items:center;white-space:nowrap;min-height:42px}
