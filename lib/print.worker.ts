@@ -11,7 +11,7 @@ self.onmessage = async (
 ) => {
   try {
     const { book, fonts, id, createdAt, includeFrontCover } = event.data;
-    const result = await buildPrintPdf(book, fonts, { id, createdAt, includeFrontCover });
+    const result = await buildPrintPdf(book, fonts, { id, createdAt, includeFrontCover, onProgress:(percent,stage)=>self.postMessage({type:"progress",percent,stage}) });
     self.postMessage(
       { ok: true, ...result },
       { transfer: [result.bytes.buffer as ArrayBuffer] },
