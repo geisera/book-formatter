@@ -61,8 +61,8 @@ export default function DesignPanel({
         </label>
         {section&&layout?<details open className="design-section-detail">
           <summary>Section appearance</summary>
-          <label className="design-toggle"><input type="checkbox" checked={showSectionTitle(section)}
-            onChange={e=>onSectionAction({kind:"visibility",id:section.id,showTitle:e.target.checked})}/>Show section title</label>
+          {(section.sectionType??"chapter")!=="chapter" ? <label className="design-toggle"><input type="checkbox" checked={showSectionTitle(section)}
+            onChange={e=>onSectionAction({kind:"visibility",id:section.id,showTitle:e.target.checked})}/>Show section title</label> : null}
           {format==="print"?<>
             <label>Start page<select aria-label="Design section start" value={layout.start} onChange={e=>sectionLayout({start:e.target.value as SectionPageLayout["start"]})}>
               <option value="next">Next page</option><option value="recto">Right-hand</option><option value="verso">Left-hand</option>
