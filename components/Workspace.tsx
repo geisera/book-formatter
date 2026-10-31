@@ -522,7 +522,7 @@ export default function Workspace() {
       <header className="topbar">
         <button className="brand" onClick={dashboard}>
           <span className="brand-icon">▤</span> Book Formatter
-          <span className="badge">FOUNDATION</span>
+          <span className="badge" title="Book Formatter is in beta">Beta</span>
         </button>
         <div className="topbar-actions">
           <Link className="help-top-link" href="/help/" aria-label="Open help and documentation">Help &amp; Docs</Link>
