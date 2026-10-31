@@ -21,6 +21,7 @@ import { blankChapter, createBook, sectionMatter, type Book } from "../lib/model
 import { romanNumeral } from "../lib/chapter-numbering";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
+import { preflight } from "../lib/epub";
 /** UI-only section labels; never modifies manuscript content. */
 function manuscriptSectionLabel(book: Book, section: Book["chapters"][number]): string {
   const type=section.sectionType??"chapter";
@@ -45,6 +46,7 @@ export default function Workspace() {
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
+  const [readinessOpen,setReadinessOpen]=useState(false);
   const [findOpen,setFindOpen]=useState(false);
   const [findConfig,setFindConfig]=useState<SearchConfig>({query:"",replacement:"",scope:"chapter",caseSensitive:false,wholeWord:false});
   const [findFocus,setFindFocus]=useState<{from:number;to:number;nonce:number}|undefined>();
@@ -364,6 +366,29 @@ export default function Workspace() {
   }
   const chapter = book?.chapters.find((c) => c.id === chapterId);
   const previewChapter = useDeferredValue(chapter);
+  const readinessIssues=book?preflight(book,publishFormat):[];
+  const blockingIssues=readinessIssues.filter(issue=>issue.severity==="error");
+  function fixReadinessIssue(location:string,message:string){
+    setReadinessOpen(false);
+    const match=/^Section (\d+):/.exec(location);
+    if(match&&book){
+      const target=book.chapters[Number(match[1])-1];
+      if(target){setChapterId(target.id);setMode("manuscript");setInspectorTab(message.includes("visible section heading")?"formatting":"preview");setPreviewVisible(true);}
+      return;
+    }
+    if(location==="Book details"){
+      setMode("details");
+      const selector=message.includes("author")?'input[aria-label="Author"]':message.includes("language")?'input[aria-label="Language tag"]':'input[aria-label="Publication title"]';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{document.querySelector<HTMLInputElement>(selector)?.focus();}));
+    }else if(location==="Book cover"){
+      setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);
+    }else if(location==="Imported manuscript"){
+      setMode("structure");
+    }else{
+      setMode("publish");
+    }
+  }
+
   async function exportSnapshot(): Promise<Book> {
     await queue.current;
     if (failed.current || blocked.current)
@@ -594,7 +619,10 @@ export default function Workspace() {
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
                 <div className="chapter-list">{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><button key={c.id} type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
-                  <small>{(c.sectionType??"chapter").replaceAll("-"," ")}</small><span>{c.title}</span>
+                  <small>{(c.sectionType??"chapter").replaceAll("-"," ")}
+                    {readinessIssues.some(issue=>issue.severity==="error"&&issue.location.startsWith(`Section ${book.chapters.indexOf(c)+1}:`))?
+                      <span className="section-issue-dot" title="Export validation issue" aria-label="Export validation issue">●</span>:null}
+                  </small><span>{c.title}</span>
                 </button>)}</div>
               </details>)}
             </div>
@@ -647,6 +675,11 @@ export default function Workspace() {
                 <button type="button" aria-pressed={mode==="publish"||mode==="print"}
                   onClick={()=>setMode("publish")}>Export</button>
               </div>
+              <button type="button" className={blockingIssues.length?"readiness-pill has-issues":"readiness-pill is-ready"}
+                aria-expanded={readinessOpen} aria-controls="export-readiness-list"
+                onClick={()=>setReadinessOpen(v=>!v)}>
+                {blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}
+              </button>
               <div className="workspace-save">
                 <span>{getEbookEdition(book).template.id.replace(/^./, (c) => c.toUpperCase())} · ebook edition</span>
                 <span
@@ -657,6 +690,16 @@ export default function Workspace() {
                 </span>
               </div>
             </nav>
+            {readinessOpen?<section id="export-readiness-list" className="workspace-readiness-panel" aria-label="Export validation issues">
+              <div className="workspace-readiness-head"><strong>Export checks · {publishFormat==="ebook"?"EPUB":"Paperback PDF"}</strong>
+                <button type="button" onClick={()=>setReadinessOpen(false)} aria-label="Close export checks">Close</button></div>
+              {readinessIssues.length===0?<p>No issues detected by the local preflight checks. Review your downloaded file before publication.</p>:
+                <ul>{readinessIssues.map((issue,i)=><li key={i}>
+                  <span className={issue.severity==="error"?"issue-error":"issue-warning"}>{issue.severity==="error"?"Error":"Warning"}</span>
+                  <div><strong>{issue.location}</strong><p>{issue.message}</p></div>
+                  <button type="button" onClick={()=>fixReadinessIssue(issue.location,issue.message)}>Fix</button>
+                </li>)}</ul>}
+            </section>:null}
             <div className={`workspace-body mode-${mode}${mode==="manuscript"&&!previewVisible?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
               {mode==="manuscript" ? <div className="editor-shared-toolbar" role="group" aria-label="Manuscript and Design layout">
                 <button type="button" aria-pressed={inspectorTab==="preview"} onClick={()=>{setInspectorTab("preview");setPreviewVisible(true);}}>Write</button>
