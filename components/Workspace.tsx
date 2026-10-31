@@ -21,6 +21,7 @@ import { blankChapter, createBook, sectionMatter, type Book } from "../lib/model
 import { romanNumeral } from "../lib/chapter-numbering";
 import { db, saveBook, saveImportedBook, deleteBook } from "../lib/storage";
 import { backupBook, restoreProject } from "../lib/backup";
+import {getBackupFolder,saveBackupFolder,clearBackupFolder,folderPermission,writeFolderBackup,type BackupFolder} from "../lib/folder-backup";
 import { preflight } from "../lib/epub";
 import { schema } from "../lib/model";
 /** UI-only section labels; never modifies manuscript content. */
@@ -64,6 +65,11 @@ export default function Workspace() {
   const [previewVisible,setPreviewVisible]=useState(true);
   const [readinessOpen,setReadinessOpen]=useState(false);
   const [backupRefresh,setBackupRefresh]=useState(0);
+  const [folderBackup,setFolderBackup]=useState<"off"|"ready"|"permission"|"unsupported">("off");
+  const [folderMessage,setFolderMessage]=useState("");
+  const folderHandle=useRef<BackupFolder|null>(null);
+  const folderLastRevision=useRef(new Map<string,number>());
+  const folderWriting=useRef(false);
   const [backupSnooze,setBackupSnooze]=useState<string|null>(null);
   const [backupPrompt,setBackupPrompt]=useState(false);
   const [sectionMenu,setSectionMenu]=useState<string|null>(null);
@@ -307,6 +313,57 @@ export default function Workspace() {
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+  async function enableFolderBackups(){
+    try{
+      const picker=(window as Window & {showDirectoryPicker?:()=>Promise<BackupFolder>}).showDirectoryPicker;
+      if(!picker){setFolderBackup("unsupported");return;}
+      const folder=await picker();
+      if(await folderPermission(folder,true)!=="granted")throw Error("Folder permission was not granted.");
+      await saveBackupFolder(folder);
+      folderHandle.current=folder;
+      folderLastRevision.current.clear();
+      setFolderBackup("ready");
+      setFolderMessage("Folder enabled. Backups run while this app is open, approximately every 5 minutes after changes.");
+    }catch(e){if(e instanceof DOMException&&e.name==="AbortError")return;setFolderMessage(e instanceof Error?e.message:"Could not enable folder backup.");}
+  }
+  async function disableFolderBackups(){
+    await clearBackupFolder();
+    folderHandle.current=null;folderLastRevision.current.clear();setFolderBackup("off");
+    setFolderMessage("Automatic folder backups disabled. Existing backup files were not deleted.");
+  }
+  async function folderBackupNow(){
+    const folder=folderHandle.current;
+    if(!folder||folderWriting.current||pending.current||failed.current)return;
+    const snapshot=current.current;
+    if(!snapshot||folderLastRevision.current.get(snapshot.id)===snapshot.revision)return;
+    if(await folderPermission(folder)!=="granted"){setFolderBackup("permission");setFolderMessage("Folder permission needs renewal. Select Reconnect folder.");return;}
+    folderWriting.current=true;
+    try{
+      const source=await db.sources.get(snapshot.id);
+      const bytes=backupBook(snapshot,source);
+      const timestamp=new Date().toISOString().replace(/[:.]/g,"-");
+      const filename=(snapshot.title.replace(/[^a-z0-9-]/gi,"-").slice(0,65)||"book")+"-"+snapshot.id.slice(0,8)+"-"+timestamp+".book.zip";
+      await writeFolderBackup(folder,filename,bytes);
+      folderLastRevision.current.set(snapshot.id,snapshot.revision);
+      localStorage.setItem(backupKey(snapshot.id),JSON.stringify({at:Date.now(),words:bookWords(snapshot)}));
+      setBackupRefresh(v=>v+1);
+      setFolderMessage("Automatic backup saved to the selected folder.");
+    }catch(e){setFolderMessage(e instanceof Error?e.message:"Folder backup failed. Download a manual backup.");}
+    finally{folderWriting.current=false;}
+  }
+  useEffect(()=>{
+    if(!("showDirectoryPicker" in window)){setFolderBackup("unsupported");return;}
+    let active=true;
+    void getBackupFolder().then(async folder=>{
+      if(!active||!folder)return;
+      folderHandle.current=folder;
+      const permission=await folderPermission(folder);
+      if(active)setFolderBackup(permission==="granted"?"ready":"permission");
+    }).catch(()=>{if(active)setFolderMessage("Saved folder could not be accessed. Select a new folder.");});
+    const interval=window.setInterval(()=>{void folderBackupNow();},300000);
+    return()=>{active=false;window.clearInterval(interval);};
+    // Interval reads the latest current book and folder refs.
+  },[]);
   async function backup() {
     if (!current.current) return;
     try {
@@ -725,6 +782,17 @@ export default function Workspace() {
                 </>
               ) : null}
               <button onClick={backup}>↓ Download backup</button>
+              <div className="folder-backup-controls">
+                <strong>Automatic folder backups</strong>
+                <p>Optional. Saves timestamped project backups to a folder you choose while this app is open. Never uploads files.</p>
+                {folderBackup==="unsupported"?<small>Not supported in this browser. Manual backup remains available.</small>:folderBackup==="off"?<button type="button" onClick={()=>void enableFolderBackups()}>Choose backup folder</button>:<>
+                  <small>{folderBackup==="ready"?"Folder connected":"Folder permission required"}</small>
+                  <button type="button" onClick={()=>void enableFolderBackups()}>{folderBackup==="ready"?"Change folder":"Reconnect folder"}</button>
+                  {folderBackup==="ready"?<button type="button" onClick={()=>void folderBackupNow()}>Back up now</button>:null}
+                  <button type="button" onClick={()=>void disableFolderBackups()}>Turn off</button>
+                </>}
+                {folderMessage?<small role="status">{folderMessage}</small>:null}
+              </div>
               <p>
                 Stored on this device.
                 <br />
