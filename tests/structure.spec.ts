@@ -121,3 +121,13 @@ test("sidebar adds, duplicates, and reorders sections through shared structure a
   await page.getByRole("button", {name:"Organize…"}).click();
   await expect(page.getByRole("region", {name:"Book structure editor"})).toBeVisible();
 });
+
+test("word-count status is visible in the Manuscript editor", async ({page}) => {
+  await page.goto("/");
+  await page.getByLabel("Book title", {exact:true}).fill("Word Count Test");
+  await page.getByLabel("Author name", {exact:true}).fill("Example Author");
+  await page.getByRole("button", {name:"Create local book"}).click();
+  await expect(page.locator(".editor-word-count")).toContainText("Chapter: 0 words");
+  await expect(page.locator(".editor-word-count")).toContainText("Book: 0 words");
+  await expect(page.locator(".editor-word-count")).toContainText("~0 h 0 min read");
+});
