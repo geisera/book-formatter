@@ -300,6 +300,19 @@ export default function DesignPanel({
             onChange={(e) => change("chapterSpacing", Number(e.target.value))}
           />
         </label>
+        <label>Chapter number display
+          <select aria-label="Ebook chapter numbering" value={edition.chapterNumberStyle??"none"}
+            onChange={e=>change("chapterNumberStyle",e.target.value as EbookEdition["chapterNumberStyle"])}>
+            <option value="none">Title only</option>
+            <option value="arabic">Number above title (1, 2, 3)</option>
+            <option value="roman">Roman number above title (I, II, III)</option>
+          </select>
+        </label>
+        <label>Front-matter heading scale <span className="control-value">{(edition.frontMatterTitleScale??1).toFixed(2)}×</span>
+          <input aria-label="Ebook front-matter heading scale" type="range" min="0.75" max="1.5" step="0.05"
+            value={edition.frontMatterTitleScale??1} onChange={e=>change("frontMatterTitleScale",Number(e.target.value))}/>
+        </label>
+        <p className="control-note">Ebook-specific heading presentation; paperback settings remain independent.</p>
         <label>
           Scene ornament
           <select
