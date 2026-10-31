@@ -89,7 +89,8 @@ export default function Workspace() {
   const [bookshelfQuery,setBookshelfQuery]=useState("");
   const [bookshelfSort,setBookshelfSort]=useState<"recent"|"title"|"author">("recent");
   const [bookshelfTipVisible,setBookshelfTipVisible]=useState(true);
-  useEffect(()=>{setBookshelfTipVisible(localStorage.getItem("book-formatter:bookshelf-guide-dismissed")!=="1");},[]);
+  const [coachmarkDismissed,setCoachmarkDismissed]=useState(false);
+  useEffect(()=>{setBookshelfTipVisible(localStorage.getItem("book-formatter:bookshelf-guide-dismissed")!=="1");setCoachmarkDismissed(localStorage.getItem("book-formatter:coachmark-dismissed")==="1");},[]);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
   const [mode, setMode] = useState<
     "manuscript" | "structure" | "design" | "details" | "publish" | "print"
@@ -834,6 +835,11 @@ export default function Workspace() {
               <button type="button" aria-expanded={mobileDrawerOpen} aria-controls="mobile-manuscript-drawer" onClick={()=>setMobileDrawerOpen(v=>!v)}>☰ Sections</button>
               <strong>{book.title}</strong>
             </div>
+            {!coachmarkDismissed?<div className="workspace-coachmark" role="note">
+              <span><strong>Start here:</strong> Write in Manuscript, arrange chapters in Structure, choose a look in Design, add publication details in Details, then export your book.</span>
+              <Link href="/help/#start" target="_blank" rel="noopener noreferrer">Getting started guide</Link>
+              <button type="button" onClick={()=>{localStorage.setItem("book-formatter:coachmark-dismissed","1");setCoachmarkDismissed(true);}} aria-label="Dismiss workspace introduction">Dismiss</button>
+            </div>:null}
             <nav className="workspace-modes" aria-label="Workspace mode">
               <div className="workspace-primary-modes">
                 <button type="button" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"}
@@ -868,6 +874,9 @@ export default function Workspace() {
                 </span>
               </div>
             </nav>
+            <div className="workspace-context-help">
+              <Link href={mode==="structure"?"/help/#structure":mode==="details"?"/help/#details":mode==="publish"||mode==="print"?"/help/#epub":mode==="manuscript"&&inspectorTab==="formatting"?"/help/#design":"/help/#editor"} target="_blank" rel="noopener noreferrer" aria-label="Help for current workspace">? Help for {mode==="manuscript"?(inspectorTab==="formatting"?"Design":"Manuscript"):mode==="publish"||mode==="print"?"Export":mode[0].toUpperCase()+mode.slice(1)}</Link>
+            </div>
             {backupDue&&!backupSnoozed?<div className="backup-nudge" role="status">
               <span>Your changes exist only in this browser. Download a backup.</span>
               <button type="button" onClick={()=>void backup()}>Download</button>
