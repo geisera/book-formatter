@@ -1,4 +1,5 @@
 import { decodeImage, embeddedImages } from "./images";
+import {hyphenationPoints} from "./hyphenation";
 import { normalizedIsbn } from "./publication-metadata";
 import { PDFDocument, grayscale, degrees, type PDFFont, type PDFPage, type PDFImage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
@@ -220,7 +221,7 @@ export async function buildPrintPdf(
     const available = contentWidth - indent - naturalWidth;
     const normalSpace = measure(" ", "regular", fontSize);
     const extra = justify && spaces >= 2 && available > 0 &&
-      available / spaces <= normalSpace * 0.65 ? available / spaces : 0;
+      available / spaces <= normalSpace * 0.95 ? available / spaces : 0;
     let x = proof.left + indent + (alignment === "center" ? Math.max(0, available) / 2 : alignment === "right" ? Math.max(0, available) : 0);
     for (const run of runs) {
       draw(run.text, x, baseline, fontSize, run.face);
@@ -271,6 +272,8 @@ export async function buildPrintPdf(
     flush();
     return out;
   }
+  const exceptionWords=new Set((profile.hyphenationExceptions??"").toLowerCase().split(/[\\s,]+/).filter(Boolean));
+  const locale=profile.hyphenationLanguage??"en-us";
   function wrap(
     words: Word[],
     firstIndent: number,
@@ -280,9 +283,13 @@ export async function buildPrintPdf(
     const result: Line[] = [];
     let runs: Run[] = [],
       width = 0,
-      indent = firstIndent;
+      indent = firstIndent,
+      consecutiveHyphens=0;
     const flush = () => {
-      result.push({ runs, width, indent });
+      if(runs.length){
+        result.push({ runs, width, indent });
+        consecutiveHyphens = runs[runs.length-1]?.text.endsWith("-") ? consecutiveHyphens+1 : 0;
+      }
       runs = [];
       width = 0;
       indent = 0;
@@ -309,16 +316,37 @@ export async function buildPrintPdf(
         width = wordWidth;
         return;
       }
-      warnings.add(
-        "At least one overlong word was split across lines without a hyphen; inspect the proof.",
-      );
-      for (const run of word)
-        for (const character of run.text) {
-          const w = measure(character, run.face, fontSize);
-          if (width + w > maxWidth - indent && runs.length) flush();
-          runs.push({ text: character, face: run.face });
-          width += w;
+      // Prefer only TeX-approved breaks; never split arbitrary characters.
+      // Restrict automatic splitting to unstyled alphabetic words so marks
+      // and punctuation retain their original content.
+      if(profile.hyphenate!==false && word.length===1 && /^[a-z]+$/i.test(word[0].text)){
+        let remaining=word[0].text;
+        while(remaining){
+          const candidates=consecutiveHyphens < (profile.maxConsecutiveHyphens??2)
+            ? hyphenationPoints(remaining,locale,exceptionWords) : [];
+          const available=maxWidth-indent-width;
+          const fit=candidates.filter(pos=>measure(remaining.slice(0,pos)+"-",word[0].face,fontSize)<=available+0.001);
+          if(fit.length){
+            const cut=fit[fit.length-1];
+            const fragment=remaining.slice(0,cut)+"-";
+            runs.push({text:fragment,face:word[0].face});
+            width+=measure(fragment,word[0].face,fontSize);
+            flush();
+            remaining=remaining.slice(cut);
+          }else{
+            if(runs.length){flush();continue;}
+            throw Error("A word is too wide for this print page and cannot be hyphenated safely. Try a larger trim, smaller font, or edit the word.");
+          }
+          if(measure(remaining,word[0].face,fontSize)<=maxWidth-indent){
+            runs.push({text:remaining,face:word[0].face});
+            width+=measure(remaining,word[0].face,fontSize);
+            break;
+          }
         }
+      }else{
+        if(runs.length){flush();add(word,false);return;}
+        throw Error("A word or styled span is too wide for print margins. Adjust the book design or text.");
+      }
     }
     for (const word of words) {
       if (word.hardBreak) {
