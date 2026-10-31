@@ -747,6 +747,10 @@ export default function Workspace() {
                     onPrintTrim={changePrintTrim}
                     onPrintAlignment={changePrintAlignment}
                     onPrintTypography={changePrintTypography}
+                    book={book}
+                    selectedId={chapterId}
+                    onSelectSection={setChapterId}
+                    onSectionAction={updateStructure}
                   />
                 </aside>
                 <section className="design-studio-preview" aria-label="Book design preview">
@@ -759,7 +763,7 @@ export default function Workspace() {
                   </div>
                   <div className="design-studio-preview-content">
                     {designPreview==="print"
-                      ? <DesignPrintPreview book={book} getSnapshot={exportSnapshot}/>
+                      ? <DesignPrintPreview book={book} getSnapshot={exportSnapshot} selectedSectionId={chapterId}/>
                       : <EbookPreview
                           hidden={false}
                           book={book}
