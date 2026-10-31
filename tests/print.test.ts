@@ -480,3 +480,25 @@ describe("print proof progress events",()=>{
   expect(result.record.pageCount).toBeGreaterThan(0);
  },30000);
 });
+
+describe("chapter-ending pagination regression",()=>{
+ it("keeps compact chapter endings valid across balanced, automatic and flow settings",async()=>{
+  const b=fixture();
+  const original=structuredClone(b.chapters);
+  b.chapters=[{...b.chapters[0],content:{type:"doc",content:[
+   ...Array.from({length:15},()=>({type:"paragraph",content:[{type:"text",text:"The far gate stood beneath the morning clouds. ".repeat(24)}]})),
+   {type:"paragraph",content:[{type:"text",text:"A final exchange made the decision inevitable. ".repeat(8)}]},
+   {type:"paragraph",content:[{type:"text",text:"Then the door opened and the chapter ended."}]}
+  ]}}];
+  const saved=structuredClone(b.chapters);
+  for(const layoutPriority of ["automatic","balanced","flow"] as const){
+   b.editions!.print={...getPrintEdition(b),layoutPriority};
+   const result=await buildPrintPdf(b,fonts,options);
+   expect(result.record.checks).toMatchObject({overflow:0,splitViolations:0});
+   expect(result.record.pages.filter(p=>p.chapterId===b.chapters[0].id).length).toBeGreaterThan(1);
+   expect((await PDFDocument.load(result.bytes)).getPageCount()).toBe(result.record.pageCount);
+   expect(b.chapters).toEqual(saved);
+  }
+  expect(original).toHaveLength(3);
+ },60000);
+});
