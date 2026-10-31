@@ -10,7 +10,7 @@ test("builds, previews and downloads the same PDF offline and preserves profile 
   const sent: string[] = [];
   page.on("request", (request) => {
     if (
-      request.method() !== "GET" ||
+      (request.method() !== "GET" && request.method() !== "HEAD") ||
       new URL(request.url()).origin !== "http://127.0.0.1:3100"
     )
       sent.push(request.url());
