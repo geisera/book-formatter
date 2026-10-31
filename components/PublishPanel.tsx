@@ -102,6 +102,30 @@ export default function PublishPanel({
       setMetadataBusy(false);
     }
   }
+  async function validateInBrowser(row:ExportRecord){
+    setValidationBusy(true);setError("");setNotice("");
+    let validator:Worker|undefined;
+    try{
+      const stored=await db.artifacts.get(row.id);
+      if(!stored)throw Error("Saved EPUB not found. Generate the EPUB again.");
+      validator=new Worker(new URL("../workers/epubcheck-worker.ts",import.meta.url),{type:"module"});
+      const worker=validator;
+      const result=await new Promise<{valid:boolean;messages:NonNullable<ExportRecord["epubCheckMessages"]>}>((resolve,reject)=>{
+        const timer=setTimeout(()=>{worker.terminate();reject(Error("EPUBCheck timed out. Try a smaller EPUB or validate with the external tool."));},180000);
+        worker.onmessage=(event:MessageEvent<{ok:boolean;valid:boolean;messages:NonNullable<ExportRecord["epubCheckMessages"]>;error?:string}>)=>{
+          clearTimeout(timer);if(event.data.ok)resolve(event.data);else reject(Error(event.data.error||"EPUBCheck failed."));
+        };
+        worker.onerror=()=>{clearTimeout(timer);reject(Error("Could not load the local EPUBCheck engine. Open Book Formatter online once and retry."));};
+        worker.postMessage({id:row.id,bytes:stored.bytes});
+      });
+      const updated:ExportRecord={...row,epubCheck:result.valid?"passed":"failed",epubCheckVersion:"5.4.0",epubCheckCheckedAt:new Date().toISOString(),epubCheckMessages:result.messages.slice(0,250)};
+      await db.exports.put(updated);
+      setHistory(items=>items.map(item=>item.id===row.id?updated:item));
+      setResult(current=>current?.id===row.id?updated:current);
+      setNotice(result.valid?"EPUBCheck passed for this saved EPUB. Review reader appearance before publishing.":"EPUBCheck found errors. Review diagnostics below, correct the book, and generate a new EPUB.");
+    }catch(e){setError(e instanceof Error?e.message:"EPUBCheck could not validate this EPUB.");}
+    finally{validator?.terminate();setValidationBusy(false);}
+  }
   async function importEpubCheckReport(row:ExportRecord,file:File) {
     setValidationBusy(true);setError("");setNotice("");
     try{
@@ -415,7 +439,7 @@ export default function PublishPanel({
                 package files. They do not replace EPUBCheck or a visual reader
                 proof. This browser does not label exports publication-ready.
               </p>
-              <p>Run official EPUBCheck with Java outside the browser using <code>node scripts/validate-epub.mjs book.epub path/to/epubcheck.jar</code>, then attach the resulting <code>.epubcheck.json</code> report to the matching export-history entry. No book upload occurs. A report must match the saved EPUB SHA-256 before the result can be recorded.</p>
+              <p>You can run EPUBCheck entirely locally with the <strong>Run EPUBCheck in browser</strong> button on the saved export below. Alternatively, run official EPUBCheck with Java outside the browser using <code>node scripts/validate-epub.mjs book.epub path/to/epubcheck.jar</code>, then attach the resulting <code>.epubcheck.json</code> report to the matching export-history entry. No book upload occurs. A report must match the saved EPUB SHA-256 before the result can be recorded.</p>
               <a
                 href="https://www.w3.org/publishing/epubcheck/"
                 target="_blank"
@@ -448,6 +472,7 @@ export default function PublishPanel({
                     </small>
                   </summary>
                   <p>{row.filename}</p>
+                  <button type="button" disabled={validationBusy} onClick={()=>void validateInBrowser(row)}>{validationBusy?"Validating EPUB…":"Run EPUBCheck in browser"}</button>
                   <label className="epubcheck-report-input">Attach EPUBCheck JSON report
                     <input type="file" accept=".json,application/json" disabled={validationBusy} onChange={e=>{const file=e.target.files?.[0];if(file)void importEpubCheckReport(row,file);e.target.value="";}}/>
                   </label>
