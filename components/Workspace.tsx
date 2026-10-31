@@ -660,10 +660,18 @@ export default function Workspace() {
               ← Bookshelf
             </button>
             <div className="workspace-book-info"><div className="workspace-book-kicker">CURRENT BOOK</div><h2>{book.title}</h2><p className="muted">{book.author||"Author not set"}</p></div>
+            <div className="sidebar-section-actions">
+              <button className="add" onClick={()=>{
+                const selected=book.chapters.find(c=>c.id===chapterId);
+                updateStructure({kind:"add",title:"New chapter",sectionType:"chapter",after:selected&&sectionMatter(selected.sectionType??"chapter")==="body"?selected.id:undefined});
+                setMode("manuscript");setInspectorTab("preview");
+              }}>+ Add chapter</button>
+              <button type="button" onClick={()=>setMode("structure")}>Organize…</button>
+            </div>
             <div className="section-navigator" aria-label="Book sections">
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
-                <div className="chapter-list" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});setDraggingSection(null);}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className="sidebar-section-row" draggable onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.effectAllowed="move";}} onDragEnd={()=>setDraggingSection(null)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});setDraggingSection(null);}}><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
+                <div className="chapter-list" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});setDraggingSection(null);}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className="sidebar-section-row" onDragEnd={()=>setDraggingSection(null)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});setDraggingSection(null);}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
                   <small>{(c.sectionType??"chapter").replaceAll("-"," ")}
                     {readinessIssues.some(issue=>issue.severity==="error"&&issue.location.startsWith(`Section ${book.chapters.indexOf(c)+1}:`))?
                       <span className="section-issue-dot" title="Export validation issue" aria-label="Export validation issue">●</span>:null}
@@ -677,14 +685,6 @@ export default function Workspace() {
                   <button role="menuitem" disabled={book.chapters.length===1} onClick={()=>{setSectionMenu(null);if(window.confirm("Delete this section and its content?"))updateStructure({kind:"delete",id:c.id});}}>Delete</button>
                 </div>:null}</div>)}</div>
               </details>)}
-            </div>
-            <div className="sidebar-section-actions">
-              <button className="add" onClick={()=>{
-                const selected=book.chapters.find(c=>c.id===chapterId);
-                updateStructure({kind:"add",title:"New chapter",sectionType:"chapter",after:selected&&sectionMatter(selected.sectionType??"chapter")==="body"?selected.id:undefined});
-                setMode("manuscript");setInspectorTab("preview");
-              }}>+ Add chapter</button>
-              <button type="button" onClick={()=>setMode("structure")}>Organize…</button>
             </div>
             <small className="backup-time sidebar-backup-time">{backupLabel(book.id)}</small>
             <div className="aside-bottom">
