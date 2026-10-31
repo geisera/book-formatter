@@ -55,3 +55,11 @@ await copyFile(
   "node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
   "public/pdfjs/pdf.worker.min.mjs",
 );
+
+await build({
+  entryPoints:["workers/epubcheck-worker.ts"],
+  bundle:true,platform:"browser",conditions:["browser","worker"],format:"esm",
+  target:"es2022",outfile:"public/epubcheck-worker.js",minify:true,
+  external:["@aws-sdk/client-s3"],
+});
+await copyFile("node_modules/epubcheck-standalone/dist/epubcheck-engine.js","public/epubcheck-engine.js");
