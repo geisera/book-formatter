@@ -12,6 +12,46 @@ Deploy with Vercel's Next.js preset or serve `out/` over HTTPS.
 Offline installation requires HTTPS (localhost is allowed for development).
 The managed preview launcher serves the production build, so build before previewing.
 
+## Feature status (PRD v1.1)
+
+This is a feature-level implementation inventory, not a certification that all PRD acceptance criteria pass. **Implemented** means the capability is present in the application or documented verification workflow; **partial / needs validation** means further work is required. See [PRD](docs/PRD.md) for the complete requirements and milestone exit criteria.
+
+### Implemented
+
+- **Local-first projects:** Guest/local-only bookshelf, project creation, Dexie/IndexedDB storage, transactional autosave, revision conflict protection, save/error indicators, storage persistence requests and capacity warnings.
+- **Offline foundation:** Service worker/app shell, offline local workflows and browser acceptance tests; complete PWA/cross-browser qualification is still pending.
+- **Import:** Local DOCX, Markdown and plain-text import, chapter-boundary review, diagnostics, cancellable worker, retained source file, supported PNG/JPEG DOCX images and guarded archive parsing.
+- **Editor:** Direct ProseMirror, independent chapter documents, paragraphs, headings, bold, italic, scene breaks, undo/redo, keyboard shortcuts, autosave, and chapter/book-wide find-and-replace.
+- **Images:** PNG/JPEG insertion and DOCX extraction, local embedding, alternative text, caption, alignment, width and replace/remove controls; embedded images are carried into EPUB, PDF and backups.
+- **Design:** Classic ebook typography (font, size, leading, indents, paragraph spacing, chapter openings and scene ornaments); distinct ebook and print settings.
+- **Metadata and covers:** Publication metadata and optional PNG/JPEG EPUB cover artwork.
+- **Previews:** Reflowable ebook preview with chapter navigation and device-width/theme/zoom controls; print PDF preview with single/facing pages, zoom and navigation.
+- **EPUB:** Offline/local EPUB generation with navigation, embedded supported images/fonts, metadata, build fingerprints and local export history; test fixtures and browser-produced samples run through EPUBCheck in CI.
+- **Paperback PDF:** Offline/local generation, 5 × 8, 5.5 × 8.5 and 6 × 9 inch trim settings, mirrored margins, embedded fonts, recto chapter openings, blank pages, running headers, page numbers, preview and download of the same PDF, local history, and independent fixture/CI inspection.
+- **Portability:** Versioned ZIP project backups and restoration, including source imports, edition settings and embedded images.
+- **Quality engineering:** Type checks, unit tests, browser/offline tests, EPUB validation fixtures, PDF geometry/text/font inspection and GitHub Actions checks.
+
+### Partial / needs more validation
+
+- **Book structure (STR-001–004):** Chapter creation/renaming and stable IDs exist; comprehensive front/body/back matter management, rearrange/split/merge and chapter-numbering options need completion or verification.
+- **PWA and local reliability (LOCAL, UX):** Cross-browser installation, full offline coverage, interrupted-save and quota-exhaustion recovery, and long-manuscript editing performance require broader acceptance testing.
+- **Imports and media (IMP-002–004):** Complex DOCX layouts, unsupported elements, image positioning, and captions may require correction; broaden round-trip/fidelity tests.
+- **Print typography and preflight (PDF-003–007; QA-003–005):** Existing automated PDF proof inspection is not a complete author-facing preflight report or retailer certification. Hyphenation, justification, page balance, longer edge cases and physical proofs remain.
+- **EPUB publication checks (EPUB-005–006):** EPUBCheck runs in CI on fixtures, **not** on each user's downloaded EPUB; reader/retailer proofing and wider accessibility checks remain.
+- **Accessibility and compatibility (UX-001–002):** Complete WCAG 2.2 AA and current-browser verification remain.
+- **Licensing and backups:** Commercial open-source/font review, project source license, and full validation of backup/restore coverage remain.
+
+### To be implemented / planned
+
+- **Complete author workspace (M2):** Full front/back matter and section organization; additional section operations; Modern and Gothic templates; expanded front-matter typography and recovery tools.
+- **Publication readiness (M1–M4):** Author-facing EPUB/PDF issue reports with severity/location/remediation; retailer-profile validation and actual paperback proofing; performance/reliability and cross-reader/browser test passes.
+- **Optional cloud sync (M3):** Account sign-in, private Supabase storage, per-project opt-in sync, offline change queue, divergent-revision conflict resolution, tenant authorization/RLS and cloud backup.
+- **Private beta (M4):** External author evaluations, retailer acceptance checks, physical print proofs, accessibility and security review.
+- **Commercial launch (M5):** Stripe purchases/subscriptions, entitlements, billing portal, onboarding, support, privacy/legal policies and administration.
+- **Later expansion (M6, not MVP):** Publisher collaboration, more templates/custom fonts, hardcover, advanced print formats, AI options, APIs and direct retailer integrations.
+
+No feature above is labeled **publication-ready** solely because it generates a file. Physical print proofs, standards checks on the exact artifact, and retailer acceptance are separate gates.
+
 ## Foundation implemented
 
 - Local bookshelf; book creation and independent chapter documents.
