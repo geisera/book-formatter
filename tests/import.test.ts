@@ -1,3 +1,4 @@
+import { recoverDocxImages } from "../lib/docx-images";
 import "fake-indexeddb/auto";
 import { afterEach, describe, it, expect } from "vitest";
 import { zipSync, unzipSync, strFromU8, strToU8 } from "fflate";
@@ -149,6 +150,25 @@ describe("semantic manuscript import", () => {
     const chapter=splitChapters(draft,"auto")[0];
     expect(schema.nodeFromJSON(chapter.content).child(1).type.name).toBe("image");
     expect(draft.diagnostics.some(d=>d.message.includes("alternative text"))).toBe(true);
+  });
+  it("recovers the real embedded PNG through DOCX relationship when conversion leaves a placeholder", () => {
+    const original=unzipSync(docxFixture());
+    const src="iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAF0lEQVR4nGM0ckthIAUwkaR6VMMI0gAAFWAA9Kg1bTEAAAAASUVORK5CYII=";
+    original["word/media/image1.png"]=Uint8Array.from(atob(src),c=>c.charCodeAt(0));
+    original["word/_rels/document.xml.rels"]=strToU8(
+      strFromU8(original["word/_rels/document.xml.rels"]).replace("</Relationships>",
+        '<Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/></Relationships>'));
+    original["word/document.xml"]=strToU8(
+      strFromU8(original["word/document.xml"]).replace("</w:body>",
+        '<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><a:graphic><a:blip r:embed="rId6"/></a:graphic></wp:inline></w:drawing></w:r></w:p></w:body>'));
+    const draft=parseConvertedHtml('<h1>Chapter One</h1><p>Before <img alt=""/> after.</p>',"test.docx");
+    const recovered=recoverDocxImages(zipSync(original),draft);
+    expect(recovered.blocks.map(b=>b.type)).toEqual(["heading","paragraph","image","paragraph"]);
+    expect(recovered.blocks[2].attrs?.src).toContain("data:image/png;base64,");
+    expect(JSON.stringify(recovered.blocks)).not.toContain("[Image:");
+    const chapters=splitChapters(recovered,"auto");
+    expect(schema.nodeFromJSON(chapters[0].content).child(1).type.name).toBe("image");
+    expect(recovered.diagnostics.some(d=>d.message.includes("Recovered 1 image"))).toBe(true);
   });
   it("keeps remote DOCX image references as inert placeholders", () => {
     const draft=parseConvertedHtml('<p>Start <img src="https://example.org/track.png" alt="Bad source"/> end.</p>',"bad.docx");
