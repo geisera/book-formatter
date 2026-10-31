@@ -59,3 +59,14 @@ export async function saveBook(
     return saved;
   });
 }
+
+/** Permanently delete a local project and all book-scoped records in one transaction. */
+export async function deleteBook(bookId: string): Promise<void> {
+  await db.transaction("rw", db.books, db.sources, db.exports, db.printExports, async () => {
+    if (!(await db.books.get(bookId))) throw Error("This manuscript no longer exists.");
+    await db.sources.delete(bookId);
+    await db.exports.where("bookId").equals(bookId).delete();
+    await db.printExports.where("bookId").equals(bookId).delete();
+    await db.books.delete(bookId);
+  });
+}
