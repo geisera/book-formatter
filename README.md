@@ -227,6 +227,29 @@ balance, hyphenation exceptions, typography review) and long-manuscript
 performance measurement on 100k+ word projects. These are next-phase items,
 not claimed complete by this feature.
 
+### Print quality audit and long-manuscript performance
+
+Run `npm run bench:print` to generate and render a **synthetic 100,000-word
+manuscript** entirely locally. An optional word count can be supplied with
+`npm run bench:print -- 150000` (supported: 1,000–200,000).
+The command reports elapsed time, throughput, heap delta, output size,
+page count, overflow/split violations, body pages with fewer than eight lines,
+and facing-body spreads differing by more than eight lines. A machine-readable
+report is written to `artifacts/print-performance.json`.
+
+This is a reproducible diagnostic, **not** a performance certification.
+It exercises PDF rendering in Node with synthetic plain-text paragraphs, rather
+than ProseMirror editing, IndexedDB autosave, browser/PWA memory limits, image
+handling, or a physical print proof. Reported memory is process heap, not browser
+total memory. No timing/memory targets or cross-machine comparisons have yet
+been established. Review page-level output in Design and with independent print
+inspection before making publishing claims. Benchmarks are opt-in to avoid
+slowing routine CI and unnecessary large-memory jobs.
+
+Next quality targets: language-aware hyphenation review, actual optical
+facing-page balancing, short-chapter ending treatment, image-heavy proofs,
+100k+ word browser sessions, and browser memory/performance budgets.
+
 ## Book structure management (STR-001–STR-004)
 
 Open a book → **Structure** to manage front matter, body matter, and back matter.
