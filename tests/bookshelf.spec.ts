@@ -9,6 +9,13 @@ test("bookshelf backup and confirmed permanent deletion",async ({page})=>{
  await expect(item).toBeVisible();
  await item.getByRole("button",{name:"Actions for Delete test manuscript"}).click();
  const menu=page.getByRole("menu",{name:"Actions for Delete test manuscript"});
+ await page.getByRole("heading",{name:/Your bookshelf/}).click();
+ await expect(menu).not.toBeVisible();
+ await item.getByRole("button",{name:"Actions for Delete test manuscript"}).click();
+ await expect(menu).toBeVisible();
+ await page.keyboard.press("Escape");
+ await expect(menu).not.toBeVisible();
+ await item.getByRole("button",{name:"Actions for Delete test manuscript"}).click();
  await expect(menu.getByRole("menuitem",{name:"Export backup"})).toBeVisible();
  const downloaded=page.waitForEvent("download");
  await menu.getByRole("menuitem",{name:"Export backup"}).click();
