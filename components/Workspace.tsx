@@ -724,6 +724,7 @@ export default function Workspace() {
                   selectedId={chapterId}
                   onAction={updateStructure}
                   onEdit={(id) => { setChapterId(id); setMode("manuscript"); }}
+                  onPreviewPrint={() => setMode("print")}
                 />
               ) : null}
               <DesignPanel
