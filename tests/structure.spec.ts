@@ -9,6 +9,7 @@ test("organizes and persists sections locally, including reordered export order"
   await page.getByRole("button", { name: "Create local book" }).click();
   await page.getByRole("button", { name: "Structure", exact: true }).click();
   await expect(page.getByRole("region", { name: "Book structure editor" })).toBeVisible();
+  await expect(page.getByRole("checkbox",{name:"Show title on page for Chapter One"})).toHaveCount(0);
   await page.getByLabel("New section type").selectOption("prologue");
   await page.getByLabel("Section title").fill("Before the story");
   await page.getByRole("button", { name: "+ Add section" }).click();
