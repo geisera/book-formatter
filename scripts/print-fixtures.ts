@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createBook, blankChapter } from "../lib/model";
 import { buildPrintPdf, type PrintFonts } from "../lib/print";
+import {printPreset} from "../lib/print-profile";
 const fonts: PrintFonts = Object.fromEntries(
   [
     ["regular", "regular"],
@@ -92,6 +93,8 @@ small.chapters = [
 async function main() {
   for (const [name, book] of [
     ["sample", small],
+    ["sample-5x8", {...small, editions: {...small.editions!, print: printPreset("classic","left","5x8")}}],
+    ["sample-5.5x8.5", {...small, editions: {...small.editions!, print: printPreset("classic","left","5.5x8.5")}}],
     ["novel", novel],
   ] as const) {
     const result = await buildPrintPdf(book, fonts, {
