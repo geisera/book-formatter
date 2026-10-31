@@ -9,7 +9,7 @@ import {
   type ImportDraft,
   type SplitMode,
 } from "../lib/import-model";
-import { SECTION_TYPES, type Book, type Chapter, type SectionType } from "../lib/model";
+import { SECTION_TYPES, schema, type Book, type Chapter, type SectionType } from "../lib/model";
 import { saveImportedBook } from "../lib/storage";
 
 export default function ImportPanel({
@@ -33,7 +33,11 @@ export default function ImportPanel({
     [author, setAuthor] = useState(""),
     [busy, setBusy] = useState(false),
     [saving, setSaving] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [dragSection,setDragSection]=useState<string|null>(null),
+    [dropBefore,setDropBefore]=useState<string|null>(null),
+    [previewId,setPreviewId]=useState<string|null>(null),
+    [stage,setStage]=useState("Preparing file");
   function stop() {
     worker.current?.terminate();
     worker.current = null;
@@ -63,11 +67,13 @@ export default function ImportPanel({
       return;
     }
     setBusy(true);
+    setStage("Reading source file");
     const token = request.current;
     try {
       const data = new Uint8Array(await file.arrayBuffer());
       if (token !== request.current) return;
       bytes.current = data;
+      setStage("Detecting sections and converting content");
       const parser = new Worker("/import-worker.js");
       worker.current = parser;
       const fail = (message: string) => {
@@ -103,6 +109,7 @@ export default function ImportPanel({
         }
         const imported = event.data.draft;
         stop();
+        setStage("Review ready");
         setDraft(imported);
         setMode("auto");
         setChapters(splitChapters(imported, "auto"));
@@ -124,6 +131,7 @@ export default function ImportPanel({
   async function commit() {
     if (!draft || !bytes.current) return;
     setSaving(true);
+    setStage("Saving local project");
     setError("");
     try {
       const project = importedBook(
@@ -154,6 +162,18 @@ export default function ImportPanel({
   function changeType(id:string,sectionType:SectionType) {
     setChapters(items=>items.map(c=>c.id===id?{...c,sectionType}:c));
     setReviewNotes(current=>({...current,[id]:"Author selected this section type."}));
+  }
+  function reorderSection(id:string,before?:string) {
+    setChapters(items=>{
+      const source=items.find(c=>c.id===id);
+      if(!source||before===id)return items;
+      const without=items.filter(c=>c.id!==id);
+      const destination=before?without.findIndex(c=>c.id===before):without.length;
+      if(destination<0)return items;
+      without.splice(destination,0,source);
+      return without;
+    });
+    setDropBefore(null);setDragSection(null);
   }
   function moveSection(index:number,offset:number) {
     setChapters(items=>{
@@ -237,7 +257,7 @@ export default function ImportPanel({
           </label>
           {busy ? (
             <div className="import-progress" role="status">
-              Reading your manuscript locally…{" "}
+              {stage}…{" "}<progress aria-label="Import progress" />{" "}
               <button
                 onClick={() => {
                   stop();
@@ -325,13 +345,20 @@ export default function ImportPanel({
               </p>
             )}
           </section>
+          <div className="import-review-progress" role="status">Review step 2 of 3 · {chapters.length} sections detected. Adjust their order, type, and boundaries before saving.</div>
           <div className="section-review" aria-label="Detected sections">
             {chapters.map((c, index) => {
               const guess=classifyImportedSection(c.title,index,chapters.length,title);
               const blocks=(c.content.content as {type:string;content?:{text?:string}[]}[] | undefined)??[];
               const type=c.sectionType??"chapter";
               const overridden=!!reviewNotes[c.id] || type!==guess.type;
-              return <div className="section-row" key={c.id}>
+              return <div className={`section-row${dropBefore===c.id?" import-drop-before":""}`} key={c.id}
+                onDragOver={e=>{if(dragSection){e.preventDefault();setDropBefore(c.id);}}}
+                onDrop={e=>{e.preventDefault();if(dragSection)reorderSection(dragSection,c.id);}}
+              >
+                <span className="import-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag section ${index+1}`}
+                  onDragStart={e=>{setDragSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}
+                  onDragEnd={()=>{setDragSection(null);setDropBefore(null);}}>⠿</span>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <div className="import-review-main">
                   <div className="import-review-fields">
@@ -345,11 +372,18 @@ export default function ImportPanel({
                     </label>
                   </div>
                   <p className="import-classification" aria-label={`Section ${index+1} classification`}>
-                    <strong>{overridden?"Review / edited":guess.confidence==="high"?"High confidence":guess.confidence==="medium"?"Medium confidence":"Review suggested"}</strong>
+                    <strong title={guess.reason}>{overridden?"Review / edited":guess.confidence==="high"?"High confidence":guess.confidence==="medium"?"Medium confidence":"Low confidence · review"}</strong>
+                    <span className="import-confidence-help" title="Confidence is a rule-based suggestion from section headings, not an AI judgment. Check the title and section type before importing." aria-label="About section confidence">ⓘ</span>
                     {" · "}{reviewNotes[c.id]??(type!==guess.type?"Section type differs from the detected suggestion.":guess.reason)}
                   </p>
                   <small>{blocks.map(n=>n.content?.map(x=>x.text??"").join("")??"").join(" ").slice(0,140)||"Heading-only section or no body text"}</small>
+                  <button type="button" className="import-preview-toggle" aria-expanded={previewId===c.id} onClick={()=>setPreviewId(previewId===c.id?null:c.id)}>{previewId===c.id?"Hide comparison":"Compare source and imported text"}</button>
+                  {previewId===c.id?<div className="import-side-by-side" aria-label={`Section ${index+1} before and after preview`}>
+                    <div><strong>Source document · original extracted text</strong><pre>{draft.blocks.map(blockText).join("\n").slice(0,3000)}</pre></div>
+                    <div><strong>Imported section · resulting text</strong><pre>{schema.nodeFromJSON(c.content).textContent.slice(0,3000)}</pre></div>
+                  </div>:null}
                   <div className="import-review-actions">
+                    <span className="import-boundary-label" title="Each listed section becomes a separate book section">Section boundary {index+1}</span>
                     <button type="button" disabled={index===0} onClick={()=>moveSection(index,-1)} aria-label={`Move section ${index+1} up`}>↑ Up</button>
                     <button type="button" disabled={index===chapters.length-1} onClick={()=>moveSection(index,1)} aria-label={`Move section ${index+1} down`}>↓ Down</button>
                     {blocks.length>1 ? <>
@@ -365,6 +399,7 @@ export default function ImportPanel({
                 </div>
               </div>;
             })}
+            {dragSection?<div className="import-drop-last" onDragOver={e=>{e.preventDefault();setDropBefore(null);}} onDrop={e=>{e.preventDefault();reorderSection(dragSection);}}>Drop here to move to end</div>:null}
           </div>
           <div className="import-actions">
             <button
@@ -381,7 +416,7 @@ export default function ImportPanel({
               disabled={saving || !title.trim() || !chapters.length}
               onClick={commit}
             >
-              {saving ? "Saving locally…" : "Import as new book"}
+              {saving ? "Step 3 of 3 · Saving locally…" : "Step 3 of 3 · Import as new book"}
             </button>
           </div>
         </>
