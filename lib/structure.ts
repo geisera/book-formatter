@@ -7,6 +7,8 @@ export type StructureAction =
   | { kind: "visibility"; id: string; showTitle: boolean }
   | { kind: "layout"; id: string; changes: Partial<SectionPageLayout> }
   | { kind: "reset-layout"; id: string }
+  | { kind: "heading-scale"; id: string; value: number }
+  | { kind: "reset-style"; id: string }
   | { kind: "add"; title: string; sectionType: SectionType; after?: string }
   | { kind: "delete"; id: string }
   | { kind: "split"; id: string; blockIndex: number; title: string }
@@ -54,6 +56,15 @@ export function changeStructure(book: Book, action: StructureAction): { book: Bo
       break;
     case "layout":
       chapters[index] = { ...chapters[index], pageLayout: { ...chapters[index].pageLayout, ...action.changes } };
+      selectedId = action.id;
+      break;
+    case "heading-scale":
+      if (!Number.isFinite(action.value) || action.value < 0.5 || action.value > 2) throw Error("Invalid heading scale.");
+      chapters[index] = { ...chapters[index], headingScale: action.value };
+      selectedId = action.id;
+      break;
+    case "reset-style":
+      chapters[index] = { ...chapters[index], pageLayout: undefined, headingScale: undefined };
       selectedId = action.id;
       break;
     case "reset-layout":
