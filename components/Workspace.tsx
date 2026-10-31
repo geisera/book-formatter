@@ -836,10 +836,7 @@ export default function Workspace() {
                     />
                   </article>
                 ) : null}
-                <p className="editor-foot">
-                  <span className="editor-word-count" role="status">Chapter: {selectedWordCount.toLocaleString()} words · Book: {totalWordCount.toLocaleString()} words · ~{readingHours} h {readingRemainder} min read</span>
-                  <span>⌘ / Ctrl + B bold · ⌘ / Ctrl + I italic</span>
-                </p>
+
               </section>
               {mode==="manuscript"&&previewVisible ? <div className="editor-work-panels">
                 {inspectorTab==="formatting"?<section className="editor-format-panel" aria-label="Design controls">
@@ -896,6 +893,11 @@ export default function Workspace() {
                 />
               ) : null}
 
+            </div>
+            <div className="workspace-word-status" role="status" aria-label="Manuscript word counts">
+              <span>Section: <strong>{selectedWordCount.toLocaleString()}</strong> words</span>
+              <span>Book: <strong>{totalWordCount.toLocaleString()}</strong> words</span>
+              <span>Estimated reading: <strong>~{readingHours} h {readingRemainder} min</strong></span>
             </div>
           </div>
         </main>
