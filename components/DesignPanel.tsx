@@ -1,4 +1,5 @@
 "use client";
+import {useState} from "react";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
 import {getSectionLayout,sectionHeadingScale,defaultSectionLayout,getSectionTypographyOverrides,showSectionTitle,sectionMatter,type Book,type SectionPageLayout,type SectionType,type SectionStyle} from "../lib/model";
 import type {StructureAction} from "../lib/structure";
@@ -38,6 +39,7 @@ export default function DesignPanel({
   onPrintAlignment: (align:"left"|"justify")=>void;
   onPrintTypography: (changes: Partial<Pick<PrintEdition,"fontSize"|"leading"|"paragraphSpacing"|"firstLineIndent"|"chapterOpeningSpace"|"chapterNumberStyle"|"showChapterTitle"|"frontMatterTitleScale"|"layoutPriority"|"hyphenate"|"hyphenationLanguage"|"maxConsecutiveHyphens"|"hyphenationExceptions">>)=>void;
 }) {
+  const [settingsTab,setSettingsTab]=useState<"templates"|"sections"|"typography">("templates");
   const section=book.chapters.find(c=>c.id===selectedId) ?? book.chapters[0];
   const layout=section ? getSectionLayout(section,book) : null;
   const sectionType=section?.sectionType??"chapter";
@@ -64,6 +66,13 @@ export default function DesignPanel({
       <div className="eyebrow">BOOK DESIGN</div>
       <h2>Appearance</h2>
       <p className="design-intro">Choose a style and refine the {format==="ebook"?"ebook":"paperback"} edition. Your manuscript stays unchanged.</p>
+      <div className="design-settings-tabs" role="tablist" aria-label="Design settings">
+        {(["templates","sections","typography"] as const).map(tab=><button key={tab} type="button" role="tab"
+          aria-selected={settingsTab===tab} onClick={()=>setSettingsTab(tab)}>
+          {tab==="templates"?"Templates":tab==="sections"?"Section":"Typography"}
+        </button>)}
+      </div>
+      <div className="design-tab-content" hidden={settingsTab!=="sections"}>
       <fieldset className="design-section-settings"><legend>Selected section</legend>
         <label>Section
           <select aria-label="Design section" value={section?.id??""} onChange={e=>onSelectSection(e.target.value)}>
@@ -129,6 +138,8 @@ export default function DesignPanel({
           <button type="button" onClick={()=>onSectionAction({kind:"reset-style",id:section.id})}>Reset selected section overrides</button>
         </details>:null}
       </fieldset>
+      </div>
+      <div className="design-tab-content" hidden={settingsTab!=="templates"}>
       <details className="design-cover-section" open><summary>Cover artwork</summary><CoverEditor cover={cover} onChange={onCoverChange}/></details>
       <div className="template-options" role="group" aria-label="Book design template">
         {(["classic", "modern", "gothic"] as EditionTemplate[]).map((id) => (
@@ -144,6 +155,8 @@ export default function DesignPanel({
           </button>
         ))}
       </div>
+      </div>
+      <div className="design-tab-content" hidden={settingsTab!=="typography"}>
       {format==="print"?<div className="design-print-settings">
         <fieldset><legend>Paperback layout</legend>
           <label>Trim size
@@ -395,7 +408,8 @@ export default function DesignPanel({
       >
         {format === "print" ? "Reset paperback typography" : "Reset ebook typography"}
       </button>
-      <p className="control-note">Settings save locally. Preview updates automatically; final exports remain in Publish and Print.</p>
+      <p className="control-note">Settings save locally. Preview updates automatically; exports are available under Publish.</p>
+      </div>
     </section>
   );
 }
