@@ -8,6 +8,20 @@ import {getPrintEdition,PRINT_TRIMS} from "../lib/print-profile";
 import type {PrintFonts,PrintResult,PrintRecord} from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
 
+// Reuse local font buffers across consecutive preview regenerations. A failed
+// load is retried next time, including after restoring offline assets.
+let cachedPrintFonts:Promise<PrintFonts>|null=null;
+function previewFonts():Promise<PrintFonts>{
+  if(!cachedPrintFonts)cachedPrintFonts=Promise.all(["regular","italic","bold","bold-italic"].map(async face=>{
+    const response=await localAsset("/epub-fonts/"+face+".woff");
+    if(!response.ok)throw Error("Print fonts are not available offline. Open the application online once.");
+    return new Uint8Array(await response.arrayBuffer());
+  })).then(([regular,italic,bold,boldItalic])=>({regular,italic,bold,boldItalic})).catch(e=>{
+    cachedPrintFonts=null;
+    throw e;
+  });
+  return cachedPrintFonts;
+}
 /** A disposable PDF proof; never persists a build or mutates the manuscript. */
 export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:{book:Book;getSnapshot:()=>Promise<Book>;selectedSectionId?:string}) {
   const snapshotRef=useRef(getSnapshot);
@@ -20,7 +34,6 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
     let cancelled=false;
     let worker:Worker|null=null;
     let release:(()=>void)|null=null;
-    const controller=new AbortController();
     const timeout=setTimeout(async()=>{
       if(cancelled)return;
       setState("building");setError("");
@@ -29,11 +42,7 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
         if(cancelled)return;
         // Never label an outdated asynchronous build current.
         if(snapshotChecksum(snapshot)!==fingerprint) {setState("waiting");return;}
-        const fonts=await Promise.all(["regular","italic","bold","bold-italic"].map(async face=>{
-          const response=await localAsset("/epub-fonts/"+face+".woff",controller.signal);
-          if(!response.ok)throw Error("Print fonts are not available offline. Open the application online once.");
-          return new Uint8Array(await response.arrayBuffer());
-        }));
+        const fonts=await previewFonts();
         if(cancelled)return;
         const prepared=await localWorker("/print-worker.js?renderer=print-proof-1.5.0");
         worker=prepared.worker;release=prepared.release;
@@ -52,12 +61,12 @@ export default function DesignPrintPreview({book,getSnapshot,selectedSectionId}:
           setState("ready");
           worker?.terminate();release?.();worker=null;release=null;
         };
-        worker.postMessage({book:snapshot,fonts:{regular:fonts[0],italic:fonts[1],bold:fonts[2],boldItalic:fonts[3]} satisfies PrintFonts,id:newId(),createdAt:new Date().toISOString()});
+        worker.postMessage({book:snapshot,fonts:fonts satisfies PrintFonts,id:newId(),createdAt:new Date().toISOString()});
       }catch(e){
         if(!cancelled){setState("error");setError(e instanceof Error?e.message:"Could not build the print preview.");}
       }
     },900);
-    return ()=>{cancelled=true;clearTimeout(timeout);controller.abort();worker?.terminate();release?.();};
+    return ()=>{cancelled=true;clearTimeout(timeout);worker?.terminate();release?.();};
   },[fingerprint]);
   const current=result?.record.inputChecksum===fingerprint&&state==="ready";
   const trim=getPrintEdition(book).trim;
