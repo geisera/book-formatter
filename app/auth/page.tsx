@@ -1,5 +1,5 @@
 "use client";
-import {useState} from "react";
+import {useEffect,useState} from "react";
 type Mode="sign-in"|"sign-up"|"reset";
 const endpoint=process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/,"");
 const publishable=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -11,6 +11,7 @@ export default function AuthPage(){
   const [message,setMessage]=useState("");
   const [error,setError]=useState("");
   const configured=!!endpoint&&!!publishable;
+  useEffect(()=>{if(new URLSearchParams(window.location.search).get("mode")==="sign-up")setMode("sign-up");},[]);
   async function submit(event:React.FormEvent<HTMLFormElement>){
     event.preventDefault();setBusy(true);setError("");setMessage("");
     try{
@@ -23,9 +24,9 @@ export default function AuthPage(){
       const result=await response.json() as {error_description?:string;msg?:string;message?:string;error?:string};
       if(!response.ok)throw Error(result.error||result.error_description||result.msg||result.message||"Authentication request failed.");
       if(mode==="sign-in"){
-        window.location.assign("/");
+        window.location.assign("/workspace/");
       }else if(mode==="sign-up"){
-        setMessage("Registration submitted. Check your email for a confirmation link.");
+        setMessage("Check your inbox for a confirmation email. Open its confirmation link to verify your address, then return here to sign in. Also check Spam or Promotions if it does not arrive promptly.");
       }else{setMessage("If an account exists, password recovery instructions have been sent.");}
     }catch(e){setError(e instanceof Error?e.message:"Authentication failed.");}
     finally{setBusy(false);}
@@ -35,6 +36,7 @@ export default function AuthPage(){
       <p className="eyebrow">BOOK FORMATTER</p>
       <h1 id="auth-title">{mode==="sign-in"?"Sign in":mode==="sign-up"?"Create account":"Reset password"}</h1>
       <p>Account authentication is separate from manuscript storage. Your books remain local to this browser.</p>
+      {mode==="sign-up"?<p className="auth-confirm-note"><strong>Email confirmation required.</strong> After registering, check your inbox and click the verification link from Book Formatter before attempting to sign in.</p>:null}
       {!configured?<p role="alert" className="alert">Authentication is awaiting Supabase project configuration.</p>:null}
       {error?<p role="alert" className="alert">{error}</p>:null}
       {message?<p role="status">{message}</p>:null}
@@ -48,7 +50,7 @@ export default function AuthPage(){
         <button type="button" onClick={()=>{setMode("sign-up");setError("");setMessage("");}}>Register</button>
         <button type="button" onClick={()=>{setMode("reset");setError("");setMessage("");}}>Forgot password?</button>
       </div>
-      <a href="/">Back to Book Formatter</a>
+      <a href="/">Back to Book Formatter home</a>
     </section>
   </main>;
 }
