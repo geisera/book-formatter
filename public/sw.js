@@ -1,4 +1,12 @@
-const CACHE="book-formatter-v2";
-self.addEventListener("install",event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(["/","/help/","/icon.svg","/manifest.webmanifest","/import-worker.js","/epub-worker.js","/print-worker.js"]);const html=await (await cache.match("/")).text();const paths=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(x=>x[1].replaceAll("&amp;","&")).filter(x=>x.startsWith("/_next/"));await cache.addAll([...new Set(paths)]);await self.skipWaiting()})()));
-self.addEventListener("activate",event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith("book-formatter-")&&key!==CACHE)await caches.delete(key);await self.clients.claim()})()));
-self.addEventListener("fetch",event=>{const url=new URL(event.request.url);if(event.request.method!=="GET"||url.origin!==location.origin)return;event.respondWith((async()=>{const cache=await caches.open(CACHE);const isWorker=url.pathname==="/print-worker.js"||url.pathname==="/epub-worker.js";const cached=await cache.match(event.request,{ignoreSearch:isWorker});if(cached&&!isWorker&&event.request.mode!=="navigate")return cached;try{const response=await fetch(event.request);if(response.ok)await cache.put(event.request,response.clone());return response}catch(error){if(cached)return cached;if(event.request.mode==="navigate")return (await cache.match("/"))||Response.error();return Response.error()}})())});
+const CACHE="book-formatter-auth-v1";
+self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
+self.addEventListener("activate",event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith("book-formatter-"))await caches.delete(key);await self.clients.claim();})()));
+self.addEventListener("fetch",event=>{
+ const u=new URL(event.request.url);
+ if(event.request.mode==="navigate"||u.pathname.startsWith("/api/")||u.pathname.startsWith("/auth/"))return;
+ if(event.request.method!=="GET"||u.origin!==location.origin)return;
+ event.respondWith((async()=>{const cache=await caches.open(CACHE);const cached=await cache.match(event.request);
+ if(cached)return cached;
+ try{const response=await fetch(event.request);if(response.ok&&u.pathname!=="/"&&u.pathname!=="/help/")await cache.put(event.request,response.clone());return response;}catch{return cached||Response.error();}
+ })());
+});
