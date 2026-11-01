@@ -26,7 +26,7 @@ export default function AuthPage(){
       if(mode==="sign-in"){
         window.location.assign("/workspace/");
       }else if(mode==="magic-link"){
-        setMessage("If this email belongs to an account, a one-time sign-in link is on its way. Open the link on this device to access your workspace. Check Spam or Promotions if necessary.");
+        setMessage("If this email belongs to an account, a one-time sign-in link is on its way. Open the link on the device where you want to access your workspace. Check Spam or Promotions if necessary.");
       }else if(mode==="sign-up"){
         setMessage("Check your inbox for a confirmation email. Open its confirmation link to verify your address, then return here to sign in. Also check Spam or Promotions if it does not arrive promptly.");
       }else{setMessage("If an account exists, password recovery instructions have been sent.");}
@@ -38,7 +38,7 @@ export default function AuthPage(){
       <p className="eyebrow">BOOK FORMATTER</p>
       <h1 id="auth-title">{mode==="sign-in"?"Sign in":mode==="sign-up"?"Create account":mode==="magic-link"?"Email sign-in link":"Reset password"}</h1>
       <p>Account authentication is separate from manuscript storage. Your books remain local to this browser.</p>
-      {mode==="magic-link"?<p className="auth-confirm-note">Enter the email address of an existing account. We’ll send a one-time sign-in link; no password required. The link must be opened from this browser.</p>:null}
+      {mode==="magic-link"?<p className="auth-confirm-note">Enter the email address of an existing account. We’ll send a one-time sign-in link; no password required. Open the link to complete sign-in on the device where you want to work.</p>:null}
       {mode==="sign-up"?<p className="auth-confirm-note"><strong>Email confirmation required.</strong> After registering, check your inbox and click the verification link from Book Formatter before attempting to sign in.</p>:null}
       {!configured?<p role="alert" className="alert">Authentication is awaiting Supabase project configuration.</p>:null}
       {error?<p role="alert" className="alert">{error}</p>:null}
