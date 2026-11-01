@@ -34,9 +34,10 @@ reflect the prior prototype rather than the target product behavior. See
 
 ## Authentication implementation status (November 1, 2026)
 
-**Phase 1 foundation only.** The public `/auth/` route provides email/password registration, sign-in and password-recovery requests through Supabase Auth's public REST endpoints. Configure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in Vercel. The Supabase project identifier is `pxgkyxlizflwjbtknubf`; use its actual active publishable key, never a secret/service-role key.
+The manuscript workspace (`/`) and Help (`/help/`) now require a **server-verified Supabase Auth session**. Anonymous requests redirect to `/auth/`. Sign-in uses the server-side `/api/auth/sign-in` endpoint to verify the identity with Supabase and issue a short-lived, HttpOnly, SameSite=Lax cookie; sign-out clears it. Deployments use dynamic Next.js hosting rather than static export. A newer service worker does not cache workspace navigation responses. Vercel requires `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 
-**Not yet a secure authenticated product:** Sign-in does not establish a protected workspace session, route or API authorization, profile ownership, an email-confirmation callback or password reset completion flow. Do not treat `/auth/` as enforcement of AUTH-001–008. Existing local bookshelf remains available during migration. Next implementation stage: server-enforced authenticated routes (requires revisiting static export), session strategy with bounded offline authorization, and account-scoped local project migration/recovery. Manuscripts are not transmitted by the authentication screen.
+**Not yet complete:** Session lifetime is limited to an access-token period (at most one hour) with no refresh; users must sign in again on expiry. Offline editing is not available under the new guard until a bounded offline authorization design is implemented. Existing IndexedDB books are *not* yet partitioned by account and remain on the device after sign-out. Do not use this release as a multi-account shared-device product. Registration requests and recovery email requests are exposed, but full recovery completion and confirmation callback are not yet implemented. Do not claim AUTH-001–008 complete or assert that manuscript data is cryptographically protected. No manuscript content is sent to Supabase by sign-in.
+
 
 ## Run
 
