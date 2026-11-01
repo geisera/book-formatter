@@ -32,6 +32,12 @@ reflect the prior prototype rather than the target product behavior. See
 [PRD v1.2](docs/PRD.md) and the
 [authentication architecture decision](docs/authentication-local-first.md).
 
+## Authentication implementation status (November 1, 2026)
+
+**Phase 1 foundation only.** The public `/auth/` route provides email/password registration, sign-in and password-recovery requests through Supabase Auth's public REST endpoints. Configure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in Vercel. The Supabase project identifier is `pxgkyxlizflwjbtknubf`; use its actual active publishable key, never a secret/service-role key.
+
+**Not yet a secure authenticated product:** Sign-in does not establish a protected workspace session, route or API authorization, profile ownership, an email-confirmation callback or password reset completion flow. Do not treat `/auth/` as enforcement of AUTH-001–008. Existing local bookshelf remains available during migration. Next implementation stage: server-enforced authenticated routes (requires revisiting static export), session strategy with bounded offline authorization, and account-scoped local project migration/recovery. Manuscripts are not transmitted by the authentication screen.
+
 ## Run
 
 Node.js 24 or newer. `npm ci`, then `npm run dev`.
