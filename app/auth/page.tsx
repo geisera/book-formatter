@@ -16,16 +16,14 @@ export default function AuthPage(){
     try{
       if(!configured)throw Error("Authentication is not configured. Contact the site administrator.");
       const target=mode==="sign-in"?"/auth/v1/token?grant_type=password":mode==="sign-up"?"/auth/v1/signup":"/auth/v1/recover";
-      const response=await fetch(endpoint+target,{
-        method:"POST",headers:{"apikey":publishable!,"Content-Type":"application/json"},
+      const response=await fetch(mode==="sign-in"?"/api/auth/sign-in":endpoint+target,{
+        method:"POST",headers:{"apikey":publishable!,"Content-Type":"application/json"},credentials:"same-origin",
         body:JSON.stringify(mode==="reset"?{email}:{email,password})
       });
-      const result=await response.json() as {error_description?:string;msg?:string;message?:string;access_token?:string;refresh_token?:string};
-      if(!response.ok)throw Error(result.error_description||result.msg||result.message||"Authentication request failed.");
+      const result=await response.json() as {error_description?:string;msg?:string;message?:string;error?:string};
+      if(!response.ok)throw Error(result.error||result.error_description||result.msg||result.message||"Authentication request failed.");
       if(mode==="sign-in"){
-        if(!result.access_token)throw Error("No session returned. Check that your email is confirmed.");
-        // Phase 1 proves provider identity; an authenticated workspace will follow once server-side guards exist.
-        setMessage("Sign-in succeeded. Authenticated workspace access is not enabled yet.");
+        window.location.assign("/");
       }else if(mode==="sign-up"){
         setMessage("Registration submitted. Check your email for a confirmation link.");
       }else{setMessage("If an account exists, password recovery instructions have been sent.");}
