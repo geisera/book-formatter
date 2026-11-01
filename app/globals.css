@@ -2542,3 +2542,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .delete-undo-notice{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 16px;background:#f8f1dc;color:#49391d;border-bottom:1px solid #ddcb94;font-size:13px}
 .delete-undo-notice span{flex:1 1 190px}
 .delete-undo-notice button{min-height:36px;background:#fff9ed;border:1px solid #cdb985;border-radius:5px;padding:7px 12px}
+
+
+/* Authentication entrypoint — account identity remains separate from local manuscripts. */
+.auth-page{min-height:100dvh;display:grid;place-items:center;padding:32px 16px;background:#f0f3ec}
+.auth-card{width:min(100%,460px);background:#fff;border:1px solid #d5dfd4;border-radius:12px;padding:30px;box-shadow:0 12px 28px #11251b12}
+.auth-card h1{margin:8px 0 12px}.auth-card p{line-height:1.5}
+.auth-card form{display:grid;gap:14px;margin:20px 0}
+.auth-card form label{display:grid;gap:7px;font-weight:600;font-size:13px}
+.auth-card input{min-height:44px;border:1px solid #aebcaf;border-radius:6px;padding:10px 12px;width:100%}
+.auth-card .primary{min-height:44px}
+.auth-options{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.auth-options button{border:1px solid #c8d6ca;border-radius:5px;padding:9px 12px;min-height:40px;background:#f9faf7}
