@@ -604,6 +604,7 @@ export default function Workspace() {
         </button>
         <div className="topbar-actions">
           <Link className="help-top-link" href="/help/" aria-label="Open help and documentation">Help &amp; Docs</Link>
+          <button type="button" onClick={async()=>{await fetch("/api/auth/sign-out",{method:"POST"});window.location.replace("/auth/");}}>Sign out</button>
           <div className="connection">
             {offline ? "● Offline" : "● Local workspace"}
             <span>
