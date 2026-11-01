@@ -11,12 +11,19 @@ export default function AuthPage(){
   const [message,setMessage]=useState("");
   const [error,setError]=useState("");
   const configured=!!endpoint&&!!publishable;
-  useEffect(()=>{if(new URLSearchParams(window.location.search).get("mode")==="sign-up")setMode("sign-up");},[]);
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    if(params.get("mode")==="sign-up")setMode("sign-up");
+    const authError=params.get("error_description")||params.get("error");
+    if(authError)setError(authError);
+    else if(params.get("confirmed")==="true")setMessage("Email confirmed successfully. Your address is verified. Sign in to access your workspace.");
+    if(authError||params.has("confirmed"))window.history.replaceState(null,"","/auth/");
+  },[]);
   async function submit(event:React.FormEvent<HTMLFormElement>){
     event.preventDefault();setBusy(true);setError("");setMessage("");
     try{
       if(!configured)throw Error("Authentication is not configured. Contact the site administrator.");
-      const target=mode==="sign-in"?"/auth/v1/token?grant_type=password":mode==="sign-up"?"/auth/v1/signup":mode==="magic-link"?"/auth/v1/otp?redirect_to="+encodeURIComponent(window.location.origin+"/auth/callback/"):"/auth/v1/recover";
+      const target=mode==="sign-in"?"/auth/v1/token?grant_type=password":mode==="sign-up"?"/auth/v1/signup?redirect_to="+encodeURIComponent(window.location.origin+"/auth/callback/?flow=confirm"):mode==="magic-link"?"/auth/v1/otp?redirect_to="+encodeURIComponent(window.location.origin+"/auth/callback/"):"/auth/v1/recover";
       const response=await fetch(mode==="sign-in"?"/api/auth/sign-in":endpoint+target,{
         method:"POST",headers:{"apikey":publishable!,"Content-Type":"application/json"},credentials:"same-origin",
         body:JSON.stringify(mode==="reset"?{email}:mode==="magic-link"?{email,create_user:false}:{email,password})
@@ -28,7 +35,7 @@ export default function AuthPage(){
       }else if(mode==="magic-link"){
         setMessage("If this email belongs to an account, a one-time sign-in link is on its way. Open the link on the device where you want to access your workspace. Check Spam or Promotions if necessary.");
       }else if(mode==="sign-up"){
-        setMessage("Check your inbox for a confirmation email. Open its confirmation link to verify your address, then return here to sign in. Also check Spam or Promotions if it does not arrive promptly.");
+        setMessage("Check your inbox for a confirmation email. Open its confirmation link to verify your address. You will then return to BookStitcher to sign in. Also check Spam or Promotions if it does not arrive promptly.");
       }else{setMessage("If an account exists, password recovery instructions have been sent.");}
     }catch(e){setError(e instanceof Error?e.message:"Authentication failed.");}
     finally{setBusy(false);}
