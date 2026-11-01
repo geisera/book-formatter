@@ -2554,3 +2554,27 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .auth-card .primary{min-height:44px}
 .auth-options{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
 .auth-options button{border:1px solid #c8d6ca;border-radius:5px;padding:9px 12px;min-height:40px;background:#f9faf7}
+
+
+/* Public home page */
+.landing{min-height:100dvh;background:radial-gradient(ellipse at 75% 15%,#e8ece0 0,transparent 54%),#f7f6f0;color:#243a32}
+.landing-header{max-width:1180px;margin:auto;padding:26px 32px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.landing-brand{font:700 22px Georgia,serif;color:#243a32;text-decoration:none}
+.landing-header nav{display:flex;gap:22px;align-items:center}.landing-header nav a{color:#243a32;text-decoration:none;font-weight:600}
+.landing-header .landing-nav-cta,.landing-primary{display:inline-block;background:#224c40;color:white;border-radius:6px;padding:13px 22px;text-decoration:none;font-weight:700}
+.landing-header .landing-nav-cta{padding:10px 17px;color:#fff}
+.landing-hero{max-width:900px;margin:0 auto;padding:108px 30px 105px;text-align:center}
+.landing-eyebrow{font-size:12px;letter-spacing:.22em;font-weight:700;color:#6d806f}
+.landing-hero h1{font:normal clamp(52px,7.8vw,102px)/1.06 Georgia,serif;letter-spacing:-.04em;margin:25px 0 25px}
+.landing-hero h1 em{color:#466858;font-weight:400}
+.landing-hero>p{max-width:660px;margin:0 auto;font-size:19px;line-height:1.7;color:#5b695e}
+.landing-actions{display:flex;justify-content:center;align-items:center;gap:23px;margin:36px auto 25px;flex-wrap:wrap}
+.landing-secondary{font-weight:700;color:#244c3f;text-decoration:none}
+.landing-hero .landing-note{font-size:13px;max-width:600px;color:#748078}
+.landing-features{max-width:1100px;margin:0 auto;padding:0 30px 100px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.landing-features article{background:#fffefa;border:1px solid #dde2d8;border-radius:10px;padding:30px}
+.landing-features h2{font:normal 25px Georgia,serif;margin:0 0 14px}
+.landing-features p{color:#606c63;line-height:1.65;margin:0}
+.landing-footer{text-align:center;border-top:1px solid #dde2d8;padding:28px;color:#718074;font-size:13px}
+.auth-confirm-note{padding:14px 16px;border:1px solid #d6ded3;background:#f4f8f1;border-radius:7px}
+@media(max-width:700px){.landing-header{padding:20px 18px}.landing-header nav{gap:12px}.landing-header .landing-nav-cta{padding:9px 11px}.landing-hero{padding:80px 20px 85px}.landing-hero>p{font-size:17px}.landing-features{grid-template-columns:1fr;padding:0 20px 60px}}
