@@ -122,6 +122,7 @@ export async function buildPrintPdf(
     splitViolations = 0;
   let activeLayout: SectionPageLayout = getSectionLayout(book.chapters[0],book);
   const contentsPages: { index: number; entries: typeof book.chapters }[] = [];
+  const fullBleedPageNumbers = new Set<number>();
   // Bounded width cache: large books contain many unique tokens, and keeping
   // every string forever can grow worker memory without improving reuse.
   const widths = new Map<string, number>();
@@ -562,6 +563,7 @@ export async function buildPrintPdf(
           const drawWidth=asset.width*scale,drawHeight=asset.height*scale;
           page.drawImage(asset,{x:-BLEED+(targetWidth-drawWidth)/2,y:-BLEED+(targetHeight-drawHeight)/2,width:drawWidth,height:drawHeight});
           proof.lineCount=1;
+          fullBleedPageNumbers.add(proof.page);
           proof.minX=0;proof.maxX=WIDTH;proof.minY=0;proof.maxY=HEIGHT;
           followingFullBleed=true;
           opening=false;
@@ -813,7 +815,7 @@ export async function buildPrintPdf(
   for (let i = 0; i < pages.length; i++) {
     proof = pages[i];
     page = pdf.getPage(i);
-    if (proof.kind === "blank" || proof.kind === "title") continue;
+    if (proof.kind === "blank" || proof.kind === "title" || fullBleedPageNumbers.has(proof.page)) continue;
     const section = book.chapters.find(c => c.id === proof.chapterId);
     const settings = section ? getSectionLayout(section,book) : activeLayout;
     const numbered = settings.pageNumber === "show" ||
