@@ -7,6 +7,7 @@ export const SECTION_SAMPLES: Record<SectionType, readonly SampleBlock[]> = {
   prologue: [{text:"Before the events of the first chapter, something happened that would change everything."},{text:"A prologue uses the book’s normal narrative typography with its own opening heading."}],
   epilogue: [{text:"Much later, the consequences of those events could finally be understood."},{text:"An epilogue normally follows the narrative typography of the main chapters."}],
   interlude: [{text:"Elsewhere, another story was already unfolding."},{text:"An interlude may shift time, viewpoint, or setting while retaining readable narrative typography."}],
+  volume: [{text:"A new volume begins here. This division may contain multiple parts and chapters.",kind:"small"}],
   part: [{text:"A new part introduces a major division of the book. A short subtitle or epigraph may appear here.",kind:"small"}],
   "half-title": [{text:"The Book Title",kind:"heading"}],
   title: [{text:"The Book Title",kind:"heading"},{text:"A Subtitle, If Any",kind:"small"},{text:"Author Name",kind:"attribution"}],
