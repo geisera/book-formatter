@@ -24,8 +24,10 @@ export function classifyImportedSection(title:string, index:number, total:number
   if(type) return {type,confidence:"high",reason:"Recognized conventional section heading."};
   if(/^chapter\s+(?:\d+|[ivxlcdm]+|[a-z]+)(?:\s*[:.\-–—].*)?$/i.test(value))
     return {type:"chapter",confidence:"high",reason:"Recognized a chapter-number heading."};
-  if(/^(?:part|book|volume)\s+(?:\d+|[ivxlcdm]+|[a-z]+)(?:\s*[:.\-–—].*)?$/i.test(value))
-    return {type:"part",confidence:"high",reason:"Recognized a major division heading; volumes are currently represented as parts."};
+  if(/^(?:volume|book)\s+(?:\d+|[ivxlcdm]+|[a-z]+)(?:\s*[:.\-–—].*)?$/i.test(value))
+    return {type:"volume",confidence:"high",reason:"Recognized a volume or book-level division."};
+  if(/^part\s+(?:\d+|[ivxlcdm]+|[a-z]+)(?:\s*[:.\-–—].*)?$/i.test(value))
+    return {type:"part",confidence:"high",reason:"Recognized a part heading."};
   if(/^appendix\s+[a-z\d]+(?:\s*[:.\-–—].*)?$/i.test(value))
     return {type:"appendix",confidence:"high",reason:"Recognized a labeled appendix."};
   if(/^introduction\b|^foreword\b|^afterword\b|^acknowledg(?:e)?ments\b/i.test(value)){
