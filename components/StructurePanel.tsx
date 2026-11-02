@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { schema } from "../lib/model";
 import { SECTION_TYPES, sectionMatter, showSectionTitle, getSectionLayout, type Book, type SectionType } from "../lib/model";
-import { orderedSections, sectionGroups, type StructureAction } from "../lib/structure";
+import { orderedSections, sectionGroups, divisionHierarchy, type StructureAction } from "../lib/structure";
 
 const labels: Record<SectionType, string> = {
   chapter: "Chapter", prologue: "Prologue", epilogue: "Epilogue", interlude: "Interlude",
@@ -89,6 +89,7 @@ export default function StructurePanel({
   const [rowMenu,setRowMenu]=useState<string|null>(null);
   const groups = sectionGroups(book);
   const ordered = orderedSections(book);
+  const hierarchy=divisionHierarchy(book);
   const dispatch = (action: StructureAction) => {
     try { onAction(action); setError(""); if (action.kind === "layout" || action.kind === "reset-layout" || action.kind === "visibility") setLayoutNotice(true); } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to change structure.");
@@ -118,6 +119,7 @@ export default function StructurePanel({
               const blocks = (section.content.content as unknown[] | undefined) ?? [];
               const layout = getSectionLayout(section);
               return <li className={selectedId === section.id ? "structure-item active" : "structure-item"}
+                style={{marginInlineStart: `${(hierarchy.get(section.id)?.depth??0)*20}px`}}
                 key={section.id} draggable onDragStart={e => { setDragId(section.id); e.dataTransfer.effectAllowed = "move"; }}
                 onDragOver={e => e.preventDefault()} onDrop={e => {
                   e.preventDefault();
