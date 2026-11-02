@@ -63,7 +63,6 @@ export default function Workspace() {
   const [mobileDrawerOpen,setMobileDrawerOpen]=useState(false);
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewVisible,setPreviewVisible]=useState(true);
-  const [formatControlsVisible,setFormatControlsVisible]=useState(false);
   const [readinessOpen,setReadinessOpen]=useState(false);
   const [backupRefresh,setBackupRefresh]=useState(0);
   const [folderBackup,setFolderBackup]=useState<"off"|"ready"|"permission"|"unsupported">("off");
@@ -586,6 +585,7 @@ export default function Workspace() {
       print: { ...printPreset(edition.template.id, printAlignment, priorPrint.trim), fontSize:priorPrint.fontSize,leading:priorPrint.leading,paragraphSpacing:priorPrint.paragraphSpacing,firstLineIndent:priorPrint.firstLineIndent,chapterOpeningSpace:priorPrint.chapterOpeningSpace,chapterNumberStyle:priorPrint.chapterNumberStyle,showChapterTitle:priorPrint.showChapterTitle,frontMatterTitleScale:priorPrint.frontMatterTitleScale,layoutPriority:priorPrint.layoutPriority,hyphenate:priorPrint.hyphenate,hyphenationLanguage:priorPrint.hyphenationLanguage,maxConsecutiveHyphens:priorPrint.maxConsecutiveHyphens,hyphenationExceptions:priorPrint.hyphenationExceptions },
     } });
   }
+  const previewDesignSelected=mode==="manuscript"&&inspectorTab==="formatting";
   const previewFormatControl = <div className="design-studio-format" role="group" aria-label="Preview format">
                       <button type="button" aria-pressed={designPreview==="ebook"} onClick={()=>setDesignPreview("ebook")}>Ebook</button>
                       <button type="button" aria-pressed={designPreview==="print"} onClick={()=>setDesignPreview("print")}>Paperback</button>
@@ -759,13 +759,13 @@ export default function Workspace() {
       ) : (
         <main className={`workspace${mobileDrawerOpen?" mobile-drawer-open":""}`}>
           {mobileDrawerOpen?<button type="button" className="mobile-drawer-scrim" aria-label="Close manuscript drawer" onClick={()=>setMobileDrawerOpen(false)}/>:null}
-          <aside id="mobile-manuscript-drawer" aria-label="Manuscript sections">
+          <aside id="mobile-manuscript-drawer" aria-label={previewDesignSelected?"Book design controls":"Manuscript sections"}>
             <div className="sidebar-header">
             <button className="text-button bookshelf-back-link" onClick={dashboard}>
               ← Bookshelf
             </button>
             <div className="workspace-book-info"><div className="workspace-book-kicker">CURRENT BOOK</div><h2>{book.title}</h2><p className="muted">{book.author||"Author not set"}</p></div>
-            <div className="sidebar-section-actions">
+            <div className="sidebar-section-actions" hidden={previewDesignSelected}>
               <button className="add" onClick={()=>{
                 const selected=book.chapters.find(c=>c.id===chapterId);
                 updateStructure({kind:"add",title:"New chapter",sectionType:"chapter",after:selected&&sectionMatter(selected.sectionType??"chapter")==="body"?selected.id:undefined});
@@ -774,7 +774,16 @@ export default function Workspace() {
               <button type="button" className="organize-sections" onClick={()=>setMode("structure")}>Organize…</button>
             </div>
             </div>
-            <div className="section-navigator" aria-label="Book sections">
+                {previewDesignSelected?<section id="preview-format-controls" className="editor-format-panel sidebar-design-controls" aria-label="Design controls">
+                  <DesignPanel hidden={false} cover={book.cover} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
+                    edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
+                    printProfile={getPrintEdition(book)} onPrintTrim={changePrintTrim}
+                    onPrintAlignment={changePrintAlignment} onPrintTypography={changePrintTypography}
+                    onOpenPaperback={()=>{setPublishFormat("print");setMode("publish");}}
+                    book={book} selectedId={chapterId} onSelectSection={setChapterId} onSectionAction={updateStructure}
+                    onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}/>
+                </section>:null}
+            <div className="section-navigator" aria-label="Book sections" hidden={previewDesignSelected}>
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
                 <div className="chapter-list" onDragOver={e=>{e.preventDefault();if(draggingSection)setDropTarget({group});}} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});clearDrag();}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className={`sidebar-section-row${draggingSection===c.id?" is-dragging":""}${dropTarget?.group===group&&dropTarget.before===c.id?" drop-before":""}`} onDragEnd={clearDrag} onDragOver={e=>{e.preventDefault();e.stopPropagation();if(draggingSection)setDropTarget({group,before:c.id});}} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});clearDrag();}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} aria-label={c.title} onClick={()=>setChapterId(c.id)}>
@@ -834,7 +843,7 @@ export default function Workspace() {
           </aside>
           <div className="workspace-content">
             <div className="mobile-workspace-header">
-              <button type="button" aria-expanded={mobileDrawerOpen} aria-controls="mobile-manuscript-drawer" onClick={()=>setMobileDrawerOpen(v=>!v)}>☰ Sections</button>
+              <button type="button" aria-expanded={mobileDrawerOpen} aria-controls="mobile-manuscript-drawer" onClick={()=>setMobileDrawerOpen(v=>!v)}>{previewDesignSelected?"☰ Appearance":"☰ Sections"}</button>
               <strong>{book.title}</strong>
             </div>
             {!coachmarkDismissed?<div className="workspace-coachmark" role="note">
@@ -876,9 +885,6 @@ export default function Workspace() {
                     </button>
                   </li>
                 </ol>:null}
-              {mode==="manuscript"&&inspectorTab==="formatting"?
-                <button type="button" className="format-controls-toggle" aria-expanded={formatControlsVisible} aria-controls="preview-format-controls"
-                  onClick={()=>setFormatControlsVisible(v=>!v)}>{formatControlsVisible?"Hide format controls":"Show format controls"}</button>:null}
               <button type="button" className="workspace-details-link" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Edit book details</button>
               <div className={`workspace-save save-indicator ${status==="Save failed"?"failed":"saved"}`}
                 role="status" aria-live="polite" title={status||"Stored on this device"}>
@@ -969,16 +975,7 @@ export default function Workspace() {
                 ) : null}
 
               </section>
-              {mode==="manuscript"&&inspectorTab==="formatting"&&previewVisible ? <div className={`editor-work-panels${formatControlsVisible?"":" controls-hidden"}`}>
-                {formatControlsVisible?<section id="preview-format-controls" className="editor-format-panel" aria-label="Design controls">
-                  <DesignPanel hidden={false} cover={book.cover} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
-                    edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
-                    printProfile={getPrintEdition(book)} onPrintTrim={changePrintTrim}
-                    onPrintAlignment={changePrintAlignment} onPrintTypography={changePrintTypography}
-                    onOpenPaperback={()=>{setPublishFormat("print");setMode("publish");}}
-                    book={book} selectedId={chapterId} onSelectSection={setChapterId} onSectionAction={updateStructure}
-                    onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}/>
-                </section>:null}
+              {mode==="manuscript"&&inspectorTab==="formatting"&&previewVisible ? <div className="editor-work-panels controls-hidden">
                 <aside className="editor-live-proof" aria-label="Live formatted book preview">
                   {designPreview==="print"?<div className="unified-preview-toolbar">{previewFormatControl}</div>:null}
                   {designPreview==="ebook" ? <EbookPreview formatControl={previewFormatControl} hidden={false} book={book} chapter={previewChapter} chapterId={chapterId} edition={getEbookEdition(book)} onNavigate={setChapterId} updating={previewChapter!==chapter}/> :
