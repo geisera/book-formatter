@@ -197,7 +197,7 @@ export default function EbookPreview({
     "--paragraph-spacing": `${edition.paragraphSpacing}em`,
     "--chapter-space": `${edition.chapterSpacing}em`,
     "--front-heading-scale": edition.frontMatterTitleScale??1,
-    width: `${width}px`,
+    width: width === "fit" ? "100%" : `${width}px`,
   } as CSSProperties;
   return (
     <section
@@ -223,6 +223,7 @@ export default function EbookPreview({
             value={width}
             onChange={(e) => setWidth(e.target.value)}
           >
+            <option value="fit">Fit column</option>
             <option value="320">Phone · 320 px</option>
             <option value="420">Ereader · 420 px</option>
             <option value="600">Tablet · 600 px</option>
@@ -252,6 +253,8 @@ export default function EbookPreview({
           </button>
           <button
             aria-label="Reset preview text size (preview only)"
+            aria-live="polite"
+            title="Reset to 100%"
             onClick={() => setScale(1)}
           >
             {Math.round(scale * 100)}%
@@ -272,7 +275,7 @@ export default function EbookPreview({
         <button type="button" aria-pressed={showCover} onClick={()=>setShowCover(true)}>Cover</button>
         <button type="button" aria-pressed={!showCover} onClick={()=>setShowCover(false)}>Chapter</button>
       </div> : null}
-      <div className={`reader-viewport paginated-reader theme-${theme}`} ref={viewport}
+      <div className={`reader-viewport paginated-reader theme-${theme}${width === "fit" ? " fit-column" : ""}`} ref={viewport}
         tabIndex={0} role="region" aria-label="Paginated ebook reader"
         onKeyDown={event => {
           if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;

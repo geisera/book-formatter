@@ -868,9 +868,10 @@ export default function Workspace() {
                     </button>
                     <button type="button" className={blockingIssues.length?"pipeline-readiness has-issues":"pipeline-readiness is-ready"}
                       aria-expanded={readinessOpen} aria-controls="export-readiness-list"
-                      title={blockingIssues.length?`${blockingIssues.length} export issue${blockingIssues.length===1?"":"s"} · View export checks`:"Ready to export · View export checks"}
+                      aria-label={blockingIssues.length?"Not ready to export":"Ready to export"}
+                      title={blockingIssues.length?"Not ready to export":"Ready to export"}
                       onClick={()=>setReadinessOpen(v=>!v)}>
-                      <span className="sr-only">{blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}</span><span aria-hidden="true">●</span>
+                      <span className="sr-only">{blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}</span><span className="export-status-dot" aria-hidden="true" />
                     </button>
                   </li>
                 </ol>:null}
