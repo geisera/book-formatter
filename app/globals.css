@@ -2694,3 +2694,27 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .workspace-body.layout-format .editor-work-panels.controls-hidden{grid-template-columns:minmax(0,1fr)}
 .workspace-body.layout-format .editor-work-panels.controls-hidden .editor-live-proof{grid-column:1;grid-row:1}
 @media(max-width:680px){.workspace-body.mode-manuscript .editor-shared-toolbar{flex-wrap:wrap}}
+
+/* Reflowable, one-screen-at-a-time ebook pagination. */
+.preview-panel .reader-viewport.paginated-reader{
+  overflow:hidden;scrollbar-gutter:auto;display:flex;justify-content:center;
+  height:650px;max-height:75vh;min-height:380px;touch-action:pan-y;
+}
+.preview-panel .paginated-reader .paginated-ebook-page{
+  flex-shrink:1;min-width:0;min-height:0;height:100%;margin:0;
+  padding:24px;overflow:hidden;
+}
+.ebook-pagination-window{height:100%;width:100%;overflow:hidden}
+.ebook-page-flow{
+  height:100%;width:100%;column-count:auto;column-gap:40px;column-fill:auto;
+}
+.ebook-page-flow p{orphans:2;widows:2}
+.ebook-page-flow h2,.ebook-page-flow h3{break-after:avoid}
+.ebook-page-flow .ebook-chapter-header,.ebook-page-flow .ebook-scene,
+.ebook-page-flow figure{break-inside:avoid}
+.ebook-page-flow .ebook-illustration img{max-height:420px;max-height:min(420px,45vh);object-fit:contain}
+.ebook-page-flow.showing-cover{columns:auto}
+.ebook-page-flow .ebook-cover-preview{height:100%;min-height:0}
+.ebook-page-flow .ebook-cover-preview img{max-height:100%;max-width:100%}
+.paginated-reader:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.preview-footer [role=status]{font-size:11px;text-align:center}
