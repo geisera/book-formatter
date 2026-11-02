@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Book } from "../lib/model";
+import {embeddedImages} from "../lib/images";
 import { preflight, snapshotChecksum } from "../lib/epub";
 import type { PrintRecord, PrintResult } from "../lib/print";
 import PdfProofViewer from "./PdfProofViewer";
@@ -41,6 +42,7 @@ export default function PrintPanel({
   const authorIssues = authorPrintIssues(preflightReport);
   const internalFailure = result ? printHasInternalFailure(preflightReport) : false;
   const profile = getPrintEdition(book);
+  const hasFullBleed=book.chapters.some(section=>embeddedImages(section.content).some(image=>image.printPlacement==="full-bleed"));
   const trimLabel=PRINT_TRIMS[profile.trim].label;
   const trimSize=PRINT_TRIMS[profile.trim];
   const templateLabel = profile.template.id[0].toUpperCase() + profile.template.id.slice(1);
@@ -128,7 +130,7 @@ export default function PrintPanel({
             Choose your paperback format, review the page layout, and export a print interior PDF.
           </p>
         </div>
-        <span className="format-stamp">{trimLabel} · NO BLEED</span>
+        <span className="format-stamp">{trimLabel} · {hasFullBleed?"⅛ IN BLEED":"NO BLEED"}</span>
       </div>
       <div className="print-settings">
         <div className="print-settings-main">
