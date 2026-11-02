@@ -1,4 +1,4 @@
-# Book Formatter
+# BookStitcher
 
 Authenticated, local-first web book formatting application built with Next.js,
 React, TypeScript, direct ProseMirror and Dexie/IndexedDB. **Users must sign in
@@ -8,7 +8,7 @@ cloud synchronization or server-side PDF/EPUB rendering.
 
 ## Product access and data model
 
-**Product decision (October 31, 2026):** Book Formatter is a web application
+**Product decision (October 31, 2026):** BookStitcher is a web application
 requiring authenticated accounts for all authoring, formatting, preview and
 export workflows. Public marketing, sign-in, registration and recovery pages may
 remain accessible without a session.
@@ -122,7 +122,7 @@ All eight types can be added or assigned to existing sections without modifying
 their text. Each has an explanatory description and a "Use this when" hint.
 They appear in EPUB navigation and PDF export using the selected edition's
 typography and section page layout. Bibliography, Glossary, and Endnotes are
-manual reference-content sections: Book Formatter does not yet generate citations,
+manual reference-content sections: BookStitcher does not yet generate citations,
 glossary entries, or automatically linked note numbers. Parts remain decorative
 section boundaries rather than hierarchical chapter containers.
 
