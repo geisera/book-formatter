@@ -2689,3 +2689,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .book-details-panel .book-details-fields{gap:20px}
 @media(max-width:900px){.workspace-modes{gap:12px}.workspace-modes .bs-context-nav{width:100%;padding:8px 0 0;border-left:0;border-top:1px solid #e1e7df;flex-wrap:wrap}}
 @media(max-width:580px){.workspace-primary-modes.bs-workflow-navigation{flex-wrap:wrap}.bs-workflow-navigation .bs-workflow-tab{padding:10px 13px}.bs-workflow-navigation .bs-book-details-link{margin-left:0}}
+
+/* Allow the Preview to fill the workspace when format controls are hidden. */
+.workspace-body.layout-format .editor-work-panels.controls-hidden{grid-template-columns:minmax(0,1fr)}
+.workspace-body.layout-format .editor-work-panels.controls-hidden .editor-live-proof{grid-column:1;grid-row:1}
+@media(max-width:680px){.workspace-body.mode-manuscript .editor-shared-toolbar{flex-wrap:wrap}}
