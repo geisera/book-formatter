@@ -609,15 +609,10 @@ export default function Workspace() {
         <div className="topbar-actions">
           <Link className="help-top-link" href="/help/" aria-label="Open help and documentation">Help &amp; Docs</Link>
           <button type="button" onClick={async()=>{await fetch("/api/auth/sign-out",{method:"POST"});window.location.replace("/auth/");}}>Sign out</button>
-          <div className="connection">
-            {offline ? "● Offline" : "● Local workspace"}
-            <span>
-              {!offlineSupported
-                ? "Offline installation requires HTTPS"
-                : installed
-                  ? "Offline app ready"
-                  : "Preparing offline app…"}
-            </span>
+          <div className={`connection offline-readiness-badge${installed?" is-ready":""}`}
+            title={offline?"Offline · Manuscripts are stored on this device.":!offlineSupported?"Local workspace · Offline installation requires HTTPS.":installed?"Local workspace · Offline app ready. Manuscripts are stored on this device.":"Local workspace · Preparing offline app…"}>
+            <span className="offline-readiness-dot" aria-hidden="true">●</span>
+            {installed?"Offline ready":offline?"Offline":!offlineSupported?"Local workspace":"Preparing offline…"}
           </div>
         </div>
       </header>
@@ -764,6 +759,7 @@ export default function Workspace() {
         <main className={`workspace${mobileDrawerOpen?" mobile-drawer-open":""}`}>
           {mobileDrawerOpen?<button type="button" className="mobile-drawer-scrim" aria-label="Close manuscript drawer" onClick={()=>setMobileDrawerOpen(false)}/>:null}
           <aside id="mobile-manuscript-drawer" aria-label="Manuscript sections">
+            <div className="sidebar-header">
             <button className="text-button bookshelf-back-link" onClick={dashboard}>
               ← Bookshelf
             </button>
@@ -775,6 +771,7 @@ export default function Workspace() {
                 setMode("manuscript");setInspectorTab("preview");
               }}>+ Add chapter</button>
               <button type="button" className="organize-sections" onClick={()=>setMode("structure")}>Organize…</button>
+            </div>
             </div>
             <div className="section-navigator" aria-label="Book sections">
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
@@ -795,18 +792,14 @@ export default function Workspace() {
                 </div>:null}</div>)}{draggingSection&&dropTarget?.group===group&&!dropTarget.before?<div className="sidebar-drop-end" aria-label="Drop section at end of group">Drop here · end of {group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</div>:null}</div>
               </details>)}
             </div>
+            <details className="project-files">
+              <summary>Project files</summary>
+              <div className="project-files-content">
             <small className="backup-time sidebar-backup-time">{backupLabel(book.id)}</small>
             <div className="aside-bottom">
-              <button onClick={() => {setPublishFormat("print");setMode("publish");}}>Print PDF proof</button>
-              <button
-                className="export-link"
-                onClick={() => {setPublishFormat("ebook");setMode("publish");}}
-              >
-                Export EPUB
-              </button>
               {book.importInfo ? (
                 <>
-                  <button onClick={original}>↓ Download original</button>
+                  <button onClick={original}>Download original</button>
                   <details className="saved-import-report">
                     <summary>Import report</summary>
                     <p>{book.importInfo.filename}</p>
@@ -822,11 +815,11 @@ export default function Workspace() {
                   </details>
                 </>
               ) : null}
-              <button onClick={backup}>↓ Download backup</button>
+              <button onClick={backup}>Download backup</button>
               <div className="folder-backup-controls">
-                <strong>Automatic folder backups</strong>
-                <p>Optional. Saves timestamped project backups to a folder you choose while this app is open. Never uploads files.</p>
-                {folderBackup==="unsupported"?<small>Not supported in this browser. Manual backup remains available.</small>:folderBackup==="off"?<button type="button" onClick={()=>void enableFolderBackups()}>Choose backup folder</button>:<>
+                <p className="project-backup-note">Backups save to this device. <span tabIndex={0} aria-label="About project backups"
+                  title="Optional timestamped folder backups run while this app is open and never upload files. Not supported in this browser; manual backup remains available. Keep an independent backup.">ⓘ</span></p>
+                {folderBackup==="unsupported"?null:folderBackup==="off"?<button type="button" onClick={()=>void enableFolderBackups()}>Choose backup folder</button>:<>
                   <small>{folderBackup==="ready"?"Folder connected":"Folder permission required"}</small>
                   <button type="button" onClick={()=>void enableFolderBackups()}>{folderBackup==="ready"?"Change folder":"Reconnect folder"}</button>
                   {folderBackup==="ready"?<button type="button" onClick={()=>void folderBackupNow(true)}>Back up now</button>:null}
@@ -834,12 +827,9 @@ export default function Workspace() {
                 </>}
                 {folderMessage?<small role="status">{folderMessage}</small>:null}
               </div>
-              <p>
-                Stored on this device.
-                <br />
-                Keep an independent backup.
-              </p>
             </div>
+              </div>
+            </details>
           </aside>
           <div className="workspace-content">
             <div className="mobile-workspace-header">
@@ -878,8 +868,9 @@ export default function Workspace() {
                     </button>
                     <button type="button" className={blockingIssues.length?"pipeline-readiness has-issues":"pipeline-readiness is-ready"}
                       aria-expanded={readinessOpen} aria-controls="export-readiness-list"
+                      title={blockingIssues.length?`${blockingIssues.length} export issue${blockingIssues.length===1?"":"s"} · View export checks`:"Ready to export · View export checks"}
                       onClick={()=>setReadinessOpen(v=>!v)}>
-                      {blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}
+                      <span className="sr-only">{blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}</span><span aria-hidden="true">●</span>
                     </button>
                   </li>
                 </ol>:null}
