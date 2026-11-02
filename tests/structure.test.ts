@@ -1,8 +1,24 @@
 import { describe, it, expect } from "vitest";
 import { createBook, blankChapter, validateBook, showSectionTitle, defaultShowSectionTitle, getSectionLayout } from "../lib/model";
-import { changeStructure, orderedSections, sectionGroups } from "../lib/structure";
+import { changeStructure, orderedSections, sectionGroups, divisionHierarchy } from "../lib/structure";
 import { backupBook, restoreBook } from "../lib/backup";
 describe("book structure editor", () => {
+  it("organizes volumes, parts and chapters without breaking older backups", () => {
+    let book=createBook("Collected Works","Author");
+    book=changeStructure(book,{kind:"add",sectionType:"volume",title:"Volume I",before:book.chapters[0].id}).book;
+    const volume=book.chapters.find(c=>c.sectionType==="volume")!;
+    book=changeStructure(book,{kind:"add",sectionType:"part",title:"Part One",after:volume.id}).book;
+    const part=book.chapters.find(c=>c.sectionType==="part")!;
+    const hierarchy=divisionHierarchy(book);
+    expect(hierarchy.get(part.id)).toEqual({volumeId:volume.id,depth:1});
+    const chapter=book.chapters.find(c=>c.sectionType===undefined)!;
+    expect(hierarchy.get(chapter.id)).toEqual({volumeId:volume.id,partId:part.id,depth:2});
+    const restored=restoreBook(backupBook(book));
+    expect(restored.chapters.map(c=>c.sectionType)).toContain("volume");
+    expect(divisionHierarchy(restored).get(restored.chapters.find(c=>c.sectionType==="part")!.id)?.depth).toBe(1);
+    expect(validateBook(restored).title).toBe("Collected Works");
+  });
+
   it("reorders and renames by stable identity without changing manuscript text", () => {
     let book = createBook("Title", "Author");
     book.chapters = [blankChapter("One"), blankChapter("Two"), blankChapter("Three")];
