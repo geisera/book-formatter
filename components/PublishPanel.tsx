@@ -409,7 +409,7 @@ export default function PublishPanel({
             <div className="validation-note">
               <strong>About validation</strong>
               <p>
-                Every time you select <strong>Generate &amp; validate EPUB</strong>, Book Formatter builds the EPUB and automatically runs EPUBCheck locally in your browser. Files that pass validation download automatically. If EPUBCheck finds errors or cannot complete, the EPUB is kept for troubleshooting and is not labeled as validated.
+                Every time you select <strong>Generate &amp; validate EPUB</strong>, BookStitcher builds the EPUB and automatically runs EPUBCheck locally in your browser. Files that pass validation download automatically. If EPUBCheck finds errors or cannot complete, the EPUB is kept for troubleshooting and is not labeled as validated.
               </p>
               <p>
                 Results and detailed findings are saved in <strong>Export history</strong>. No book content is uploaded.
