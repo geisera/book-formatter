@@ -46,7 +46,7 @@ export default function AuthPage(){
       <h1 id="auth-title">{mode==="sign-in"?"Sign in":mode==="sign-up"?"Create account":mode==="magic-link"?"Email sign-in link":"Reset password"}</h1>
       <p>Account authentication is separate from manuscript storage. Your books remain local to this browser.</p>
       {mode==="magic-link"?<p className="auth-confirm-note">Enter the email address of an existing account. We’ll send a one-time sign-in link; no password required. Open the link to complete sign-in on the device where you want to work.</p>:null}
-      {mode==="sign-up"?<p className="auth-confirm-note"><strong>Email confirmation required.</strong> After registering, check your inbox and click the verification link from Book Formatter before attempting to sign in.</p>:null}
+      {mode==="sign-up"?<p className="auth-confirm-note"><strong>Email confirmation required.</strong> After registering, check your inbox and click the verification link from BookStitcher before attempting to sign in.</p>:null}
       {!configured?<p role="alert" className="alert">Authentication is awaiting Supabase project configuration.</p>:null}
       {error?<p role="alert" className="alert">{error}</p>:null}
       {message?<p role="status">{message}</p>:null}
@@ -61,7 +61,7 @@ export default function AuthPage(){
         <button type="button" onClick={()=>{setMode("magic-link");setError("");setMessage("");}}>Sign in without password</button>
         <button type="button" onClick={()=>{setMode("reset");setError("");setMessage("");}}>Forgot password?</button>
       </div>
-      <a href="/">Back to Book Formatter home</a>
+      <a href="/">Back to BookStitcher home</a>
     </section>
   </main>;
 }
