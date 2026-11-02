@@ -17,6 +17,23 @@ export type StructureAction =
   | { kind: "split"; id: string; blockIndex: number; title: string }
   | { kind: "merge"; id: string };
 
+/** Hierarchy is derived from ordered division headings, preserving existing flat-book backups.
+ * A volume owns all following body sections until the next volume; a part owns
+ * following sections until the next part or volume. Historical books without
+ * volume headings remain valid. */
+export function divisionHierarchy(book: Book): Map<string,{volumeId?:string;partId?:string;depth:number}> {
+ const result=new Map<string,{volumeId?:string;partId?:string;depth:number}>();
+ let volumeId:string|undefined,partId:string|undefined;
+ for(const section of orderedSections(book)){
+  const matter=sectionMatter(section.sectionType??"chapter");
+  if(matter!=="body"){result.set(section.id,{depth:0});continue;}
+  if(section.sectionType==="volume"){volumeId=section.id;partId=undefined;result.set(section.id,{depth:0});continue;}
+  if(section.sectionType==="part"){partId=section.id;result.set(section.id,{volumeId,depth:volumeId?1:0});continue;}
+  result.set(section.id,{volumeId,partId,depth:(volumeId?1:0)+(partId?1:0)});
+ }
+ return result;
+}
+
 /** The displayed sequence is also the stored/export sequence: front, body, then back. */
 export function orderedSections(book: Book): Chapter[] {
   const sections = book.chapters;
