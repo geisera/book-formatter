@@ -96,6 +96,8 @@ export async function buildPrintPdf(
     const source = decodeImage(image.src);
     embedded.set(image.src, source.mediaType === "image/png" ? await pdf.embedPng(source.bytes) : await pdf.embedJpg(source.bytes));
   }
+  const HAS_BLEED = book.chapters.some(section=>embeddedImages(section.content).some(image=>image.printPlacement==="full-bleed"));
+  const BLEED = HAS_BLEED ? 9 : 0; // 0.125 inch per edge, in PDF points.
   const WIDTH = PRINT_TRIMS[profile.trim].width,
     HEIGHT = PRINT_TRIMS[profile.trim].height,
     contentWidth = WIDTH - profile.inside - profile.outside,
@@ -483,6 +485,7 @@ export async function buildPrintPdf(
     let estimated = showSectionTitle(chapter) ? (visibleOpeningTitle?110:55) : 0;
     doc.forEach(node => {
       if (node.type.name === "image") {
+        if(node.attrs.printPlacement==="full-bleed"){ estimated+=HEIGHT; return; }
         const asset = embedded.get(node.attrs.src)!;
         estimated += Math.min(350, contentWidth * node.attrs.width / 100 * asset.height / asset.width) + 22 + (node.attrs.caption ? 40 : 0);
       } else if (node.type.name === "scene_break") estimated += leading * 4;
@@ -545,6 +548,20 @@ export async function buildPrintPdf(
       if (node.type.name === "image") {
         const asset = embedded.get(node.attrs.src);
         if (!asset) throw Error("Embedded print image could not be loaded.");
+        if(node.attrs.printPlacement==="full-bleed"){
+          // Full bleed occupies its own page; cover-crop around the centre.
+          // Additional media area is added consistently to every page below.
+          bodyPage();
+          const targetWidth=WIDTH+2*BLEED,targetHeight=HEIGHT+2*BLEED;
+          const scale=Math.max(targetWidth/asset.width,targetHeight/asset.height);
+          const drawWidth=asset.width*scale,drawHeight=asset.height*scale;
+          page.drawImage(asset,{x:-BLEED+(targetWidth-drawWidth)/2,y:-BLEED+(targetHeight-drawHeight)/2,width:drawWidth,height:drawHeight});
+          proof.lineCount=1;
+          proof.minX=0;proof.maxX=WIDTH;proof.minY=0;proof.maxY=HEIGHT;
+          bodyPage();
+          opening=false;
+          return;
+        }
         const maxWidth = contentWidth * node.attrs.width / 100;
         const maxHeight = HEIGHT - profile.top - profile.bottom - 120;
         const scale = Math.min(maxWidth / asset.width, maxHeight / asset.height);
@@ -873,6 +890,17 @@ export async function buildPrintPdf(
   if (!Number.isFinite(created.getTime()))
     throw Error("Invalid print build timestamp.");
   const inputChecksum = snapshotChecksum(book);
+  if(HAS_BLEED){
+    // Use uniform media, trim and bleed boxes for the complete print interior.
+    for(const sheet of pdf.getPages()){
+      sheet.translateContent(BLEED,BLEED);
+      sheet.setSize(WIDTH+2*BLEED,HEIGHT+2*BLEED);
+      sheet.setMediaBox(0,0,WIDTH+2*BLEED,HEIGHT+2*BLEED);
+      sheet.setTrimBox(BLEED,BLEED,WIDTH,HEIGHT);
+      sheet.setBleedBox(0,0,WIDTH+2*BLEED,HEIGHT+2*BLEED);
+    }
+    warnings.add("Full-bleed images are center-cropped to fill dedicated pages with 0.125 inch bleed on all sides. Verify print-vendor interior specifications and inspect a physical proof.");
+  }
   pdf.setTitle(book.metadata?.subtitle ? `${book.title}: ${book.metadata.subtitle}` : book.title);
   pdf.setAuthor(book.author);
   if (book.metadata?.description) pdf.setSubject(book.metadata.description);
@@ -882,7 +910,7 @@ export async function buildPrintPdf(
   pdf.setModificationDate(created);
   pdf.setLanguage(book.language ?? "en");
   pdf.setKeywords([
-    `${profile.template.id} ${profile.trim} no bleed`,
+    `${profile.template.id} ${profile.trim} ${HAS_BLEED?"0.125 inch bleed":"no bleed"}`,
     `revision:${book.revision}`,
     `snapshot:${inputChecksum}`,
     ...(book.metadata?.isbn ? [`isbn:${normalizedIsbn(book.metadata.isbn)}`] : []),
