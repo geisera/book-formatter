@@ -4,11 +4,11 @@ import {createPortal} from "react-dom";
 import {MAX_IMAGE_BYTES,type ImageAlign,type ImageWidth} from "../lib/images";
 
 export type ImageProperties = {
- src:string; alt:string; caption:string; width:ImageWidth; align:ImageAlign;
+ src:string; alt:string; caption:string; width:ImageWidth; align:ImageAlign; printPlacement?:"inline"|"full-bleed";
 };
 export function ImagePropertiesPanel({image,onSave,onReplace,onRemove,onClose}:{
  image:ImageProperties;
- onSave:(changes:Pick<ImageProperties,"alt"|"caption"|"width"|"align">)=>void;
+ onSave:(changes:Pick<ImageProperties,"alt"|"caption"|"width"|"align"|"printPlacement">)=>void;
  onReplace:(file:File)=>Promise<void>;
  onRemove:()=>void;
  onClose:()=>void;
@@ -17,17 +17,18 @@ export function ImagePropertiesPanel({image,onSave,onReplace,onRemove,onClose}:{
  const [caption,setCaption]=useState(image.caption);
  const [width,setWidth]=useState<ImageWidth>(image.width);
  const [align,setAlign]=useState<ImageAlign>(image.align);
+ const [printPlacement,setPrintPlacement]=useState(image.printPlacement??"inline");
  const [error,setError]=useState("");
  const [busy,setBusy]=useState(false);
  const fileRef=useRef<HTMLInputElement>(null);
  const [mounted,setMounted]=useState(false);
  useEffect(()=>{setMounted(true);return()=>setMounted(false);},[]);
  useEffect(()=>{const key=(event:KeyboardEvent)=>{if(event.key==="Escape"){event.preventDefault();onClose();}};document.addEventListener("keydown",key);return()=>document.removeEventListener("keydown",key);},[onClose]);
- useEffect(()=>{setAlt(image.alt);setCaption(image.caption);setWidth(image.width);setAlign(image.align);setError("");},[image.src,image.alt,image.caption,image.width,image.align]);
- const dirty=alt!==image.alt || caption!==image.caption || width!==image.width || align!==image.align;
+ useEffect(()=>{setAlt(image.alt);setCaption(image.caption);setWidth(image.width);setAlign(image.align);setPrintPlacement(image.printPlacement??"inline");setError("");},[image.src,image.alt,image.caption,image.width,image.align]);
+ const dirty=alt!==image.alt || caption!==image.caption || width!==image.width || align!==image.align || printPlacement!==(image.printPlacement??"inline");
  function save(){
   if(!alt.trim()){setError("Alternative text is required.");return;}
-  onSave({alt:alt.trim().slice(0,500),caption:caption.slice(0,1000),width,align});
+  onSave({alt:alt.trim().slice(0,500),caption:caption.slice(0,1000),width,align,printPlacement});
   setError("");
  }
  async function replace(file?:File){
@@ -61,6 +62,11 @@ export function ImagePropertiesPanel({image,onSave,onReplace,onRemove,onClose}:{
       <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
      </select>
     </label>
+    <label className="image-properties-wide">Print placement
+      <select aria-label="Print placement" value={printPlacement} onChange={e=>setPrintPlacement(e.target.value as "inline"|"full-bleed")}>
+        <option value="inline">Inline within margins</option><option value="full-bleed">Full bleed — dedicated print page</option>
+      </select>
+    </label>
     <label className="image-properties-wide">Alternative text
      <input aria-label="Image alternative text" required maxLength={500} value={alt} onChange={e=>setAlt(e.target.value)} />
     </label>
@@ -76,6 +82,6 @@ export function ImagePropertiesPanel({image,onSave,onReplace,onRemove,onClose}:{
    <button type="button" disabled={busy} onClick={()=>fileRef.current?.click()}>{busy?"Replacing…":"Replace image"}</button>
    <button type="button" className="image-properties-remove" disabled={busy} onClick={onRemove}>Remove image</button>
   </div>
-  <p className="image-properties-hint">Replacing an image keeps its position, alignment, size, alternative text, and caption. Image files remain local.</p>
+  <p className="image-properties-hint">Replacing an image keeps its position, alignment, size, alternative text, and caption. Full-bleed images occupy a dedicated print page and crop to fill. Captions are not printed on full-bleed pages. Image files remain local.</p>
  </section>,document.body);
 }
