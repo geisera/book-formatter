@@ -6,7 +6,7 @@ import { orderedSections, sectionGroups, type StructureAction } from "../lib/str
 
 const labels: Record<SectionType, string> = {
   chapter: "Chapter", prologue: "Prologue", epilogue: "Epilogue", interlude: "Interlude",
-  part: "Part", "half-title": "Half title", title: "Title page", copyright: "Copyright",
+  volume: "Volume", part: "Part", "half-title": "Half title", title: "Title page", copyright: "Copyright",
   dedication: "Dedication", epigraph: "Epigraph", toc: "Table of contents", preface: "Preface",
   "about-author": "About the Author", "also-by": "Also By", notes: "Notes",
   acknowledgments: "Acknowledgments", foreword: "Foreword", introduction: "Introduction",
@@ -19,7 +19,8 @@ const sectionDescriptions: Record<SectionType, string> = {
   prologue: "An opening scene or introduction that precedes the main chapters.",
   epilogue: "A closing scene or reflection following the main story.",
   interlude: "A brief passage between chapters, often from another viewpoint or time.",
-  part: "A major division grouping multiple chapters, with a prominent opening page.",
+  volume: "A book-level division containing parts and chapters, with its own opening page.",
+  part: "A division within a volume or book that groups chapters, with a prominent opening page.",
   "half-title": "A simple preliminary page displaying only the book title.",
   title: "A formal title page for the book title, subtitle, author, and publisher.",
   copyright: "Publication rights and edition details, such as copyright notices and ISBN.",
@@ -46,6 +47,7 @@ const sectionUseCases: Record<SectionType, string> = {
   prologue: "Use this when readers need a scene or event before Chapter One to establish context, tension, or backstory.",
   epilogue: "Use this when you want to show the aftermath of the ending or offer a final glimpse of the characters.",
   interlude: "Use this when you want to briefly interrupt the chapter sequence with a different perspective, place, or time.",
+  volume: "Use this for a multi-volume work. All subsequent parts and chapters belong to this volume until the next volume.",
   part: "Use this when your book has major acts or divisions containing multiple chapters.",
   "half-title": "Use this when you want a minimalist book-title page before the formal title page, especially in print.",
   title: "Use this when you want a dedicated, fully formatted title page instead of the automatically generated one.",
