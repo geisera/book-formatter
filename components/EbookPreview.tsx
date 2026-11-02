@@ -106,6 +106,7 @@ export default function EbookPreview({
   onNavigate,
   updating,
   hidden,
+  formatControl,
 }: {
   book: Book;
   chapter: Chapter | undefined;
@@ -114,6 +115,7 @@ export default function EbookPreview({
   onNavigate: (id: string) => void;
   updating: boolean;
   hidden?: boolean;
+  formatControl?: ReactNode;
 }) {
   const [showCover,setShowCover] = useState(false);
   const [width, setWidth] = useState("420"),
@@ -212,7 +214,8 @@ export default function EbookPreview({
           {updating ? "Updating…" : "● Live"}
         </span>
       </div>
-      <div className="reader-controls preview-simulator-toolbar" aria-label="Preview simulator controls">
+      <div className="unified-preview-toolbar" aria-label="Preview simulator controls">
+        {formatControl}
         <label>
           Reading width
           <select
@@ -234,26 +237,6 @@ export default function EbookPreview({
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
-          </select>
-        </label>
-      </div>
-      {book.cover ? <div className="cover-preview-toggle" role="group" aria-label="Preview page">
-        <button type="button" aria-pressed={showCover} onClick={()=>setShowCover(true)}>Cover</button>
-        <button type="button" aria-pressed={!showCover} onClick={()=>setShowCover(false)}>Chapter</button>
-      </div> : null}
-      <div className="reader-navigation">
-        <label className="preview-chapter-label">
-          <span className="sr-only">Preview chapter</span>
-          <select
-            aria-label="Preview chapter"
-            value={chapterId}
-            onChange={(e) => {setShowCover(false);onNavigate(e.target.value);}}
-          >
-            {book.chapters.map((c, i) => (
-              <option key={c.id} value={c.id}>
-                {i + 1}. {c.title}
-              </option>
-            ))}
           </select>
         </label>
         <div className="reader-zoom" title="Preview only — text size does not change the exported edition">
@@ -283,6 +266,10 @@ export default function EbookPreview({
           </button>
         </div>
       </div>
+      {book.cover ? <div className="cover-preview-toggle" role="group" aria-label="Preview page">
+        <button type="button" aria-pressed={showCover} onClick={()=>setShowCover(true)}>Cover</button>
+        <button type="button" aria-pressed={!showCover} onClick={()=>setShowCover(false)}>Chapter</button>
+      </div> : null}
       <div className={`reader-viewport paginated-reader theme-${theme}`} ref={viewport}
         tabIndex={0} role="region" aria-label="Paginated ebook reader"
         onKeyDown={event => {
@@ -346,6 +333,21 @@ export default function EbookPreview({
         </article>
       </div>
       <div className="preview-footer">
+        <label className="preview-chapter-label">
+          <span className="sr-only">Preview chapter</span>
+          <select
+            aria-label="Preview chapter"
+            value={chapterId}
+            onChange={(e) => {setShowCover(false);onNavigate(e.target.value);}}
+          >
+            {book.chapters.map((c, i) => (
+              <option key={c.id} value={c.id}>
+                {i + 1}. {c.title}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <button
           disabled={previousDisabled}
           onClick={() => turnPage(-1)}
@@ -363,12 +365,9 @@ export default function EbookPreview({
         >
           Next →
         </button>
+        <button type="button" className="preview-info" aria-label="About ebook pagination"
+          title="Use page buttons, arrow keys, or swipe. Pages reflow with screen size and typography; preview controls do not change the exported book.">ⓘ</button>
       </div>
-      <p className="preview-note">
-        Paginated ebook preview · use the arrows or swipe to turn pages.
-        <br />
-        Pages reflow with screen size and typography. Reader controls affect this preview only.
-      </p>
     </section>
   );
 }
