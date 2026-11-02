@@ -239,6 +239,7 @@ export default function EbookPreview({
             <option value="dark">Dark</option>
           </select>
         </label>
+        <div className="text-size-control"><span>Text size</span>
         <div className="reader-zoom" title="Preview only — text size does not change the exported edition">
           <button
             aria-label="Decrease preview text size"
@@ -264,6 +265,7 @@ export default function EbookPreview({
           >
             A+
           </button>
+        </div>
         </div>
       </div>
       {book.cover ? <div className="cover-preview-toggle" role="group" aria-label="Preview page">
@@ -365,8 +367,7 @@ export default function EbookPreview({
         >
           Next →
         </button>
-        <button type="button" className="preview-info" aria-label="About ebook pagination"
-          title="Use page buttons, arrow keys, or swipe. Pages reflow with screen size and typography; preview controls do not change the exported book.">ⓘ</button>
+
       </div>
     </section>
   );
