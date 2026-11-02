@@ -1,5 +1,6 @@
 "use client";
 import {useState} from "react";
+import Link from "next/link";
 import { presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
 import {getSectionLayout,sectionHeadingScale,defaultSectionLayout,getSectionTypographyOverrides,showSectionTitle,sectionMatter,type Book,type SectionPageLayout,type SectionType,type SectionStyle} from "../lib/model";
 import type {StructureAction} from "../lib/structure";
@@ -66,7 +67,10 @@ export default function DesignPanel({
       hidden={hidden}
     >
       <div className="eyebrow">BOOK DESIGN</div>
-      <h2>Appearance</h2>
+      <div className="appearance-panel-header">
+        <h2>Appearance</h2>
+        <Link href="/help/#design" target="_blank" rel="noopener noreferrer" aria-label="Help with book design">Help ↗</Link>
+      </div>
       <p className="design-intro">Choose a style and refine the {format==="ebook"?"ebook":"paperback"} edition. Your manuscript stays unchanged.</p>
       <div className="template-options design-template-first" role="group" aria-label="Book design template">
         {(["classic","modern","gothic"] as EditionTemplate[]).map(id=><button type="button" key={id}

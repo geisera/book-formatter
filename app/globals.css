@@ -2718,3 +2718,46 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .ebook-page-flow .ebook-cover-preview img{max-height:100%;max-width:100%}
 .paginated-reader:focus-visible{outline:2px solid var(--green);outline-offset:3px}
 .preview-footer [role=status]{font-size:11px;text-align:center}
+
+/* One mode control, with Design → Export progression and persistent save state. */
+.workspace-modes.workspace-toolbar{gap:10px 16px;padding:12px 20px;justify-content:flex-start}
+.workspace-toolbar .workspace-primary-modes.bs-workflow-navigation{
+  display:inline-flex!important;width:auto;gap:3px;padding:3px;border:1px solid #cbd7cf;
+  border-radius:8px;background:#edf2ed;flex-wrap:nowrap;
+}
+.workspace-toolbar .workspace-primary-modes .bs-workflow-tab{min-height:36px;padding:8px 16px;font-size:13px}
+.workspace-toolbar .workspace-structure-link,.workspace-toolbar .workspace-details-link,
+.workspace-toolbar .format-controls-toggle{
+  min-height:36px;padding:8px 10px;font-size:12px;border:0;background:transparent;color:#50675b;
+}
+.workspace-toolbar .format-controls-toggle{border:1px solid #cbd7cf;border-radius:6px;background:#fff}
+.workspace-pipeline{list-style:none;display:flex;align-items:center;gap:10px;margin:0;padding:0}
+.workspace-pipeline li{display:flex;align-items:center;gap:7px}
+.workspace-toolbar .pipeline-step{display:flex;align-items:center;gap:6px;padding:7px 5px;border:0;background:transparent;font-size:13px;color:#607469}
+.workspace-toolbar .pipeline-step[aria-current="step"]{color:#214f3d;font-weight:700}
+.pipeline-number{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:50%;border:1px solid #b8c8be;font-size:11px}
+.pipeline-step[aria-current="step"] .pipeline-number{background:#244c40;color:white;border-color:#244c40}
+.pipeline-arrow{color:#8a9d90}
+.workspace-toolbar .pipeline-readiness{font-size:11px;padding:4px 7px;border:0;border-radius:4px;background:#eaf2e9;color:#3c6249}
+.workspace-toolbar .pipeline-readiness.has-issues{background:#fff0db;color:#89581c}
+.workspace-toolbar .workspace-save.save-indicator{
+  display:inline-flex;align-items:center;gap:6px;flex-shrink:0;width:auto;margin-left:auto;
+  padding:6px 0;font-size:12px;color:#587360;white-space:nowrap;
+}
+.workspace-toolbar .save-indicator>span:first-child{display:inline!important}
+.workspace-toolbar .save-indicator.failed{color:#a33b32}
+.appearance-panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.appearance-panel-header h2{margin-bottom:0}
+.appearance-panel-header a{font:12px/1.4 system-ui,sans-serif;color:#506c5a;white-space:nowrap}
+@media(max-width:900px){
+  .workspace-content .workspace-modes.workspace-toolbar{position:sticky;top:54px;z-index:65;background:#f9faf7}
+  .workspace-toolbar .workspace-pipeline{order:5;width:100%;border-top:1px solid #e0e7df;padding-top:8px}
+  .workspace-toolbar .workspace-primary-modes.bs-workflow-navigation{width:auto}
+  .workspace-toolbar .workspace-details-link{margin-left:0}
+  .workspace-content{padding-bottom:0}
+}
+@media(max-width:480px){
+  .workspace-modes.workspace-toolbar{gap:7px;padding:9px 12px}
+  .workspace-toolbar .workspace-primary-modes .bs-workflow-tab{padding:7px 10px}
+  .workspace-toolbar .format-controls-toggle{order:6}
+}
