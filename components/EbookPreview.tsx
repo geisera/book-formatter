@@ -6,6 +6,7 @@ import {sectionIsEmpty,sampleForSection} from "../lib/section-samples";
 import {
   memo,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -119,10 +120,73 @@ export default function EbookPreview({
     [theme, setTheme] = useState("light"),
     [scale, setScale] = useState(1);
   const viewport = useRef<HTMLDivElement>(null);
+  const pageWindow = useRef<HTMLDivElement>(null);
+  const pageFlow = useRef<HTMLDivElement>(null);
+  const previousChapterEnd = useRef<string | null>(null);
+  const swipeStart = useRef<{x:number;y:number} | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageCount, setPageCount] = useState(1);
+  const [pageWidth, setPageWidth] = useState(1);
   const index = book.chapters.findIndex((c) => c.id === chapterId);
   useEffect(() => {
-    if (viewport.current) viewport.current.scrollTop = 0;
-  }, [chapterId,showCover]);
+    setPage(0);
+  }, [chapterId, showCover]);
+  useLayoutEffect(() => {
+    const frame = pageWindow.current, flow = pageFlow.current;
+    if (!frame || !flow || hidden || updating || chapter?.id !== chapterId) return;
+    let active = true;
+    let request = 0;
+    const measure = () => {
+      if (!active || frame.clientWidth === 0) return;
+      const size = frame.clientWidth;
+      flow.style.columnWidth = `${size}px`;
+      const count = showCover ? 1 : Math.max(1, Math.round((flow.scrollWidth + 40) / (size + 40)));
+      setPageWidth(size);
+      setPageCount(count);
+      if (previousChapterEnd.current === chapterId) {
+        setPage(count - 1);
+        previousChapterEnd.current = null;
+      } else {
+        setPage(p => Math.min(p, count - 1));
+      }
+    };
+    const schedule = () => {
+      if (!active) return;
+      cancelAnimationFrame(request);
+      request = requestAnimationFrame(measure);
+    };
+    const observer = new ResizeObserver(schedule);
+    observer.observe(frame);
+    flow.addEventListener("load", schedule, true);
+    document.fonts.addEventListener("loadingdone", schedule);
+    void document.fonts.ready.then(schedule);
+    schedule();
+    return () => {
+      active = false;
+      cancelAnimationFrame(request);
+      observer.disconnect();
+      flow.removeEventListener("load", schedule, true);
+      document.fonts.removeEventListener("loadingdone", schedule);
+    };
+  }, [chapterId, chapter, book, edition, scale, width, showCover, hidden, updating]);
+
+  function turnPage(direction: -1 | 1) {
+    if (showCover) {
+      if (direction === 1) { setShowCover(false); setPage(0); }
+      return;
+    }
+    if (direction === 1 && page < pageCount - 1) { setPage(p => p + 1); return; }
+    if (direction === -1 && page > 0) { setPage(p => p - 1); return; }
+    const next = book.chapters[index + direction];
+    if (next) {
+      if (direction === -1) previousChapterEnd.current = next.id;
+      onNavigate(next.id);
+    } else if (direction === -1 && book.cover) {
+      setShowCover(true);
+    }
+  }
+  const previousDisabled = showCover || (page === 0 && index <= 0 && !book.cover);
+  const nextDisabled = !showCover && page >= pageCount - 1 && index >= book.chapters.length - 1;
   const style = {
     fontFamily: BODY_FONTS[edition.bodyFont],
     fontSize: `${edition.fontSize * scale}px`,
@@ -219,13 +283,28 @@ export default function EbookPreview({
           </button>
         </div>
       </div>
-      <div className={`reader-viewport theme-${theme}`} ref={viewport}>
+      <div className={`reader-viewport paginated-reader theme-${theme}`} ref={viewport}
+        tabIndex={0} role="region" aria-label="Paginated ebook reader"
+        onKeyDown={event => {
+          if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
+          if (event.key === "ArrowRight") { event.preventDefault(); turnPage(1); }
+          if (event.key === "ArrowLeft") { event.preventDefault(); turnPage(-1); }
+        }}
+        onTouchStart={event => { const touch = event.touches[0]; swipeStart.current = {x:touch.clientX,y:touch.clientY}; }}
+        onTouchEnd={event => {
+          const start = swipeStart.current, end = event.changedTouches[0];
+          swipeStart.current = null;
+          if (start && end && Math.abs(end.clientX-start.x)>50 && Math.abs(end.clientX-start.x)>Math.abs(end.clientY-start.y)*1.5) turnPage(end.clientX<start.x?1:-1);
+        }}>
         <article
-          className={`ebook-page heading-${edition.headingStyle} template-${edition.template.id} opening-${openingDesign(chapter?.sectionType??"chapter",edition.template.id).style}${chapter && sectionMatter(chapter.sectionType??"chapter")==="front"?" front-matter":""}`}
+          className={`ebook-page paginated-ebook-page heading-${edition.headingStyle} template-${edition.template.id} opening-${openingDesign(chapter?.sectionType??"chapter",edition.template.id).style}${chapter && sectionMatter(chapter.sectionType??"chapter")==="front"?" front-matter":""}`}
           style={style}
           aria-label="Formatted chapter"
           aria-busy={updating}
         >
+          <div className="ebook-pagination-window" ref={pageWindow}>
+          <div className={`ebook-page-flow${showCover?" showing-cover":""}`} ref={pageFlow}
+            style={{transform:`translateX(-${page * (pageWidth + 40)}px)`}}>
           {showCover && book.cover ? <div className="ebook-cover-preview">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={book.cover.src} alt={book.cover.alt}/>
@@ -264,31 +343,33 @@ export default function EbookPreview({
           ) : chapter ? (
             <ChapterContent chapter={chapter} ornament={edition.sceneOrnament} />
           ) : null}</>}
+          </div>
+          </div>
         </article>
       </div>
       <div className="preview-footer">
         <button
-          disabled={index <= 0}
-          onClick={() => onNavigate(book.chapters[index - 1].id)}
-          aria-label="Previous preview chapter"
+          disabled={previousDisabled}
+          onClick={() => turnPage(-1)}
+          aria-label="Previous preview page"
         >
           ← Previous
         </button>
-        <span>
-          {index + 1} / {book.chapters.length}
+        <span role="status" aria-live="polite">
+          {showCover ? "Cover" : `Page ${page + 1} of ${pageCount} · Section ${index + 1} of ${book.chapters.length}`}
         </span>
         <button
-          disabled={index >= book.chapters.length - 1}
-          onClick={() => onNavigate(book.chapters[index + 1].id)}
-          aria-label="Next preview chapter"
+          disabled={nextDisabled}
+          onClick={() => turnPage(1)}
+          aria-label="Next preview page"
         >
           Next →
         </button>
       </div>
       <p className="preview-note">
-        Reflowable preview · width adapts to available space.
+        Paginated ebook preview · use the arrows or swipe to turn pages.
         <br />
-        Reader controls affect this preview only. Print pagination is not shown.
+        Pages reflow with screen size and typography. Reader controls affect this preview only.
       </p>
     </section>
   );
