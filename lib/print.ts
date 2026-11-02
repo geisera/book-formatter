@@ -544,7 +544,12 @@ export async function buildPrintPdf(
       if(data.length) y-=12;
     }
     let opening = true;
+    let followingFullBleed = false;
     doc.forEach((node, _offset, index) => {
+      if(followingFullBleed){
+        if(node.type.name!=="image" || node.attrs.printPlacement!=="full-bleed") bodyPage();
+        followingFullBleed=false;
+      }
       if (node.type.name === "image") {
         const asset = embedded.get(node.attrs.src);
         if (!asset) throw Error("Embedded print image could not be loaded.");
@@ -558,7 +563,7 @@ export async function buildPrintPdf(
           page.drawImage(asset,{x:-BLEED+(targetWidth-drawWidth)/2,y:-BLEED+(targetHeight-drawHeight)/2,width:drawWidth,height:drawHeight});
           proof.lineCount=1;
           proof.minX=0;proof.maxX=WIDTH;proof.minY=0;proof.maxY=HEIGHT;
-          bodyPage();
+          followingFullBleed=true;
           opening=false;
           return;
         }
