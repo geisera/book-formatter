@@ -842,22 +842,21 @@ export default function Workspace() {
               <strong>{book.title}</strong>
             </div>
             {!coachmarkDismissed?<div className="workspace-coachmark" role="note">
-              <span><strong>Start here:</strong> Write in Manuscript, arrange chapters in Structure, choose a look in Design, add publication details in Details, then export your book.</span>
+              <span><strong>Start here:</strong> Use Writing to edit and organize your manuscript; switch to Formatting to design, preview, and export. Edit book details for your cover and publishing metadata.</span>
               <Link href="/help/#start" target="_blank" rel="noopener noreferrer">Getting started guide</Link>
               <button type="button" onClick={()=>{localStorage.setItem("book-formatter:coachmark-dismissed","1");setCoachmarkDismissed(true);}} aria-label="Dismiss workspace introduction">Dismiss</button>
             </div>:null}
             <nav className="workspace-modes" aria-label="Workspace mode">
-              <div className="workspace-primary-modes">
-                <button type="button" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"}
-                  onClick={()=>{setMode("manuscript");setInspectorTab("preview");setPreviewVisible(true);}}>Manuscript</button>
-                <button type="button" aria-pressed={mode==="structure"}
-                  onClick={()=>setMode("structure")}>Structure</button>
-                <button type="button" aria-pressed={mode==="manuscript"&&inspectorTab==="formatting"}
-                  onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Design</button>
-                <button type="button" aria-pressed={mode==="details"}
-                  onClick={()=>setMode("details")}>Details</button>
-                <button type="button" aria-pressed={mode==="publish"||mode==="print"}
-                  onClick={()=>setMode("publish")}>Export</button>
+              <div className="workspace-primary-modes bs-workflow-navigation" role="group" aria-label="Bookmaking workspace">
+                <button type="button" className="bs-workflow-tab" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"||mode==="structure"}
+                  onClick={()=>{setMode("manuscript");setInspectorTab("preview");setPreviewVisible(true);}}>Writing</button>
+                <button type="button" className="bs-workflow-tab" aria-pressed={mode==="manuscript"&&inspectorTab==="formatting"||mode==="publish"||mode==="print"}
+                  onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Formatting</button>
+                <button type="button" className="bs-book-details-link" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Edit book details</button>
+              </div>
+              <div className="bs-context-nav" role="group" aria-label="Workspace tools">
+                {(mode==="structure"||mode==="manuscript"&&inspectorTab==="preview")?<><button type="button" aria-pressed={mode==="manuscript"} onClick={()=>{setMode("manuscript");setInspectorTab("preview");}}>Manuscript</button><button type="button" aria-pressed={mode==="structure"} onClick={()=>setMode("structure")}>Book structure</button></>:null}
+                {(mode==="manuscript"&&inspectorTab==="formatting"||mode==="publish"||mode==="print")?<><button type="button" aria-pressed={mode==="manuscript"} onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Themes &amp; preview</button><button type="button" aria-pressed={mode==="publish"||mode==="print"} onClick={()=>setMode("publish")}>Export editions</button></>:null}
               </div>
               <button type="button" className={blockingIssues.length?"readiness-pill has-issues":"readiness-pill is-ready"}
                 aria-expanded={readinessOpen} aria-controls="export-readiness-list"
