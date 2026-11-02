@@ -2851,3 +2851,80 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
   .workspace-body.layout-format .editor-live-proof{height:auto;overflow:visible}
   .editor-format-panel .design-panel{max-height:none;overflow:visible}
 }
+
+/* Workspace layout contract: fixed chrome, flexible outline, collapsed file footer. */
+:root{--global-header-height:64px}
+.workspace>.sidebar-header{flex:0 0 auto}
+.workspace>aside .sidebar-header{flex:0 0 auto}
+.workspace>aside .section-navigator{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden}
+.workspace>aside .project-files{flex:0 0 auto;border-top:1px solid #d6ddd3;padding:0 12px;background:#fafbf8}
+.project-files>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;padding:13px 4px;font:600 13px/1.4 Arial,sans-serif}
+.project-files>summary::-webkit-details-marker{display:none}
+.project-files>summary::after{content:"›";font-size:18px;transform:rotate(0)}
+.project-files[open]>summary::after{transform:rotate(90deg)}
+.project-files-content{max-height:28vh;overflow-y:auto;padding:0 4px 12px}
+.project-files .aside-bottom{padding:0;margin:0;border:0}
+.project-files .sidebar-backup-time{display:block;margin:0 0 8px;padding:0;font-size:12px;color:#586259}
+.project-files .aside-bottom>button,.project-files .saved-import-report>summary,
+.project-files .folder-backup-controls>button{display:block;width:auto;margin:3px 0;padding:5px 0;font:13px/1.4 Arial,sans-serif;text-align:left;text-decoration:underline;text-underline-offset:3px;border:0;background:transparent}
+.project-files .saved-import-report{margin:3px 0;font-size:13px}
+.project-files .saved-import-report p,.project-files .saved-import-report li{font-size:12px}
+.project-files .folder-backup-controls{margin:8px 0 0;padding:0;border:0;background:transparent}
+.project-files .project-backup-note{font:12px/1.5 Arial,sans-serif;color:#4c5c4e;white-space:normal;margin:8px 0}
+.project-backup-note [tabindex]{display:inline-block;cursor:help}
+.workspace-toolbar .workspace-primary-modes.bs-workflow-navigation{border:0;background:transparent;padding:0}
+.workspace-toolbar .format-controls-toggle,.workspace-toolbar .workspace-details-link{border:0;background:transparent;font:12px/1.4 Arial,sans-serif;padding:8px 10px;min-height:36px}
+.workspace-toolbar .pipeline-readiness{padding:3px!important;min-width:18px;min-height:24px;border:0;border-radius:50%;background:transparent!important;line-height:1;font-size:10px;color:#477857}
+.workspace-toolbar .pipeline-readiness.has-issues{color:#aa6a16}
+.topbar .connection.offline-readiness-badge{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font:12px/1.4 Arial,sans-serif;white-space:nowrap}
+.topbar .offline-readiness-badge .offline-readiness-dot{display:inline;font-size:10px;color:#7d887e;margin:0}
+.topbar .offline-readiness-badge.is-ready .offline-readiness-dot{color:#28734d}
+.design-panel .design-affects{padding-top:8px}
+.design-panel .design-affects table{margin-top:0}
+.design-panel .design-affects tbody>tr:first-child>th,.design-panel .design-affects tbody>tr:first-child>td{border-top:0;padding-top:0}
+.design-panel .design-tab-content legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.design-panel .design-tab-content fieldset{position:relative;padding-top:14px}
+.unified-preview-toolbar .text-size-control{display:flex;flex-direction:column;gap:5px;font:12px/1.4 Arial,sans-serif;color:#465649}
+.preview-footer .preview-chapter-label{flex:0 1 40%;max-width:40%}
+.preview-footer{justify-content:center}
+.preview-footer [role=status]{flex:0 0 auto}
+@media(min-width:901px){
+  .topbar{height:var(--global-header-height);min-height:var(--global-header-height)}
+  .workspace{height:calc(100dvh - var(--global-header-height));overflow:hidden}
+  .workspace>aside{display:flex;flex-direction:column;height:calc(100dvh - var(--global-header-height));max-height:none;overflow:hidden}
+  .workspace>aside .sidebar-header{padding-bottom:8px}
+  .sidebar-header .workspace-book-info{padding:8px 18px}
+  .sidebar-header .workspace-book-info h2{margin:3px 0}
+  .sidebar-header .workspace-book-info p{margin:3px 0;font-size:12px}
+  .sidebar-header .sidebar-section-actions{padding:6px 18px}
+  .workspace>.workspace-content{overflow:hidden;height:100%;min-height:0}
+  .workspace-body.layout-format .editor-format-panel{height:100%;min-height:0;max-height:none;overflow-y:auto}
+  .editor-format-panel .design-panel{height:auto;overflow:visible;max-height:none}
+}
+@media(max-width:900px){.workspace>aside .sidebar-header{flex:0 0 auto}.project-files-content{max-height:30vh}}
+/* Three shared button tiers. Layout and selected-state variants inherit these tokens. */
+.workspace button,.topbar button{
+  --button-bg:transparent;--button-border:1px solid transparent;--button-color:#405c49;
+  background:var(--button-bg)!important;border:var(--button-border)!important;color:var(--button-color)!important;
+  font-size:12px;box-shadow:none;
+}
+/* Secondary: outlined controls. */
+.workspace :is(.organize-sections,.template-card,.preview-footer button,.reader-zoom button),
+.topbar button:not(.brand){
+  --button-bg:#fff;--button-border:1px solid #bdc9be;--button-color:#405c49;
+}
+/* Primary: filled dark green actions and selected mode segments. */
+.workspace :is(.add,.bs-workflow-tab[aria-pressed="true"],.design-studio-format button[aria-pressed="true"]){
+  --button-bg:#244c40;--button-border:1px solid #244c40;--button-color:#fff;
+}
+.workspace .template-card{--button-border:2px solid #d2d8cf}
+.workspace .template-card.active{--button-border:2px solid #285a43;--button-bg:#f1f5ef}
+.workspace .sidebar-section-row>button.selected{--button-bg:#edf1ed;border-left:3px solid #285a43!important;font-weight:700}
+.workspace .sidebar-section-row>button:not(.selected):first-of-type{border-left:3px solid transparent!important}
+.workspace .project-files button{--button-bg:transparent;--button-border:1px solid transparent;--button-color:#405c49}
+.workspace .pipeline-readiness{--button-bg:transparent;--button-border:1px solid transparent}
+.workspace .pipeline-readiness.has-issues{--button-color:#aa6a16}
+.workspace .brand,.topbar .brand{font-size:20px}
+
+.workspace .pipeline-readiness{--button-color:#477857}
+.workspace .pipeline-readiness.has-issues{--button-color:#aa6a16}
