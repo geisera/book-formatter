@@ -75,20 +75,21 @@ export default function DesignPanel({
       <div className="template-options design-template-first" role="group" aria-label="Book design template">
         {(["classic","modern","gothic"] as EditionTemplate[]).map(id=><button type="button" key={id}
           className={edition.template.id===id?"template-card active":"template-card"}
-          aria-pressed={edition.template.id===id} onClick={()=>onChange(presetFor(id))}>
+          aria-label={`${id[0].toUpperCase()+id.slice(1)} theme${edition.template.id===id?" · selected":""}`} aria-pressed={edition.template.id===id} onClick={()=>onChange(presetFor(id))}>
+          {edition.template.id===id?<span className="template-selected-badge" aria-label="Selected theme">✓</span>:null}
           <span className={`template-chapter-thumbnail template-${id}`} aria-hidden="true">
             <span>CHAPTER ONE</span><strong>The Beginning</strong><i>It began on a quiet morning, when the world still held its secrets.</i>
           </span>
-          <span><strong>{id[0].toUpperCase()+id.slice(1)}</strong><small>{edition.template.id===id?"Selected":id==="classic"?"Traditional literary serif":id==="modern"?"Contemporary and restrained":"Ornamental fantasy and horror"}</small></span>
+          <span><strong>{id[0].toUpperCase()+id.slice(1)}</strong><small>{id==="classic"?"Traditional literary serif":id==="modern"?"Contemporary and restrained":"Ornamental fantasy and horror"}</small></span>
         </button>)}
       </div>
-      <div className="design-affects"><strong>What this affects</strong>
+      <fieldset className="design-affects"><legend>What this affects</legend>
         <table><tbody>
           <tr><th>Template</th><td>EPUB + PDF</td></tr>
           <tr><th>Body size / spacing / indent</th><td>EPUB</td></tr>
           <tr><th>Justification / trim size</th><td>PDF · <button type="button" onClick={()=>onOpenPaperback?.()}>Export → Paperback</button></td></tr>
         </tbody></table>
-      </div>
+      </fieldset>
       <div className="design-settings-tabs" role="tablist" aria-label="Design settings">
         {(["typography","sections"] as const).map(tab=><button key={tab} type="button" role="tab"
           aria-selected={settingsTab===tab} onClick={()=>setSettingsTab(tab)}>
