@@ -64,6 +64,7 @@ export default function Workspace() {
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
+  const [formatControlsVisible,setFormatControlsVisible]=useState(true);
   const [readinessOpen,setReadinessOpen]=useState(false);
   const [backupRefresh,setBackupRefresh]=useState(0);
   const [folderBackup,setFolderBackup]=useState<"off"|"ready"|"permission"|"unsupported">("off");
@@ -842,7 +843,7 @@ export default function Workspace() {
               <strong>{book.title}</strong>
             </div>
             {!coachmarkDismissed?<div className="workspace-coachmark" role="note">
-              <span><strong>Start here:</strong> Use Writing to edit and organize your manuscript; switch to Formatting to design, preview, and export. Edit book details for your cover and publishing metadata.</span>
+              <span><strong>Start here:</strong> Use Writing to edit and organize your manuscript; switch to Preview to design, preview, and export. Edit book details for your cover and publishing metadata.</span>
               <Link href="/help/#start" target="_blank" rel="noopener noreferrer">Getting started guide</Link>
               <button type="button" onClick={()=>{localStorage.setItem("book-formatter:coachmark-dismissed","1");setCoachmarkDismissed(true);}} aria-label="Dismiss workspace introduction">Dismiss</button>
             </div>:null}
@@ -851,7 +852,7 @@ export default function Workspace() {
                 <button type="button" className="bs-workflow-tab" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"||mode==="structure"}
                   onClick={()=>{setMode("manuscript");setInspectorTab("preview");setPreviewVisible(true);}}>Writing</button>
                 <button type="button" className="bs-workflow-tab" aria-pressed={mode==="manuscript"&&inspectorTab==="formatting"||mode==="publish"||mode==="print"}
-                  onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Formatting</button>
+                  onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Preview</button>
                 <button type="button" className="bs-book-details-link" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Edit book details</button>
               </div>
               <div className="bs-context-nav" role="group" aria-label="Workspace tools">
@@ -911,7 +912,8 @@ export default function Workspace() {
             <div className={`workspace-body mode-${mode}${mode==="manuscript"&&(inspectorTab!=="formatting"||!previewVisible)?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
               {mode==="manuscript" ? <div className="editor-shared-toolbar" role="group" aria-label="Manuscript and Design layout">
                 <button type="button" aria-pressed={inspectorTab==="preview"} onClick={()=>{setInspectorTab("preview");setPreviewVisible(true);}}>Write</button>
-                <button type="button" aria-pressed={inspectorTab==="formatting"} onClick={()=>{setInspectorTab("formatting");setPreviewVisible(true);}}>Format</button>
+                <button type="button" aria-pressed={inspectorTab==="formatting"} onClick={()=>{setInspectorTab("formatting");setPreviewVisible(true);}}>Preview</button>
+                {inspectorTab==="formatting"?<button type="button" aria-expanded={formatControlsVisible} aria-controls="preview-format-controls" onClick={()=>setFormatControlsVisible(v=>!v)}>{formatControlsVisible?"Hide format controls":"Show format controls"}</button>:null}
                 <span className="editor-shared-toolbar-context">{chapter?.title}</span>
               </div> : null}
               <section className="editor-area" hidden={mode !== "manuscript"}>
@@ -970,8 +972,8 @@ export default function Workspace() {
                 ) : null}
 
               </section>
-              {mode==="manuscript"&&inspectorTab==="formatting"&&previewVisible ? <div className="editor-work-panels">
-                {inspectorTab==="formatting"?<section className="editor-format-panel" aria-label="Design controls">
+              {mode==="manuscript"&&inspectorTab==="formatting"&&previewVisible ? <div className={`editor-work-panels${formatControlsVisible?"":" controls-hidden"}`}>
+                {formatControlsVisible?<section id="preview-format-controls" className="editor-format-panel" aria-label="Design controls">
                   <DesignPanel hidden={false} cover={book.cover} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
                     edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
                     printProfile={getPrintEdition(book)} onPrintTrim={changePrintTrim}
@@ -1030,7 +1032,7 @@ export default function Workspace() {
             <nav className="mobile-bottom-navigation" aria-label="Mobile workspace navigation">
               <button type="button" aria-current={mode==="manuscript"&&inspectorTab==="preview"?"page":undefined} onClick={()=>{setMode("manuscript");setInspectorTab("preview");setMobileDrawerOpen(false);}}>Manuscript</button>
               <button type="button" aria-current={mode==="structure"?"page":undefined} onClick={()=>{setMode("structure");setMobileDrawerOpen(false);}}>Structure</button>
-              <button type="button" aria-current={mode==="manuscript"&&inspectorTab==="formatting"?"page":undefined} onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);setMobileDrawerOpen(false);}}>Design</button>
+              <button type="button" aria-current={mode==="manuscript"&&inspectorTab==="formatting"?"page":undefined} onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);setMobileDrawerOpen(false);}}>Preview</button>
               <button type="button" aria-current={mode==="details"?"page":undefined} onClick={()=>{setMode("details");setMobileDrawerOpen(false);}}>Details</button>
               <button type="button" aria-current={mode==="publish"||mode==="print"?"page":undefined} onClick={()=>{setMode("publish");setMobileDrawerOpen(false);}}>Export</button>
             </nav>
