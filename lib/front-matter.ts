@@ -18,6 +18,7 @@ const DEFAULTS: Record<SectionType, SectionTypography> = {
   "prologue":        {headingFactor:.95,bodyFactor:1,headingAlign:"center",bodyAlign:"left",italicBody:false,unindentedBody:false,suppressHeading:false,paragraphSpacingFactor:1},
   "epilogue":        {headingFactor:.95,bodyFactor:1,headingAlign:"center",bodyAlign:"left",italicBody:false,unindentedBody:false,suppressHeading:false,paragraphSpacingFactor:1},
   "interlude":       {headingFactor:.9,bodyFactor:1,headingAlign:"center",bodyAlign:"left",italicBody:false,unindentedBody:false,suppressHeading:false,paragraphSpacingFactor:1},
+  "volume":          {headingFactor:1.7,bodyFactor:1,headingAlign:"center",bodyAlign:"center",italicBody:false,unindentedBody:true,suppressHeading:false,paragraphSpacingFactor:1.4},
   "part":            {headingFactor:1.5,bodyFactor:1,headingAlign:"center",bodyAlign:"center",italicBody:false,unindentedBody:true,suppressHeading:false,paragraphSpacingFactor:1.3},
   "half-title":      {headingFactor:1.4,bodyFactor:1,headingAlign:"center",bodyAlign:"center",italicBody:false,unindentedBody:true,suppressHeading:false,paragraphSpacingFactor:1},
   "title":           {headingFactor:1.55,bodyFactor:1,headingAlign:"center",bodyAlign:"center",italicBody:false,unindentedBody:true,suppressHeading:false,paragraphSpacingFactor:1},
