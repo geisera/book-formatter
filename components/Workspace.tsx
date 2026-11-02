@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, useDeferredValue, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
 import {sectionIsEmpty,sectionTemplateContent} from "../lib/section-samples";
@@ -61,7 +61,6 @@ export default function Workspace() {
   const [inspectorTab,setInspectorTab]=useState<"preview"|"formatting">("preview");
   const [mobileDrawerOpen,setMobileDrawerOpen]=useState(false);
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
-  const [previewWidth,setPreviewWidth]=useState(44);
   const [previewVisible,setPreviewVisible]=useState(true);
   const [formatControlsVisible,setFormatControlsVisible]=useState(true);
   const [readinessOpen,setReadinessOpen]=useState(false);
@@ -90,7 +89,8 @@ export default function Workspace() {
   const [bookshelfQuery,setBookshelfQuery]=useState("");
   const [bookshelfSort,setBookshelfSort]=useState<"recent"|"title"|"author">("recent");
   const [bookshelfTipVisible,setBookshelfTipVisible]=useState(true);
-  const [coachmarkDismissed,setCoachmarkDismissed]=useState(false);
+  const [coachmarkDismissed,setCoachmarkDismissed]=useState(true);
+  function dismissCoachmark(){if(coachmarkDismissed)return;localStorage.setItem("book-formatter:coachmark-dismissed","1");setCoachmarkDismissed(true);}
   useEffect(()=>{setBookshelfTipVisible(localStorage.getItem("book-formatter:bookshelf-guide-dismissed")!=="1");setCoachmarkDismissed(localStorage.getItem("book-formatter:coachmark-dismissed")==="1");},[]);
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
   const [mode, setMode] = useState<
@@ -585,6 +585,10 @@ export default function Workspace() {
       print: { ...printPreset(edition.template.id, printAlignment, priorPrint.trim), fontSize:priorPrint.fontSize,leading:priorPrint.leading,paragraphSpacing:priorPrint.paragraphSpacing,firstLineIndent:priorPrint.firstLineIndent,chapterOpeningSpace:priorPrint.chapterOpeningSpace,chapterNumberStyle:priorPrint.chapterNumberStyle,showChapterTitle:priorPrint.showChapterTitle,frontMatterTitleScale:priorPrint.frontMatterTitleScale,layoutPriority:priorPrint.layoutPriority,hyphenate:priorPrint.hyphenate,hyphenationLanguage:priorPrint.hyphenationLanguage,maxConsecutiveHyphens:priorPrint.maxConsecutiveHyphens,hyphenationExceptions:priorPrint.hyphenationExceptions },
     } });
   }
+  const previewFormatControl = <div className="design-studio-format" role="group" aria-label="Preview format">
+                      <button type="button" aria-pressed={designPreview==="ebook"} onClick={()=>setDesignPreview("ebook")}>Ebook</button>
+                      <button type="button" aria-pressed={designPreview==="print"} onClick={()=>setDesignPreview("print")}>Paperback</button>
+                    </div>;
   return (
     <>
       {importing ? (
@@ -760,7 +764,7 @@ export default function Workspace() {
         <main className={`workspace${mobileDrawerOpen?" mobile-drawer-open":""}`}>
           {mobileDrawerOpen?<button type="button" className="mobile-drawer-scrim" aria-label="Close manuscript drawer" onClick={()=>setMobileDrawerOpen(false)}/>:null}
           <aside id="mobile-manuscript-drawer" aria-label="Manuscript sections">
-            <button className="text-button" onClick={dashboard}>
+            <button className="text-button bookshelf-back-link" onClick={dashboard}>
               ← Bookshelf
             </button>
             <div className="workspace-book-info"><div className="workspace-book-kicker">CURRENT BOOK</div><h2>{book.title}</h2><p className="muted">{book.author||"Author not set"}</p></div>
@@ -770,17 +774,18 @@ export default function Workspace() {
                 updateStructure({kind:"add",title:"New chapter",sectionType:"chapter",after:selected&&sectionMatter(selected.sectionType??"chapter")==="body"?selected.id:undefined});
                 setMode("manuscript");setInspectorTab("preview");
               }}>+ Add chapter</button>
-              <button type="button" onClick={()=>setMode("structure")}>Organize…</button>
+              <button type="button" className="organize-sections" onClick={()=>setMode("structure")}>Organize…</button>
             </div>
             <div className="section-navigator" aria-label="Book sections">
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
-                <div className="chapter-list" onDragOver={e=>{e.preventDefault();if(draggingSection)setDropTarget({group});}} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});clearDrag();}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className={`sidebar-section-row${draggingSection===c.id?" is-dragging":""}${dropTarget?.group===group&&dropTarget.before===c.id?" drop-before":""}`} onDragEnd={clearDrag} onDragOver={e=>{e.preventDefault();e.stopPropagation();if(draggingSection)setDropTarget({group,before:c.id});}} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});clearDrag();}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} onClick={()=>setChapterId(c.id)}>
-                  <small title={`${wordCounts[book.chapters.indexOf(c)]??0} words`}>{(c.sectionType??"chapter").replaceAll("-"," ")}
+                <div className="chapter-list" onDragOver={e=>{e.preventDefault();if(draggingSection)setDropTarget({group});}} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});clearDrag();}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className={`sidebar-section-row${draggingSection===c.id?" is-dragging":""}${dropTarget?.group===group&&dropTarget.before===c.id?" drop-before":""}`} onDragEnd={clearDrag} onDragOver={e=>{e.preventDefault();e.stopPropagation();if(draggingSection)setDropTarget({group,before:c.id});}} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});clearDrag();}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} title={`${c.title} · ${wordCounts[book.chapters.indexOf(c)]??0} words`} aria-label={c.title} onClick={()=>setChapterId(c.id)}>
+                  {(c.sectionType??"chapter")!=="chapter"?<small className="section-type-badge">{c.sectionType?.replaceAll("-"," ")}</small>:null}
+                  <span className="sidebar-section-title">{c.title}</span>
                     {readinessIssues.some(issue=>issue.severity==="error"&&issue.location.startsWith(`Section ${book.chapters.indexOf(c)+1}:`))?
                       <span className="section-issue-dot" title="Export validation issue" aria-label="Export validation issue">●</span>:null}
-                  </small><span>{c.title}</span>
-                </button><button type="button" className="sidebar-section-menu-trigger" aria-label={`Actions for ${c.title}`} aria-expanded={sectionMenu===c.id} onClick={()=>setSectionMenu(sectionMenu===c.id?null:c.id)}>⋯</button>
+
+                </button><span className="sidebar-title-tooltip" aria-hidden="true">{c.title}</span><button type="button" className="sidebar-section-menu-trigger" aria-label={`Actions for ${c.title}`} aria-expanded={sectionMenu===c.id} onClick={()=>setSectionMenu(sectionMenu===c.id?null:c.id)}>⋯</button>
                 {sectionMenu===c.id?<div className="sidebar-section-menu" role="menu">
                   <button role="menuitem" onClick={()=>{setSectionMenu(null);const title=window.prompt("Section title",c.title);if(title!==null)updateStructure({kind:"rename",id:c.id,title});}}>Rename</button>
                   <button role="menuitem" disabled={book.chapters.indexOf(c)===0||sectionMatter(book.chapters[book.chapters.indexOf(c)-1].sectionType??"chapter")!==group} onClick={()=>{setSectionMenu(null);updateStructure({kind:"move",id:c.id,to:book.chapters.indexOf(c)-1});}}>Move up</button>
@@ -842,11 +847,10 @@ export default function Workspace() {
               <strong>{book.title}</strong>
             </div>
             {!coachmarkDismissed?<div className="workspace-coachmark" role="note">
-              <span><strong>Start here:</strong> Use Writing to edit and organize your manuscript; switch to Preview to design, preview, and export. Edit book details for your cover and publishing metadata.</span>
-              <Link href="/help/#start" target="_blank" rel="noopener noreferrer">Getting started guide</Link>
-              <button type="button" onClick={()=>{localStorage.setItem("book-formatter:coachmark-dismissed","1");setCoachmarkDismissed(true);}} aria-label="Dismiss workspace introduction">Dismiss</button>
+              <span>New here? <Link href="/help/#start" target="_blank" rel="noopener noreferrer">Read the getting started guide ↗</Link></span>
+              <button type="button" onClick={dismissCoachmark} aria-label="Dismiss workspace introduction">×</button>
             </div>:null}
-            <nav className="workspace-modes workspace-toolbar" aria-label="Workspace navigation">
+            <nav className="workspace-modes workspace-toolbar" aria-label="Workspace navigation" onClickCapture={dismissCoachmark} onChangeCapture={dismissCoachmark}>
               <div className="workspace-primary-modes bs-workflow-navigation" role="group" aria-label="Workspace mode">
                 <button type="button" className="bs-workflow-tab" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"||mode==="structure"}
                   onClick={()=>{setMode("manuscript");setInspectorTab("preview");}}>Writing</button>
@@ -915,7 +919,7 @@ export default function Workspace() {
                   <button type="button" onClick={()=>fixReadinessIssue(issue.location,issue.message)}>Fix</button>
                 </li>)}</ul>}
             </section>:null}
-            <div className={`workspace-body mode-${mode}${mode==="manuscript"&&(inspectorTab!=="formatting"||!previewVisible)?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
+            <div className={`workspace-body mode-${mode}${mode==="manuscript"&&(inspectorTab!=="formatting"||!previewVisible)?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`}>
               <section className="editor-area" hidden={mode !== "manuscript"}>
                 {findOpen?<FindReplacePanel book={book} chapterId={chapterId} config={findConfig} onConfig={setFindConfig} onClose={()=>setFindOpen(false)} onNavigate={navigateMatch}
                   onReplace={applyReplacements} onUndo={()=>swapReplacement(true)} onRedo={()=>swapReplacement(false)}
@@ -983,15 +987,8 @@ export default function Workspace() {
                     onTypeStyle={(type,style)=>{const b=current.current;if(!b)return;const sectionStyles={...b.sectionStyles};if(style)sectionStyles[type]=style;else delete sectionStyles[type];edit({...b,sectionStyles});}}/>
                 </section>:null}
                 <aside className="editor-live-proof" aria-label="Live formatted book preview">
-                  <div className="workspace-live-preview-head">
-                    <strong>Live preview</strong>
-                    <div className="design-studio-format" role="group" aria-label="Preview format">
-                      <button type="button" aria-pressed={designPreview==="ebook"} onClick={()=>setDesignPreview("ebook")}>Ebook</button>
-                      <button type="button" aria-pressed={designPreview==="print"} onClick={()=>setDesignPreview("print")}>Paperback</button>
-                    </div>
-                    <label>Width <input type="range" aria-label="Preview width" min="30" max="65" value={previewWidth} onChange={e=>setPreviewWidth(Number(e.target.value))}/></label>
-                  </div>
-                  {designPreview==="ebook" ? <EbookPreview hidden={false} book={book} chapter={previewChapter} chapterId={chapterId} edition={getEbookEdition(book)} onNavigate={setChapterId} updating={previewChapter!==chapter}/> :
+                  {designPreview==="print"?<div className="unified-preview-toolbar">{previewFormatControl}</div>:null}
+                  {designPreview==="ebook" ? <EbookPreview formatControl={previewFormatControl} hidden={false} book={book} chapter={previewChapter} chapterId={chapterId} edition={getEbookEdition(book)} onNavigate={setChapterId} updating={previewChapter!==chapter}/> :
                     <DesignPrintPreview book={book} getSnapshot={exportSnapshot} selectedSectionId={chapterId}/>}
                 </aside>
               </div>:null}
