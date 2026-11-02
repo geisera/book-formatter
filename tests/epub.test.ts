@@ -91,13 +91,13 @@ describe("local EPUB generation", () => {
     const files = unzipSync(buildEpub(b, fonts, options).bytes);
     const section = strFromU8(files["EPUB/chapter-0001.xhtml"]);
     const nav = strFromU8(files["EPUB/nav.xhtml"]);
-    expect(section).not.toContain('<h1 id="chapter-title">');
+    expect(section).not.toMatch(/<h1\b[^>]*\bid="chapter-title"/);
     expect(section).toContain('aria-label="Chapter One"');
     expect(section).toContain("A café");
     expect(nav).toContain(">Chapter One</a>");
     b.chapters[0].showTitle = true;
     expect(strFromU8(unzipSync(buildEpub(b, fonts, options).bytes)["EPUB/chapter-0001.xhtml"]))
-      .toContain('<h1 id="chapter-title">Chapter One</h1>');
+      .toMatch(/<h1 id="chapter-title"[^>]*>Chapter One<\/h1>/);
   });
   it("ignores legacy chapter section visibility but obeys ebook title and numeral choices", () => {
     const b=fixture();
@@ -108,7 +108,7 @@ describe("local EPUB generation", () => {
     expect(chapter).toContain('>I</h1>');
     b.editions!.ebook={...getEbookEdition(b),showChapterTitle:true};
     chapter=strFromU8(unzipSync(buildEpub(b,fonts,options).bytes)["EPUB/chapter-0001.xhtml"]);
-    expect(chapter).toContain('<h1 id="chapter-title">Chapter One</h1>');
+    expect(chapter).toMatch(/<h1 id="chapter-title"[^>]*>Chapter One<\/h1>/);
   });
   it("preserves centered and right-aligned paragraphs through EPUB export", () => {
     const b = fixture();
@@ -253,9 +253,9 @@ describe("edition-specific chapter headings in exported EPUB",()=>{
   const read=(i:number)=>strFromU8(zipped[`EPUB/chapter-${String(i).padStart(4,"0")}.xhtml`]);
   expect(read(1)).toContain('class="section-layout opening-standard front-matter"');
   expect(read(1)).not.toContain('class="chapter-number"');
-  expect(read(2)).toContain('>I</span><h1 id="chapter-title">The Road</h1>');
+  expect(read(2)).toMatch(/>I<\/span><h1 id="chapter-title"[^>]*>The Road<\/h1>/);
   expect(read(3)).not.toContain('class="chapter-number"');
-  expect(read(4)).toContain('>II</span><h1 id="chapter-title">The Return</h1>');
+  expect(read(4)).toMatch(/>II<\/span><h1 id="chapter-title"[^>]*>The Return<\/h1>/);
   expect(strFromU8(zipped["EPUB/style.css"])).toContain(".section-layout.front-matter h1{font-size:2.145em}");
   expect(b.chapters).toEqual(original);
   expect(b.editions!.print).toEqual(printBefore);
@@ -266,7 +266,7 @@ describe("edition-specific chapter headings in exported EPUB",()=>{
   expect(plain).not.toContain('class="chapter-number"');
   b.editions!.ebook={...getEbookEdition(b),chapterNumberStyle:"arabic"};
   const numbered=strFromU8(unzipSync(buildEpub(b,fonts,options).bytes)["EPUB/chapter-0001.xhtml"]);
-  expect(numbered).toContain('>1</span><h1 id="chapter-title">Chapter One</h1>');
+  expect(numbered).toMatch(/>1<\/span><h1 id="chapter-title"[^>]*>Chapter One<\/h1>/);
  });
 });
 
@@ -338,14 +338,17 @@ describe("designed front matter in EPUB",()=>{
   b.metadata={publisher:"Greywatch Press",publicationDate:"2026-10-31"};
   const types=["half-title","copyright","dedication","epigraph","part"] as const;
   b.chapters=types.map((sectionType,i)=>({
-    ...b.chapters[0],id:"front-"+i,sectionType,title:sectionType+" label",
+    ...b.chapters[0],id:"front-"+i,sectionType,title:sectionType+" & <label>",
     content:{type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"Words for "+sectionType}]}]},
   }));
   const zip=unzipSync(buildEpub(b,fonts,options).bytes);
   for(const [i,type] of types.entries()){
     const html=strFromU8(zip[`EPUB/chapter-${String(i+1).padStart(4,"0")}.xhtml`]);
     expect(html).toContain("opening-"+type);
-    if(type==="half-title")expect(html).toContain("A title &amp; &lt;escape&gt;");
+    if(type==="half-title"){
+      expect(html).toMatch(/<h1 id="chapter-title"[^>]*>half-title &amp; &lt;label&gt;<\/h1>/);
+      expect(html).not.toContain("A title &amp; &lt;escape&gt;");
+    }
     if(type==="copyright")expect(html).toContain("Publisher: Greywatch Press");
   }
   const css=strFromU8(zip["EPUB/style.css"]);

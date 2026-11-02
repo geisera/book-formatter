@@ -2055,7 +2055,7 @@ aside h2 {
 .design-studio-controls .design-panel h2{font:normal 27px/1.1 Georgia,serif;margin:4px 0 8px}
 .design-studio-controls .design-intro{font-size:12px;line-height:1.5;margin:0 0 14px;color:var(--muted)}
 .design-studio-controls .template-options{display:grid;grid-template-columns:1fr;gap:6px;margin:12px 0}
-.design-studio-controls .template-card{min-height:52px;padding:9px 11px}
+.design-studio-controls .template-card{padding:9px 11px}
 .design-studio-controls .template-letter{font-size:24px}
 .design-studio-controls .design-panel fieldset{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:7px}
 .design-studio-controls .design-panel legend{font-size:13px;font-weight:700;padding:0 5px}
@@ -2971,10 +2971,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 
 /* Fix 5: equal theme-card tracks with bottom-aligned descriptions. */
 .design-panel .template-options{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;align-items:stretch;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;align-items:stretch;align-content:start;
 }
 .design-panel .template-options .template-card{
-  display:flex;flex-direction:column;align-items:stretch;min-width:0;height:100%;box-sizing:border-box;
+  display:flex;flex-direction:column;align-items:stretch;align-self:stretch;min-width:0;min-height:0;height:100%;max-height:none;box-sizing:border-box;margin-block:0;
 }
 .design-panel .template-options .template-card>span:last-child{
   flex:0 0 auto;margin-top:auto;
@@ -2999,3 +2999,41 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .topbar .brand .badge{font-size:12px}
 :is(.topbar,.workspace-toolbar) button:focus:not(:focus-visible){outline:none!important;box-shadow:none}
 :is(.topbar,.workspace-toolbar) button:focus-visible{outline:2px solid var(--brand-accent,#285a4b)!important;outline-offset:3px}
+
+/* Sidebar polish 2: one gutter for headers; preserve chapter-row geometry. */
+.workspace>aside{--sidebar-inner-gutter:16px}
+.workspace>aside .bookshelf-back-link,
+.workspace>aside .workspace-book-info,
+.workspace>aside .sidebar-section-actions{
+  padding-inline:var(--sidebar-inner-gutter);
+}
+.workspace>aside .section-navigator-group>summary{
+  position:relative;padding-inline:var(--sidebar-inner-gutter);list-style:none;
+}
+.workspace>aside .section-navigator-group>summary::-webkit-details-marker{display:none}
+.workspace>aside .section-navigator-group>summary::before{
+  content:"▸";position:absolute;left:0;
+}
+.workspace>aside .section-navigator-group[open]>summary::before{content:"▾"}
+
+/* Sidebar polish 3: separate project files from the scrolling outline. */
+.workspace>aside .project-files{
+  border-top:1px solid var(--hairline);
+  padding-inline:var(--sidebar-inner-gutter);
+}
+.workspace>aside .project-files>summary,
+.workspace>aside .project-files-content{padding-inline:0}
+
+/* Sidebar polish 4: one muted token for outline affordances. */
+.workspace>aside{--sidebar-icon-muted:#405c49}
+.workspace .sidebar-section-menu-trigger{--button-color:var(--sidebar-icon-muted)}
+.workspace .sidebar-drag-handle,
+.workspace .section-navigator-group>summary::before{color:var(--sidebar-icon-muted)}
+
+/* Preview polish 5: readable simulator status and consistent eyebrow type. */
+.preview-panel .live-indicator{font-size:12px}
+.preview-panel .preview-heading .eyebrow{font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+
+/* Preview polish 6: equal matte margins around the ebook page. */
+.preview-panel .reader-viewport.paginated-reader{display:flex;justify-content:center}
+.preview-panel .reader-viewport .ebook-page{margin-left:auto;margin-right:auto}
