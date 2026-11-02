@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Help & Documentation — Book Formatter",
-  description: "A practical guide to Book Formatter's local projects, manuscript import, editing, design, EPUB export and PDF proofs.",
+  title: "Help & Documentation — BookStitcher",
+  description: "A practical guide to BookStitcher's local projects, manuscript import, editing, design, EPUB export and PDF proofs.",
 };
 
 const topics = [
@@ -32,7 +32,7 @@ export default function HelpPage() {
           <h1>Help & documentation</h1>
           <p>Every currently available workflow, from the first manuscript to a downloadable book.</p>
         </div>
-        <Link className="help-return" href="/">← Back to Book Formatter</Link>
+        <Link className="help-return" href="/">← Back to BookStitcher</Link>
       </header>
       <div className="help-grid">
         <nav className="help-navigation" aria-label="Documentation topics">
@@ -43,7 +43,7 @@ export default function HelpPage() {
           <section id="start">
             <h2>Getting started</h2>
             <ol>
-              <li>Open Book Formatter in your browser. No account is needed for local projects.</li>
+              <li>Open BookStitcher in your browser. No account is needed for local projects.</li>
               <li>Choose <strong>Create local book</strong> to start with an empty chapter, or <strong>Import a manuscript</strong> to bring in an existing file.</li>
               <li>Use <strong>Manuscript</strong> to edit, <strong>Structure</strong> to organize sections, <strong>Design</strong> to control appearance, <strong>Details</strong> for publication metadata, and <strong>Export</strong> to generate EPUB or paperback PDF.</li>
               <li>Download a <strong>project backup</strong> regularly. Browser storage can be cleared.</li>
@@ -161,7 +161,7 @@ export default function HelpPage() {
           </section>
           <section id="offline">
             <h2>Offline operation, local storage and privacy</h2>
-            <p>Book Formatter uses browser-local storage for projects. There is no mandatory account. The app registers an offline service worker and caches assets for use after its first successful online load. The header reports <strong>Offline app ready</strong> when preparation completes.</p>
+            <p>BookStitcher uses browser-local storage for projects. There is no mandatory account. The app registers an offline service worker and caches assets for use after its first successful online load. The header reports <strong>Offline app ready</strong> when preparation completes.</p>
             <p>For reliable offline use, open the application online at least once before disconnecting. If fonts or a rendering worker were not cached, reconnect once, reload, and retry the affected operation. Continue to use the same browser profile for locally saved projects.</p>
             <p>Local manuscript editing and supported exports do not require uploading manuscript content. Browser storage is <strong>not a permanent backup</strong>: clearing site data, changing profiles, or storage eviction can remove projects. Download project backups regularly.</p>
           </section>
@@ -184,7 +184,7 @@ export default function HelpPage() {
             <p>The documentation describes <strong>implemented controls</strong>, not every requirement in the product roadmap. At present, the app does not offer cloud synchronization, team collaboration, chapter drag-and-drop reordering, direct retailer submission, hardcover or cover-wrap design, rich image layout, full in-browser EPUBCheck, or additional print trim sizes. Some of these are specified in the product requirements document but are <strong>not yet available</strong>.</p>
             <p>The project remains a local-first publishing foundation. Maintain original manuscript files and backups, review conversion warnings, and validate export artifacts before commercial publication.</p>
           </section>
-          <footer className="help-footer"><Link href="/">Return to your bookshelf</Link><span>Book Formatter user guide · Current foundation</span></footer>
+          <footer className="help-footer"><Link href="/">Return to your bookshelf</Link><span>BookStitcher user guide · Current foundation</span></footer>
         </div>
       </div>
     </main>
