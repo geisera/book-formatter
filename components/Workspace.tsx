@@ -908,7 +908,7 @@ export default function Workspace() {
                   <button type="button" onClick={()=>fixReadinessIssue(issue.location,issue.message)}>Fix</button>
                 </li>)}</ul>}
             </section>:null}
-            <div className={`workspace-body mode-${mode}${mode==="manuscript"&&!previewVisible?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
+            <div className={`workspace-body mode-${mode}${mode==="manuscript"&&(inspectorTab!=="formatting"||!previewVisible)?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
               {mode==="manuscript" ? <div className="editor-shared-toolbar" role="group" aria-label="Manuscript and Design layout">
                 <button type="button" aria-pressed={inspectorTab==="preview"} onClick={()=>{setInspectorTab("preview");setPreviewVisible(true);}}>Write</button>
                 <button type="button" aria-pressed={inspectorTab==="formatting"} onClick={()=>{setInspectorTab("formatting");setPreviewVisible(true);}}>Format</button>
@@ -922,7 +922,7 @@ export default function Workspace() {
                 <div className="editor-meta">
                   <span>MANUSCRIPT</span>
                   <button type="button" onClick={()=>setFindOpen(v=>!v)} aria-label="Find and replace manuscript">Find & Replace</button>
-                  <button type="button" onClick={()=>setPreviewVisible(v=>!v)}>{previewVisible?"Hide preview":"Show preview"}</button>
+                  {inspectorTab==="formatting"?<button type="button" onClick={()=>setPreviewVisible(v=>!v)}>{previewVisible?"Hide preview":"Show preview"}</button>:null}
                 </div>
                 {chapter ? (
                   <article className="paper">
@@ -970,7 +970,7 @@ export default function Workspace() {
                 ) : null}
 
               </section>
-              {mode==="manuscript"&&previewVisible ? <div className="editor-work-panels">
+              {mode==="manuscript"&&inspectorTab==="formatting"&&previewVisible ? <div className="editor-work-panels">
                 {inspectorTab==="formatting"?<section className="editor-format-panel" aria-label="Design controls">
                   <DesignPanel hidden={false} cover={book.cover} onCoverChange={cover=>{const b=current.current;if(b)edit({...b,cover});}}
                     edition={getEbookEdition(book)} onChange={changeEdition} format={designPreview}
