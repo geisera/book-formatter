@@ -6,7 +6,7 @@
 
 ## Decision
 
-Book Formatter is a web application. Every author must authenticate before entering the author workspace or using manuscript management, editing, previews, and export. Guest authoring is no longer part of the intended product. Authentication is **not** synonymous with cloud manuscript storage: books and associated assets are created and edited locally (Dexie/IndexedDB and approved browser storage), with optional, separately consented cloud sync.
+BookStitcher is a web application. Every author must authenticate before entering the author workspace or using manuscript management, editing, previews, and export. Guest authoring is no longer part of the intended product. Authentication is **not** synonymous with cloud manuscript storage: books and associated assets are created and edited locally (Dexie/IndexedDB and approved browser storage), with optional, separately consented cloud sync.
 
 Public marketing, registration, sign-in, verification and recovery routes can remain anonymous. Authenticated application routes and server endpoints must validate identity and permissions through server-enforced controls; a client-side hide/show guard alone is insufficient. Hosted API endpoints must not allow users to bypass authentication by direct requests.
 
