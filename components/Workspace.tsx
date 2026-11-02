@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
 import Link from "next/link";
 import Editor from "./Editor";
+import ChapterTitleTooltip from "./ChapterTitleTooltip";
 import {sectionIsEmpty,sectionTemplateContent} from "../lib/section-samples";
 import FindReplacePanel,{type SearchConfig} from "./FindReplacePanel";
 import {findInBook,replaceAcrossBook,type TextMatch} from "../lib/find-replace";
@@ -776,13 +777,13 @@ export default function Workspace() {
             <div className="section-navigator" aria-label="Book sections">
               {(["front","body","back"] as const).map(group=><details key={group} open className="section-navigator-group">
                 <summary>{group==="front"?"Front Matter":group==="body"?"Body":"Back Matter"}</summary>
-                <div className="chapter-list" onDragOver={e=>{e.preventDefault();if(draggingSection)setDropTarget({group});}} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});clearDrag();}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className={`sidebar-section-row${draggingSection===c.id?" is-dragging":""}${dropTarget?.group===group&&dropTarget.before===c.id?" drop-before":""}`} onDragEnd={clearDrag} onDragOver={e=>{e.preventDefault();e.stopPropagation();if(draggingSection)setDropTarget({group,before:c.id});}} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});clearDrag();}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} title={`${c.title} · ${wordCounts[book.chapters.indexOf(c)]??0} words`} aria-label={c.title} onClick={()=>setChapterId(c.id)}>
+                <div className="chapter-list" onDragOver={e=>{e.preventDefault();if(draggingSection)setDropTarget({group});}} onDrop={e=>{e.preventDefault();if(draggingSection)updateStructure({kind:"relocate",id:draggingSection,matter:group});clearDrag();}}>{book.chapters.filter(c=>sectionMatter(c.sectionType??"chapter")===group).map(c=><div key={c.id} className={`sidebar-section-row${draggingSection===c.id?" is-dragging":""}${dropTarget?.group===group&&dropTarget.before===c.id?" drop-before":""}`} onDragEnd={clearDrag} onDragOver={e=>{e.preventDefault();e.stopPropagation();if(draggingSection)setDropTarget({group,before:c.id});}} onDrop={e=>{e.preventDefault();e.stopPropagation();if(draggingSection&&draggingSection!==c.id)updateStructure({kind:"relocate",id:draggingSection,before:c.id,matter:group});clearDrag();}}><span className="sidebar-drag-handle" draggable title="Drag to reorder section" aria-label={`Drag to reorder ${c.title}`} onDragStart={e=>{setDraggingSection(c.id);e.dataTransfer.setData("text/plain",c.id);e.dataTransfer.effectAllowed="move";}}>⠿</span><button type="button" className={c.id===chapterId?"selected":""} aria-current={c.id===chapterId?"true":undefined} aria-label={c.title} onClick={()=>setChapterId(c.id)}>
                   {(c.sectionType??"chapter")!=="chapter"?<small className="section-type-badge">{c.sectionType?.replaceAll("-"," ")}</small>:null}
                   <span className="sidebar-section-title">{c.title}</span>
                     {readinessIssues.some(issue=>issue.severity==="error"&&issue.location.startsWith(`Section ${book.chapters.indexOf(c)+1}:`))?
                       <span className="section-issue-dot" title="Export validation issue" aria-label="Export validation issue">●</span>:null}
 
-                </button><span className="sidebar-title-tooltip" aria-hidden="true">{c.title}</span><button type="button" className="sidebar-section-menu-trigger" aria-label={`Actions for ${c.title}`} aria-expanded={sectionMenu===c.id} onClick={()=>setSectionMenu(sectionMenu===c.id?null:c.id)}>⋯</button>
+                </button><ChapterTitleTooltip title={c.title} /><button type="button" className="sidebar-section-menu-trigger" aria-label={`Actions for ${c.title}`} aria-expanded={sectionMenu===c.id} onClick={()=>setSectionMenu(sectionMenu===c.id?null:c.id)}>⋯</button>
                 {sectionMenu===c.id?<div className="sidebar-section-menu" role="menu">
                   <button role="menuitem" onClick={()=>{setSectionMenu(null);const title=window.prompt("Section title",c.title);if(title!==null)updateStructure({kind:"rename",id:c.id,title});}}>Rename</button>
                   <button role="menuitem" disabled={book.chapters.indexOf(c)===0||sectionMatter(book.chapters[book.chapters.indexOf(c)-1].sectionType??"chapter")!==group} onClick={()=>{setSectionMenu(null);updateStructure({kind:"move",id:c.id,to:book.chapters.indexOf(c)-1});}}>Move up</button>
@@ -868,9 +869,10 @@ export default function Workspace() {
                     </button>
                     <button type="button" className={blockingIssues.length?"pipeline-readiness has-issues":"pipeline-readiness is-ready"}
                       aria-expanded={readinessOpen} aria-controls="export-readiness-list"
+                      aria-label={blockingIssues.length?"Not ready to export":"Ready to export"}
                       title={blockingIssues.length?`${blockingIssues.length} export issue${blockingIssues.length===1?"":"s"} · View export checks`:"Ready to export · View export checks"}
                       onClick={()=>setReadinessOpen(v=>!v)}>
-                      <span className="sr-only">{blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}</span><span aria-hidden="true">●</span>
+                      <span className="sr-only">{blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}</span><span className="export-status-dot" aria-hidden="true" />
                     </button>
                   </li>
                 </ol>:null}

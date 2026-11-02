@@ -2928,3 +2928,74 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 
 .workspace .pipeline-readiness{--button-color:#477857}
 .workspace .pipeline-readiness.has-issues{--button-color:#aa6a16}
+
+/* Fix 1: let the chapter button fill the sidebar, rather than a narrow column. */
+.workspace>aside{padding-inline:0}
+.section-navigator-group>summary{padding-left:0}
+.section-navigator-group>.chapter-list{margin:0;padding:0 16px 0 8px}
+.section-navigator .sidebar-section-row{display:flex;align-items:center;gap:0;width:100%;min-width:0}
+.section-navigator .sidebar-drag-handle{flex:0 0 24px;width:24px;min-width:24px}
+.workspace .section-navigator .sidebar-section-row>button:first-of-type{
+  flex:1 1 auto;min-width:0;width:auto;text-align:left;padding-inline:0;
+}
+.section-navigator .sidebar-section-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-navigator .sidebar-section-row>.sidebar-section-menu-trigger{
+  position:absolute;right:0;top:0;bottom:0;width:28px;min-width:28px;
+  margin-left:auto;visibility:hidden;opacity:0;
+}
+.section-navigator .sidebar-section-row:is(:hover,:focus-within)>.sidebar-section-menu-trigger{visibility:visible;opacity:1}
+.workspace .section-navigator .sidebar-section-row:is(:hover,:focus-within)>button:first-of-type{padding-right:28px}
+
+/* Fix 2: portal avoids clipping and keeps title tips beside the outline. */
+.chapter-title-tooltip{position:fixed;z-index:1000;box-sizing:border-box;max-width:min(260px,calc(100vw - 16px));padding:6px 10px;border:0;border-radius:4px;background:var(--color-neutral-900,#202922);color:#fff;font:12px/1.4 Arial,Helvetica,sans-serif;overflow-wrap:anywhere;pointer-events:none;box-shadow:0 2px 8px #0003}
+
+/* Fix 3: flat control groups beneath the Design tabs. */
+.design-panel .design-tab-content fieldset{
+  border:0;border-radius:0;padding:0;margin:0 0 24px;background:transparent;
+}
+.design-panel .design-tab-content fieldset:last-child{margin-bottom:0}
+
+/* Fix 4: one text-size segmented control, including the existing reset action. */
+.unified-preview-toolbar .reader-zoom{
+  display:inline-flex;align-items:stretch;gap:0;border:1px solid #bdc9be;border-radius:6px;overflow:hidden;
+}
+.workspace .reader-zoom button{
+  --button-border:0;--button-bg:transparent;
+  margin:0;border-radius:0;min-width:36px;cursor:pointer;
+}
+.workspace .reader-zoom button+button{border-left:1px solid #bdc9be!important}
+.workspace .reader-zoom button:hover:not(:disabled){--button-bg:#eaf0eb}
+.workspace .reader-zoom button:active:not(:disabled){--button-bg:#dce7de}
+.workspace .reader-zoom button[title="Reset to 100%"]:hover{--button-bg:#f0f4f0}
+.workspace .reader-zoom button:disabled{cursor:default}
+
+/* Fix 5: equal theme-card tracks with bottom-aligned descriptions. */
+.design-panel .template-options{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;align-items:stretch;
+}
+.design-panel .template-options .template-card{
+  display:flex;flex-direction:column;align-items:stretch;min-width:0;height:100%;box-sizing:border-box;
+}
+.design-panel .template-options .template-card>span:last-child{
+  flex:0 0 auto;margin-top:auto;
+}
+
+/* Fix 6: readiness is a geometric status mark, independent of font metrics. */
+:root{--color-success:#28734d;--color-neutral-400:#929b96}
+.pipeline-readiness .export-status-dot{
+  display:block;flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:var(--color-neutral-400);
+}
+.pipeline-readiness.is-ready .export-status-dot{background:var(--color-success)}
+
+/* Fix 7: align the first mode label with the Design content edge. */
+.workspace{--workspace-content-inset:16px}
+.workspace-modes.workspace-toolbar{padding-inline:var(--workspace-content-inset)}
+.workspace-toolbar .workspace-primary-modes.bs-workflow-navigation{margin-inline-start:0;padding-inline:0}
+.workspace-toolbar .workspace-primary-modes .bs-workflow-tab:first-child{padding-inline-start:0}
+.editor-format-panel .design-panel{margin-inline:0!important;padding-inline:var(--workspace-content-inset)!important}
+
+/* Fix 8: consistent Help/Beta copy and keyboard-only chrome focus rings. */
+.appearance-panel-header a{font-size:12px;text-decoration:none;color:#506c5a}
+.topbar .brand .badge{font-size:12px}
+:is(.topbar,.workspace-toolbar) button:focus:not(:focus-visible){outline:none!important;box-shadow:none}
+:is(.topbar,.workspace-toolbar) button:focus-visible{outline:2px solid var(--brand-accent,#285a4b)!important;outline-offset:3px}

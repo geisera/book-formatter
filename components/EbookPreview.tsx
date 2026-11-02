@@ -252,6 +252,8 @@ export default function EbookPreview({
           </button>
           <button
             aria-label="Reset preview text size (preview only)"
+            aria-live="polite"
+            title="Reset to 100%"
             onClick={() => setScale(1)}
           >
             {Math.round(scale * 100)}%
