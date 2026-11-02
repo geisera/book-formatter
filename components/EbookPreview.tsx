@@ -309,7 +309,6 @@ export default function EbookPreview({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={book.cover.src} alt={book.cover.alt}/>
           </div> : <><header className="ebook-chapter-header">
-            <div className="ebook-opening-rule" aria-hidden="true" />
             {chapter && (showSectionTitle(chapter)||chapter.sectionType==="title") ? <>
               {chapterOrdinal(book.chapters,index)!==null && (edition.chapterNumberStyle??"none")!=="none"
                 ? ((edition.showChapterTitle??true)
