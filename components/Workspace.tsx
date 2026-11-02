@@ -284,7 +284,7 @@ export default function Workspace() {
   }
   async function createSample(){
     try{
-      const sample=createBook("Sample Manuscript","Book Formatter");
+      const sample=createBook("Sample Manuscript","BookStitcher");
       const passage={type:"doc",content:[{type:"paragraph",content:[{type:"text",text:"This is a sample manuscript. Edit this paragraph, then explore Structure, Design, Details, and Export. Your changes stay in this browser until you export or back up the project."}]}]};
       const draft={...sample,chapters:sample.chapters.map((c,i)=>i===0?{...c,title:"Chapter One: Getting Started",content:passage}:c)};
       const saved=await saveBook(draft,0);
@@ -599,8 +599,8 @@ export default function Workspace() {
       ) : null}
       <header className="topbar">
         <button className="brand" onClick={dashboard}>
-          <span className="brand-icon">▤</span> Book Formatter
-          <span className="badge" title="Book Formatter is in beta">Beta</span>
+          <span className="brand-icon">▤</span> BookStitcher
+          <span className="badge" title="BookStitcher is in beta">Beta</span>
         </button>
         <div className="topbar-actions">
           <Link className="help-top-link" href="/help/" aria-label="Open help and documentation">Help &amp; Docs</Link>
