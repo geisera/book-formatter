@@ -9,7 +9,7 @@
 
 ## 1. Vision and product principles
 
-Book Formatter allows authors to import manuscripts, organize book structure, choose professional typography, preview editions, and export publication-ready books through an installable browser application. The initial focus is novels, novellas, and short-story collections.
+BookStitcher allows authors to import manuscripts, organize book structure, choose professional typography, preview editions, and export publication-ready books through an installable browser application. The initial focus is novels, novellas, and short-story collections.
 
 Non-negotiable principles:
 
