@@ -876,7 +876,7 @@ export async function buildPrintPdf(
   pdf.setTitle(book.metadata?.subtitle ? `${book.title}: ${book.metadata.subtitle}` : book.title);
   pdf.setAuthor(book.author);
   if (book.metadata?.description) pdf.setSubject(book.metadata.description);
-  pdf.setCreator("Book Formatter");
+  pdf.setCreator("BookStitcher");
   pdf.setProducer(PRINT_RENDERER);
   pdf.setCreationDate(created);
   pdf.setModificationDate(created);
