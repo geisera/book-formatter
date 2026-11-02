@@ -2672,3 +2672,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 @media(max-width:1000px){.bs-hero{gap:15px;padding:62px 30px}.bs-product-art{transform:scale(.85);transform-origin:center}.bs-header nav{gap:16px}.bs-workflow-inner{gap:50px}.bs-book{left:11%}}
 @media(max-width:750px){.bs-landing .landing-header{padding:18px 20px}.bs-header nav a[href^="#"]{display:none}.bs-header nav{gap:14px}.bs-hero{display:flex;flex-direction:column;padding:65px 22px 75px;text-align:center;min-height:0;gap:28px}.bs-hero h1{font-size:clamp(49px,10vw,74px)}.bs-hero .bs-lede{font-size:16px}.bs-actions{justify-content:center}.bs-product-art{width:min(100%,500px);min-height:450px;transform:scale(.9);margin:-15px auto -35px}.bs-feature-grid{grid-template-columns:1fr;max-width:490px;padding:10px 22px 80px}.bs-feature-illustration{height:245px}.bs-section{padding-top:85px}.bs-workflow{padding:80px 25px}.bs-workflow-inner{grid-template-columns:1fr;gap:40px}.bs-local{padding:90px 25px}.bs-footer{flex-direction:column;text-align:center}.bs-trust-strip{gap:12px 18px;font-size:9px}}
 @media(max-width:420px){.bs-landing .landing-brand{font-size:21px}.bs-header nav a{font-size:12px}.bs-landing .landing-nav-cta{padding:11px}.bs-product-art{width:450px;transform:scale(.75);margin:-55px auto -75px}.bs-hero{overflow:hidden}.bs-steps li{gap:15px}}
+
+
+/* Bookmaking workspace: two primary activities plus contextual tools. */
+.workspace-modes{display:flex;flex-wrap:wrap;align-items:center;gap:10px 24px;padding:12px 20px;background:#f9faf7;border-bottom:1px solid #e2e7df}
+.workspace-primary-modes.bs-workflow-navigation{display:flex;align-items:center;gap:8px;border:0;padding:0;margin:0}
+.bs-workflow-navigation .bs-workflow-tab{font-size:15px;font-weight:700;padding:11px 23px;border:0;border-radius:5px;background:transparent;color:#667970}
+.bs-workflow-navigation .bs-workflow-tab[aria-pressed="true"]{background:#244c40;color:#fff}
+.bs-workflow-navigation .bs-book-details-link{background:#fff;border:1px solid #b5c5b9;padding:10px 15px;margin-left:10px;font-weight:600}
+.bs-workflow-navigation .bs-book-details-link[aria-pressed="true"]{background:#e2eee5;border-color:#36644d}
+.workspace-modes .bs-context-nav{display:flex;align-items:center;gap:6px;border-left:1px solid #d7dfd8;padding-left:18px}
+.workspace-modes .bs-context-nav button{border:0;background:transparent;padding:9px 13px;font-size:12px;color:#50675b}
+.workspace-modes .bs-context-nav button[aria-pressed="true"]{background:#e1eae3;color:#1e493a;font-weight:700}
+.book-details-panel{max-width:1320px}
+.book-details-panel>h2{font-size:clamp(30px,3vw,43px)}
+.book-details-panel .book-details-fields{gap:20px}
+@media(max-width:900px){.workspace-modes{gap:12px}.workspace-modes .bs-context-nav{width:100%;padding:8px 0 0;border-left:0;border-top:1px solid #e1e7df;flex-wrap:wrap}}
+@media(max-width:580px){.workspace-primary-modes.bs-workflow-navigation{flex-wrap:wrap}.bs-workflow-navigation .bs-workflow-tab{padding:10px 13px}.bs-workflow-navigation .bs-book-details-link{margin-left:0}}
