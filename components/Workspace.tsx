@@ -15,7 +15,7 @@ import PublishPanel from "./PublishPanel";
 import PrintPanel from "./PrintPanel";
 import StructurePanel from "./StructurePanel";
 import { changeStructure, type StructureAction } from "../lib/structure";
-import { getEbookEdition, presetFor, type EditionTemplate, type EbookEdition } from "../lib/edition";
+import { getEbookEdition, type EbookEdition } from "../lib/edition";
 import { getPrintEdition, printPreset, type PrintTrim } from "../lib/print-profile";
 import { blankChapter, createBook, sectionMatter, type Book } from "../lib/model";
 import { romanNumeral } from "../lib/chapter-numbering";
@@ -59,7 +59,6 @@ function backupLabel(id:string):string{
 export default function Workspace() {
   const [designPreview,setDesignPreview]=useState<"ebook"|"print">("ebook");
   const [inspectorTab,setInspectorTab]=useState<"preview"|"formatting">("preview");
-  const [templateMenuOpen,setTemplateMenuOpen]=useState(false);
   const [mobileDrawerOpen,setMobileDrawerOpen]=useState(false);
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewWidth,setPreviewWidth]=useState(44);
@@ -847,42 +846,49 @@ export default function Workspace() {
               <Link href="/help/#start" target="_blank" rel="noopener noreferrer">Getting started guide</Link>
               <button type="button" onClick={()=>{localStorage.setItem("book-formatter:coachmark-dismissed","1");setCoachmarkDismissed(true);}} aria-label="Dismiss workspace introduction">Dismiss</button>
             </div>:null}
-            <nav className="workspace-modes" aria-label="Workspace mode">
-              <div className="workspace-primary-modes bs-workflow-navigation" role="group" aria-label="Bookmaking workspace">
+            <nav className="workspace-modes workspace-toolbar" aria-label="Workspace navigation">
+              <div className="workspace-primary-modes bs-workflow-navigation" role="group" aria-label="Workspace mode">
                 <button type="button" className="bs-workflow-tab" aria-pressed={mode==="manuscript"&&inspectorTab==="preview"||mode==="structure"}
-                  onClick={()=>{setMode("manuscript");setInspectorTab("preview");setPreviewVisible(true);}}>Writing</button>
+                  onClick={()=>{setMode("manuscript");setInspectorTab("preview");}}>Writing</button>
                 <button type="button" className="bs-workflow-tab" aria-pressed={mode==="manuscript"&&inspectorTab==="formatting"||mode==="publish"||mode==="print"}
                   onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Preview</button>
-                <button type="button" className="bs-book-details-link" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Edit book details</button>
               </div>
-              <div className="bs-context-nav" role="group" aria-label="Workspace tools">
-                {(mode==="structure"||mode==="manuscript"&&inspectorTab==="preview")?<><button type="button" aria-pressed={mode==="manuscript"} onClick={()=>{setMode("manuscript");setInspectorTab("preview");}}>Manuscript</button><button type="button" aria-pressed={mode==="structure"} onClick={()=>setMode("structure")}>Book structure</button></>:null}
-                {(mode==="manuscript"&&inspectorTab==="formatting"||mode==="publish"||mode==="print")?<><button type="button" aria-pressed={mode==="manuscript"} onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>Themes &amp; preview</button><button type="button" aria-pressed={mode==="publish"||mode==="print"} onClick={()=>setMode("publish")}>Export editions</button></>:null}
-              </div>
-              <button type="button" className={blockingIssues.length?"readiness-pill has-issues":"readiness-pill is-ready"}
-                aria-expanded={readinessOpen} aria-controls="export-readiness-list"
-                onClick={()=>setReadinessOpen(v=>!v)}>
-                {blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}
-              </button>
-              <div className="workspace-template-quick">
-                <button type="button" aria-expanded={templateMenuOpen} aria-label="Switch book template" onClick={()=>setTemplateMenuOpen(v=>!v)}>{getEbookEdition(book).template.id.replace(/^./,c=>c.toUpperCase())} ▾</button>
-                {templateMenuOpen?<div className="workspace-template-menu" role="group" aria-label="Choose template">
-                  {(["classic","modern","gothic"] as EditionTemplate[]).map(id=><button type="button" key={id} aria-pressed={getEbookEdition(book).template.id===id} onClick={()=>{changeEdition(presetFor(id));setTemplateMenuOpen(false);}}>{id[0].toUpperCase()+id.slice(1)}</button>)}
-                </div>:null}
-              </div>
-              <div className="workspace-save">
-                <span>{getEbookEdition(book).template.id.replace(/^./, (c) => c.toUpperCase())} · ebook edition</span>
-                <span
-                  role="status"
-                  className={status === "Save failed" ? "failed" : "saved"}
-                >
-                  {status}
-                </span>
+              {(mode==="structure"||mode==="manuscript"&&inspectorTab==="preview")?
+                <button type="button" className="workspace-structure-link" aria-pressed={mode==="structure"}
+                  onClick={()=>{setMode(mode==="structure"?"manuscript":"structure");setInspectorTab("preview");}}>
+                  {mode==="structure"?"Back to manuscript":"Book structure"}
+                </button>:null}
+              {(mode==="manuscript"&&inspectorTab==="formatting"||mode==="publish"||mode==="print")?
+                <ol className="workspace-pipeline" aria-label="Publication steps">
+                  <li>
+                    <button type="button" className="pipeline-step" aria-current={mode==="manuscript"?"step":undefined}
+                      onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);}}>
+                      <span className="pipeline-number" aria-hidden="true">1</span> Design
+                    </button>
+                  </li>
+                  <li className="pipeline-arrow" aria-hidden="true">→</li>
+                  <li>
+                    <button type="button" className="pipeline-step" aria-current={mode==="publish"||mode==="print"?"step":undefined}
+                      onClick={()=>setMode("publish")}>
+                      <span className="pipeline-number" aria-hidden="true">2</span> Export
+                    </button>
+                    <button type="button" className={blockingIssues.length?"pipeline-readiness has-issues":"pipeline-readiness is-ready"}
+                      aria-expanded={readinessOpen} aria-controls="export-readiness-list"
+                      onClick={()=>setReadinessOpen(v=>!v)}>
+                      {blockingIssues.length?`${blockingIssues.length} issue${blockingIssues.length===1?"":"s"}`:"Ready to export"}
+                    </button>
+                  </li>
+                </ol>:null}
+              {mode==="manuscript"&&inspectorTab==="formatting"?
+                <button type="button" className="format-controls-toggle" aria-expanded={formatControlsVisible} aria-controls="preview-format-controls"
+                  onClick={()=>setFormatControlsVisible(v=>!v)}>{formatControlsVisible?"Hide format controls":"Show format controls"}</button>:null}
+              <button type="button" className="workspace-details-link" aria-pressed={mode==="details"} onClick={()=>setMode("details")}>Edit book details</button>
+              <div className={`workspace-save save-indicator ${status==="Save failed"?"failed":"saved"}`}
+                role="status" aria-live="polite" title={status||"Stored on this device"}>
+                <span aria-hidden="true">{status==="Save failed"?"!":status==="Saving locally…"?"◌":"✓"}</span>
+                <span>{status==="Saved locally"?"Saved":status==="Saving locally…"?"Saving…":status||"Saved"}</span>
               </div>
             </nav>
-            <div className="workspace-context-help">
-              <Link href={mode==="structure"?"/help/#structure":mode==="details"?"/help/#details":mode==="publish"||mode==="print"?"/help/#epub":mode==="manuscript"&&inspectorTab==="formatting"?"/help/#design":"/help/#editor"} target="_blank" rel="noopener noreferrer" aria-label="Help for current workspace">? Help for {mode==="manuscript"?(inspectorTab==="formatting"?"Design":"Manuscript"):mode==="publish"||mode==="print"?"Export":mode[0].toUpperCase()+mode.slice(1)}</Link>
-            </div>
             {recentlyDeleted?.bookId===book.id?<div className="delete-undo-notice" role="status">
               <span>Section deleted: <strong>{recentlyDeleted.section.title}</strong></span>
               <button type="button" onClick={()=>{if(recentlyDeleted)updateStructure({kind:"restore",section:recentlyDeleted.section,before:recentlyDeleted.before});}}>Undo deletion</button>
@@ -910,12 +916,6 @@ export default function Workspace() {
                 </li>)}</ul>}
             </section>:null}
             <div className={`workspace-body mode-${mode}${mode==="manuscript"&&(inspectorTab!=="formatting"||!previewVisible)?" preview-hidden":""}${mode==="manuscript"&&inspectorTab==="formatting"?" layout-format":" layout-write"}`} style={mode==="manuscript"?{"--preview-fraction":`${previewWidth}%`} as CSSProperties:undefined}>
-              {mode==="manuscript" ? <div className="editor-shared-toolbar" role="group" aria-label="Manuscript and Design layout">
-                <button type="button" aria-pressed={inspectorTab==="preview"} onClick={()=>{setInspectorTab("preview");setPreviewVisible(true);}}>Write</button>
-                <button type="button" aria-pressed={inspectorTab==="formatting"} onClick={()=>{setInspectorTab("formatting");setPreviewVisible(true);}}>Preview</button>
-                {inspectorTab==="formatting"?<button type="button" aria-expanded={formatControlsVisible} aria-controls="preview-format-controls" onClick={()=>setFormatControlsVisible(v=>!v)}>{formatControlsVisible?"Hide format controls":"Show format controls"}</button>:null}
-                <span className="editor-shared-toolbar-context">{chapter?.title}</span>
-              </div> : null}
               <section className="editor-area" hidden={mode !== "manuscript"}>
                 {findOpen?<FindReplacePanel book={book} chapterId={chapterId} config={findConfig} onConfig={setFindConfig} onClose={()=>setFindOpen(false)} onNavigate={navigateMatch}
                   onReplace={applyReplacements} onUndo={()=>swapReplacement(true)} onRedo={()=>swapReplacement(false)}
@@ -1029,13 +1029,7 @@ export default function Workspace() {
               ) : null}
 
             </div>
-            <nav className="mobile-bottom-navigation" aria-label="Mobile workspace navigation">
-              <button type="button" aria-current={mode==="manuscript"&&inspectorTab==="preview"?"page":undefined} onClick={()=>{setMode("manuscript");setInspectorTab("preview");setMobileDrawerOpen(false);}}>Manuscript</button>
-              <button type="button" aria-current={mode==="structure"?"page":undefined} onClick={()=>{setMode("structure");setMobileDrawerOpen(false);}}>Structure</button>
-              <button type="button" aria-current={mode==="manuscript"&&inspectorTab==="formatting"?"page":undefined} onClick={()=>{setMode("manuscript");setInspectorTab("formatting");setPreviewVisible(true);setMobileDrawerOpen(false);}}>Preview</button>
-              <button type="button" aria-current={mode==="details"?"page":undefined} onClick={()=>{setMode("details");setMobileDrawerOpen(false);}}>Details</button>
-              <button type="button" aria-current={mode==="publish"||mode==="print"?"page":undefined} onClick={()=>{setMode("publish");setMobileDrawerOpen(false);}}>Export</button>
-            </nav>
+
           </div>
         </main>
       )}
