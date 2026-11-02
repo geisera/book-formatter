@@ -65,7 +65,7 @@ export const schema = new Schema({
     em: { toDOM: () => ["em", 0], parseDOM: [{ tag: "em" }, { tag: "i" }] },
   },
 });
-export const SECTION_TYPES = ["chapter", "prologue", "epilogue", "interlude", "part", "half-title", "title", "copyright", "dedication", "epigraph", "toc", "preface", "about-author", "also-by", "notes", "acknowledgments", "foreword", "introduction", "afterword", "bibliography", "praise", "appendix", "glossary", "endnotes", "custom"] as const;
+export const SECTION_TYPES = ["chapter", "prologue", "epilogue", "interlude", "volume", "part", "half-title", "title", "copyright", "dedication", "epigraph", "toc", "preface", "about-author", "also-by", "notes", "acknowledgments", "foreword", "introduction", "afterword", "bibliography", "praise", "appendix", "glossary", "endnotes", "custom"] as const;
 export type SectionType = (typeof SECTION_TYPES)[number];
 export const sectionMatter = (type: SectionType): "front" | "body" | "back" =>
   (["half-title", "title", "copyright", "dedication", "epigraph", "toc", "preface", "foreword", "introduction", "praise"] as string[]).includes(type) ? "front" :
