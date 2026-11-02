@@ -43,7 +43,7 @@ export const schema = new Schema({
       group: "block",
       atom: true,
       draggable: true,
-      attrs: {src: {}, alt: {default: ""}, width: {default: 100}, align: {default: "center"}, caption: {default: ""}},
+      attrs: {src: {}, alt: {default: ""}, width: {default: 100}, align: {default: "center"}, caption: {default: ""}, printPlacement: {default: "inline"}},
       toDOM: node => ["figure", {class: "manuscript-image", style: `text-align:${node.attrs.align}`},
         ["img", {src: node.attrs.src, alt: node.attrs.alt, style: `width:${node.attrs.width}%;height:auto`}],
         ...(node.attrs.caption ? [["figcaption", node.attrs.caption]] : [])
