@@ -72,7 +72,7 @@ p {
   color: var(--green);
 }
 .badge {
-  font: 9px Arial;
+  font: 12px Arial;
   letter-spacing: 1.5px;
   padding: 6px 8px;
   border: 1px solid var(--line);
@@ -476,7 +476,7 @@ aside h2 {
     min-height: 500px;
   }
   .editor-meta {
-    font-size: 9px;
+    font-size: 12px;
   }
   .toolbar-spacer {
     display: none;
@@ -823,7 +823,7 @@ aside h2 {
   display: block;
 }
 .template-card small {
-  font-size: 9px;
+  font-size: 12px;
   color: #6c7b66;
   display: block;
   margin-top: 6px;
@@ -898,7 +898,7 @@ aside h2 {
   gap: 8px;
 }
 .preview-heading .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1.6px;
   margin-bottom: 10px;
 }
@@ -907,7 +907,7 @@ aside h2 {
   margin-bottom: 22px;
 }
 .live-indicator {
-  font-size: 9px;
+  font-size: 12px;
   color: #54764d;
   margin-top: 4px;
   white-space: nowrap;
@@ -978,7 +978,7 @@ aside h2 {
 }
 .ebook-book-title {
   font:
-    9px/1.7 Arial,
+    12px/1.7 Arial,
     sans-serif;
   color: #96957f;
   text-transform: uppercase;
@@ -1072,7 +1072,7 @@ aside h2 {
 }
 .preview-note {
   font:
-    9px/1.8 Arial,
+    12px/1.8 Arial,
     sans-serif;
   color: #819074;
   text-align: center;
@@ -1209,7 +1209,7 @@ aside h2 {
     padding-inline: 10px;
   }
   .workspace-modes .workspace-save {
-    font-size: 9px;
+    font-size: 12px;
   }
 }
 .workspace-body.mode-publish {
@@ -1321,7 +1321,7 @@ aside h2 {
 }
 .issue-error,
 .issue-warning {
-  font-size: 9px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -1412,7 +1412,7 @@ aside h2 {
 .export-history summary small {
   display: block;
   margin-left: 15px;
-  font-size: 9px;
+  font-size: 12px;
 }
 .history-stale {
   color: #9b7a3a;
@@ -1599,7 +1599,7 @@ aside h2 {
   box-shadow: 0 3px 12px #253f2215;
 }
 .pdf-leaf figcaption {
-  font-size: 9px;
+  font-size: 12px;
   color: #64765a;
   margin-top: 11px;
   text-align: center;
@@ -1664,7 +1664,7 @@ aside h2 {
   margin: 6px 0;
 }
 .print-history code {
-  font-size: 9px;
+  font-size: 12px;
   overflow-wrap: anywhere;
 }
 @media (max-width: 850px) {
@@ -2024,7 +2024,7 @@ aside h2 {
 .print-trim-card-head{display:flex;flex-direction:column;gap:4px}
 .print-trim-card-head strong{font:22px Georgia,serif;color:#2c3c30}
 .print-trim-card-head small{font:12px system-ui,sans-serif}
-.print-trim-card-head em{font:700 9px system-ui,sans-serif;font-style:normal;background:#dcead5;color:#365735;padding:4px 6px;border-radius:3px;width:max-content}
+.print-trim-card-head em{font:700 12px system-ui,sans-serif;font-style:normal;background:#dcead5;color:#365735;padding:4px 6px;border-radius:3px;width:max-content}
 .print-trim-description{font:12px/1.4 system-ui,sans-serif;color:#6a786d}
 .print-trim-shape{flex:none;background:#dce6d9;border:1px solid #a6bda2;border-radius:2px}
 .print-settings-divider{border-top:1px solid #e2e7de;margin:27px 0}
@@ -2413,9 +2413,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .design-template-first{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
 .design-template-first .template-card{display:flex;flex-direction:column;align-items:stretch;min-width:0;text-align:left;gap:10px;padding:10px}
 .template-chapter-thumbnail{display:flex;flex-direction:column;justify-content:center;gap:8px;min-height:138px;padding:13px;background:#fbf8ec;color:#262c28;border:1px solid #d1cdc1;text-align:center;font-family:Georgia,serif}
-.template-chapter-thumbnail>span{font-size:9px;letter-spacing:.17em}
+.template-chapter-thumbnail>span{font-size:12px;letter-spacing:.17em}
 .template-chapter-thumbnail>strong{font-size:17px;font-weight:normal}
-.template-chapter-thumbnail>i{font-size:9px;line-height:1.45}
+.template-chapter-thumbnail>i{font-size:12px;line-height:1.45}
 .template-modern{font-family:Arial,sans-serif;text-align:left;background:#fff}
 .template-modern>strong{font-weight:700}
 .template-gothic{font-family:Georgia,serif;background:#eee7dc;border-top:5px double #53453a}
@@ -2606,16 +2606,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .bs-book{position:absolute;width:256px;height:382px;top:17%;left:16%;transform:rotate(-10deg);box-shadow:-10px 20px 26px #213a3240,3px 4px 6px #23392b26;background:#e0d4b9;border-left:12px solid #1d3c32;border-radius:2px 5px 5px 2px}
 .bs-book-cover{height:100%;padding:41px 26px 21px;background:linear-gradient(110deg,#21483d,#31594a 30%,#234a40 85%,#1a3d33);border:1px solid #779082;display:flex;flex-direction:column;text-align:center;color:#f5e7c4;align-items:center}
 .bs-cover-rule{height:1px;width:100%;background:#bd9c63;margin-bottom:48px}
-.bs-cover-author,.bs-cover-bottom{font:9px Arial,sans-serif;letter-spacing:.18em}
+.bs-cover-author,.bs-cover-bottom{font:12px Arial,sans-serif;letter-spacing:.18em}
 .bs-cover-title{font:normal 31px/1.2 Georgia,serif;letter-spacing:.05em;margin:18px 0}
 .bs-cover-ornament{font:32px Georgia,serif;color:#d2b27c;margin:6px 0 auto}
 .bs-reader{position:absolute;width:264px;height:348px;right:7%;top:26%;padding:13px;border-radius:16px;background:#2f3b36;transform:rotate(9deg);box-shadow:15px 24px 30px #23372b40}
 .bs-reader-screen{height:100%;border-radius:5px;background:#f5f0e6;padding:39px 26px 20px;display:flex;flex-direction:column;text-align:center;color:#27382f}
-.bs-reader-chapter{font:9px Arial,sans-serif;letter-spacing:.2em;color:#867e68;margin-bottom:14px}
+.bs-reader-chapter{font:12px Arial,sans-serif;letter-spacing:.2em;color:#867e68;margin-bottom:14px}
 .bs-reader-screen strong{font:21px Georgia,serif;margin-bottom:21px}
 .bs-reader-screen p{text-align:left;font:12px/1.9 Georgia,serif;margin:0 0 13px}
 .bs-reader-page{margin-top:auto;font:12px Georgia,serif}
-.bs-art-stamp{position:absolute;right:4%;bottom:7%;transform:rotate(-9deg);border:1px solid #aa996e;color:#6c785e;background:#f7f3e8;padding:12px 19px;text-align:center;font:9px/1.6 Arial,sans-serif;letter-spacing:.13em}
+.bs-art-stamp{position:absolute;right:4%;bottom:7%;transform:rotate(-9deg);border:1px solid #aa996e;color:#6c785e;background:#f7f3e8;padding:12px 19px;text-align:center;font:12px/1.6 Arial,sans-serif;letter-spacing:.13em}
 .bs-art-stamp strong{font:16px Georgia,serif;letter-spacing:0}
 .bs-trust-strip{padding:22px 32px;background:#23493f;display:flex;justify-content:center;flex-wrap:wrap;gap:26px;color:#f9f3e7;font-size:12px;letter-spacing:.17em;font-weight:700}
 .bs-trust-strip span:nth-child(even){color:#d6b985}
@@ -2632,15 +2632,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .bs-feature-content p{color:#6a796f;font-size:14px;line-height:1.8;margin:0}
 .bs-mini-reader,.bs-mini-phone,.bs-paper-page{background:#fcfaf3;box-shadow:5px 12px 20px #263e3130;display:flex;flex-direction:column;align-items:center}
 .bs-mini-reader{width:190px;height:220px;padding:28px 22px;transform:rotate(-8deg)}
-.bs-mini-reader small,.bs-mini-phone small{font-size:8px;letter-spacing:.15em}
+.bs-mini-reader small,.bs-mini-phone small{font-size:12px;letter-spacing:.15em}
 .bs-mini-reader strong{font:16px Georgia,serif;margin:19px 0}
 .bs-feature-illustration i{display:block;width:100%;height:4px;background:#c3c8bb;margin:6px 0}
 .bs-feature-illustration i.short{width:65%;align-self:flex-start}
 .bs-mini-phone{width:103px;height:183px;border:9px solid #283b32;border-radius:17px;padding:27px 10px;transform:rotate(8deg);margin-left:-25px;margin-top:43px}
-.bs-mini-phone small{font-size:6px;margin-bottom:18px}
+.bs-mini-phone small{font-size:12px;margin-bottom:18px}
 .bs-paper-page{width:166px;height:224px;padding:19px;position:relative;transform:rotate(-7deg);gap:2px}
 .bs-paper-page.second{margin-left:-25px;transform:rotate(7deg);background:#fffdf8}
-.bs-paper-page small{font:9px Georgia,serif;margin-bottom:33px}
+.bs-paper-page small{font:12px Georgia,serif;margin-bottom:33px}
 .bs-paper-page strong{font:12px Georgia,serif;margin-bottom:16px}
 .bs-style-sample{height:155px;width:105px;border:6px solid #f8f5ed;background:#faf8f0;box-shadow:0 9px 19px #32443b23;display:flex;flex-direction:column;align-items:center;justify-content:center;font:62px Georgia,serif;color:#2d5146}
 .bs-style-sample span{font:22px Georgia,serif;color:#b5905a}
@@ -2670,7 +2670,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .bs-footer{margin:0;padding:30px 50px;display:flex;justify-content:space-between;align-items:center;gap:20px;border:0;background:#f6f4ee}
 .bs-footer span{font-size:12px}
 @media(max-width:1000px){.bs-hero{gap:15px;padding:62px 30px}.bs-product-art{transform:scale(.85);transform-origin:center}.bs-header nav{gap:16px}.bs-workflow-inner{gap:50px}.bs-book{left:11%}}
-@media(max-width:750px){.bs-landing .landing-header{padding:18px 20px}.bs-header nav a[href^="#"]{display:none}.bs-header nav{gap:14px}.bs-hero{display:flex;flex-direction:column;padding:65px 22px 75px;text-align:center;min-height:0;gap:28px}.bs-hero h1{font-size:clamp(49px,10vw,74px)}.bs-hero .bs-lede{font-size:16px}.bs-actions{justify-content:center}.bs-product-art{width:min(100%,500px);min-height:450px;transform:scale(.9);margin:-15px auto -35px}.bs-feature-grid{grid-template-columns:1fr;max-width:490px;padding:10px 22px 80px}.bs-feature-illustration{height:245px}.bs-section{padding-top:85px}.bs-workflow{padding:80px 25px}.bs-workflow-inner{grid-template-columns:1fr;gap:40px}.bs-local{padding:90px 25px}.bs-footer{flex-direction:column;text-align:center}.bs-trust-strip{gap:12px 18px;font-size:9px}}
+@media(max-width:750px){.bs-landing .landing-header{padding:18px 20px}.bs-header nav a[href^="#"]{display:none}.bs-header nav{gap:14px}.bs-hero{display:flex;flex-direction:column;padding:65px 22px 75px;text-align:center;min-height:0;gap:28px}.bs-hero h1{font-size:clamp(49px,10vw,74px)}.bs-hero .bs-lede{font-size:16px}.bs-actions{justify-content:center}.bs-product-art{width:min(100%,500px);min-height:450px;transform:scale(.9);margin:-15px auto -35px}.bs-feature-grid{grid-template-columns:1fr;max-width:490px;padding:10px 22px 80px}.bs-feature-illustration{height:245px}.bs-section{padding-top:85px}.bs-workflow{padding:80px 25px}.bs-workflow-inner{grid-template-columns:1fr;gap:40px}.bs-local{padding:90px 25px}.bs-footer{flex-direction:column;text-align:center}.bs-trust-strip{gap:12px 18px;font-size:12px}}
 @media(max-width:420px){.bs-landing .landing-brand{font-size:21px}.bs-header nav a{font-size:12px}.bs-landing .landing-nav-cta{padding:11px}.bs-product-art{width:450px;transform:scale(.75);margin:-55px auto -75px}.bs-hero{overflow:hidden}.bs-steps li{gap:15px}}
 
 
@@ -2874,10 +2874,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .project-backup-note [tabindex]{display:inline-block;cursor:help}
 .workspace-toolbar .workspace-primary-modes.bs-workflow-navigation{border:0;background:transparent;padding:0}
 .workspace-toolbar .format-controls-toggle,.workspace-toolbar .workspace-details-link{border:0;background:transparent;font:12px/1.4 Arial,sans-serif;padding:8px 10px;min-height:36px}
-.workspace-toolbar .pipeline-readiness{padding:3px!important;min-width:18px;min-height:24px;border:0;border-radius:50%;background:transparent!important;line-height:1;font-size:10px;color:#477857}
+.workspace-toolbar .pipeline-readiness{padding:3px!important;min-width:18px;min-height:24px;border:0;border-radius:50%;background:transparent!important;line-height:1;font-size:12px;color:#477857}
 .workspace-toolbar .pipeline-readiness.has-issues{color:#aa6a16}
 .topbar .connection.offline-readiness-badge{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font:12px/1.4 Arial,sans-serif;white-space:nowrap}
-.topbar .offline-readiness-badge .offline-readiness-dot{display:inline;font-size:10px;color:#7d887e;margin:0}
+.topbar .offline-readiness-badge .offline-readiness-dot{display:inline;font-size:12px;color:#7d887e;margin:0}
 .topbar .offline-readiness-badge.is-ready .offline-readiness-dot{color:#28734d}
 .design-panel .design-affects{padding-top:8px}
 .design-panel .design-affects table{margin-top:0}
@@ -2928,3 +2928,52 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 
 .workspace .pipeline-readiness{--button-color:#477857}
 .workspace .pipeline-readiness.has-issues{--button-color:#aa6a16}
+
+/* Shared workspace spacing and compact chapter outline. */
+:root{--workspace-inline-space:16px;--color-success:#28734d;--color-neutral-400:#929b96}
+.workspace-modes.workspace-toolbar{padding-inline:var(--workspace-inline-space)}
+.editor-format-panel .design-panel{padding-inline:var(--workspace-inline-space)!important}
+.workspace-toolbar .workspace-primary-modes .bs-workflow-tab:first-child{padding-left:0}
+.section-navigator .chapter-list{padding:0 8px 0 16px}
+.section-navigator-group>summary{padding-left:8px}
+.section-navigator .sidebar-section-row{gap:0}
+.section-navigator .sidebar-drag-handle{flex:0 0 24px;min-width:24px;min-height:36px}
+.section-navigator .sidebar-section-row>button:first-of-type{padding:6px 8px 6px 0;gap:0;border-left-width:0!important;position:relative}
+.section-navigator .sidebar-section-row>button.selected::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#285a43}
+.section-navigator .sidebar-section-row>button.selected{border-left:0!important}
+.section-navigator .sidebar-section-title{font-size:12px;font-weight:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-navigator .sidebar-section-row>.sidebar-section-menu-trigger{position:absolute;right:0;top:0;width:28px;min-width:28px;visibility:hidden;opacity:0}
+.section-navigator .sidebar-section-row:is(:hover,:focus-within)>button:first-of-type{padding-right:32px}
+.section-navigator .sidebar-section-row:is(:hover,:focus-within)>.sidebar-section-menu-trigger,
+.section-navigator .sidebar-section-menu-trigger[aria-expanded="true"]{visibility:visible;opacity:1}
+.sidebar-section-row:has(>.sidebar-section-menu-trigger[aria-expanded="true"])>button:first-of-type{padding-right:32px}
+.section-navigator .sidebar-section-row>.sidebar-title-tooltip{display:block;visibility:hidden;opacity:0;left:24px;top:auto;bottom:calc(100% + 4px);max-width:210px;padding:4px 7px;border:0;border-radius:4px;background:#24352b;color:#fff;font:12px/1.4 var(--ui-font);box-shadow:0 2px 6px #0002;transition:opacity .1s,visibility 0s .1s;z-index:30}
+.section-navigator .sidebar-section-row:is(:hover,:focus-within)>.sidebar-title-tooltip{visibility:visible;opacity:1;transition-delay:200ms}
+@media(hover:none){.section-navigator .sidebar-section-row>.sidebar-section-menu-trigger{visibility:visible;opacity:1}.section-navigator .sidebar-section-row>button:first-of-type{padding-right:32px}}
+.project-files .aside-bottom{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.project-files .aside-bottom>button,.project-files .saved-import-report>summary,.project-files .folder-backup-controls>button{margin:0;padding:0;font:400 13px/1.4 var(--ui-font);color:#405c49}
+.project-files .saved-import-report{margin:0}
+.project-files .project-backup-note{display:flex;align-items:center;gap:5px}
+.project-backup-note [tabindex]{line-height:1;vertical-align:middle}
+.export-status-dot{display:block;width:8px;height:8px;border-radius:50%;background:var(--color-neutral-400)}
+.is-ready .export-status-dot{background:var(--color-success)}
+.design-panel .design-tab-content fieldset{border:0;padding:0;margin:24px 0;background:transparent;border-radius:0}
+.appearance-panel-header a{font-size:12px;text-decoration:none}
+.template-options{grid-auto-rows:1fr;align-items:stretch}
+.template-options .template-card{height:100%;min-height:132px}
+.unified-preview-toolbar{padding-inline:16px}
+.reader-zoom{display:inline-flex;gap:0;border:1px solid #bdc9be;border-radius:5px;overflow:hidden}
+.workspace .reader-zoom button{--button-border:0;border-radius:0;margin:0;min-width:36px}
+.workspace .reader-zoom button+button{border-left:1px solid #bdc9be!important}
+/* A minimum readable size for UI copy; book typography retains edition settings. */
+.workspace :is(button,select,input,label,small,summary,output,.muted,.save-indicator,.design-panel p,.preview-footer span),
+.topbar :is(button,a,span,small){font-size:max(12px,1em)}
+.workspace .sidebar-section-title{font-size:12px}
+.workspace :is(.eyebrow,.workspace-book-kicker,.section-navigator-group>summary){font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.topbar .offline-readiness-badge,.workspace-toolbar .workspace-save.save-indicator,.design-panel output,.appearance-panel-header a{font-size:12px}
+
+.topbar .brand .badge{font-size:12px}
+.workspace :is(.eyebrow,.workspace-book-kicker,.section-navigator-group>summary){font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+
+.preview-panel .reader-viewport.paginated-reader.fit-column{padding-inline:24px}
+.workspace .section-navigator .sidebar-section-row>button:first-of-type{border-left:0!important}
