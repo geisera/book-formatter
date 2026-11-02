@@ -382,12 +382,40 @@ export function buildEpub(
       ),
     ),
   );
+  // Build a standards-compliant nested EPUB navigation outline from division order.
+  // Historical books without divisions retain their flat navigation.
+  const navigationOutline=()=>{
+    let html="",openVolume=false,openPart=false;
+    for(let i=0;i<book.chapters.length;i++){
+      const c=book.chapters[i];
+      const type=c.sectionType??"chapter";
+      if(type==="volume"){
+        if(openPart){html+="</ol></li>";openPart=false;}
+        if(openVolume){html+="</ol></li>";openVolume=false;}
+        html+=`<li><a href="${paths[i]}">${xml(c.title)}</a><ol>`;
+        openVolume=true;
+      }else if(type==="part"){
+        if(openPart){html+="</ol></li>";openPart=false;}
+        html+=`<li><a href="${paths[i]}">${xml(c.title)}</a><ol>`;
+        openPart=true;
+      }else{
+        if(sectionMatter(type)!=="body"){
+          if(openPart){html+="</ol></li>";openPart=false;}
+          if(openVolume){html+="</ol></li>";openVolume=false;}
+        }
+        html+=`<li><a href="${paths[i]}">${xml(c.title)}</a></li>`;
+      }
+    }
+    if(openPart)html+="</ol></li>";
+    if(openVolume)html+="</ol></li>";
+    return html;
+  };
   add(
     "EPUB/nav.xhtml",
     xhtml(
       "Contents",
       language,
-      `<nav epub:type="toc" id="toc" role="doc-toc"><h1>Contents</h1><ol>${coverNavigation}${explicitTitle ? "" : '<li><a href="title.xhtml">Title page</a></li>'}${book.chapters.map((c, i) => `<li><a href="${paths[i]}">${xml(c.title)}</a></li>`).join("")}</ol></nav>`,
+      `<nav epub:type="toc" id="toc" role="doc-toc"><h1>Contents</h1><ol>${coverNavigation}${explicitTitle ? "" : '<li><a href="title.xhtml">Title page</a></li>'}${navigationOutline()}</ol></nav>`,
     ),
   );
   const fontManifest =
