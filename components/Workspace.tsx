@@ -63,7 +63,7 @@ export default function Workspace() {
   const [mobileDrawerOpen,setMobileDrawerOpen]=useState(false);
   const [publishFormat,setPublishFormat]=useState<"ebook"|"print">("ebook");
   const [previewVisible,setPreviewVisible]=useState(true);
-  const [formatControlsVisible,setFormatControlsVisible]=useState(true);
+  const [formatControlsVisible,setFormatControlsVisible]=useState(false);
   const [readinessOpen,setReadinessOpen]=useState(false);
   const [backupRefresh,setBackupRefresh]=useState(0);
   const [folderBackup,setFolderBackup]=useState<"off"|"ready"|"permission"|"unsupported">("off");
