@@ -3,7 +3,7 @@ export type ImageAlign = "left" | "center" | "right";
 export type ImageWidth = 25 | 50 | 75 | 100;
 export const MAX_IMAGE_BYTES = 3_000_000;
 export const MAX_PROJECT_IMAGES_BYTES = 12_000_000;
-export type ImageAttrs = { src: string; alt: string; width: ImageWidth; align: ImageAlign; caption?: string };
+export type ImageAttrs = { src: string; alt: string; width: ImageWidth; align: ImageAlign; caption?: string; printPlacement?: "inline" | "full-bleed" };
 export function decodeImage(src: string): {bytes: Uint8Array; mediaType: "image/png" | "image/jpeg"; extension: "png" | "jpg"} {
   if (typeof src !== "string" || src.length > Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 128)
     throw Error("Image exceeds the 3 MB per-image limit.");
@@ -29,6 +29,8 @@ export function validateImageAttrs(attrs: Record<string, unknown>): void {
     throw Error("Image alt text is required (up to 500 characters).");
   if (attrs.caption !== undefined && (typeof attrs.caption !== "string" || attrs.caption.length > 1000))
     throw Error("Image caption must be 1000 characters or fewer.");
+  if (attrs.printPlacement !== undefined && !["inline","full-bleed"].includes(attrs.printPlacement as string))
+    throw Error("Invalid print image placement.");
   if (![25,50,75,100].includes(attrs.width as number) || !["left","center","right"].includes(attrs.align as string))
     throw Error("Invalid image size or alignment.");
 }
